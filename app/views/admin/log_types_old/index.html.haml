@@ -1,0 +1,39 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Log Types
+        %small
+          <i class="ace-icon fa fa-angle-double-right"></i>
+          manage log types
+    .col-md-5
+      = link_to "new", new_admin_log_type_path, :class => "btn btn-sm btn-primary"
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Enabled
+    %th Visible client
+    %th Need notify
+    %th= link_to_sortable_column :name, 'Name'
+    %th= link_to_sortable_column :title, 'Title'
+    %th Commands
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td= render "admin/shared/label_yesno", v: item.enabled
+      %td= render "admin/shared/label_yesno", v: item.visible_client
+      %td= render "admin/shared/label_yesno", v: item.need_notify
+      %td= item.name
+      %td= item.title
+      %td
+        = link_to "edit", edit_admin_log_type_path(:id => item.id)
+
+= paginate @items

@@ -1,0 +1,31 @@
+
+
+:javascript
+  function url_for_checks(server_name, checkset_name, item_id, token, url_info){
+    return "#{Gexcore::Settings.checks_server_url}admin/runner/set?server_name="+server_name+"&checkset_name=" + checkset_name + "&extra_opts_url="+encodeURIComponent(url_info+"?id="+item_id+"&token="+token);
+  }
+
+  function open_checks(user_id, server_name, checkset_name, item_id, url_info){
+
+    // get user token
+    $.ajax({
+      url: "/admin/users/"+user_id+"/get_token",
+      data: {},
+      type: "GET",
+      dataType: "json",
+      contentType: "application/json",
+      beforeSend: function(){
+      // Handle the beforeSend event
+      },
+      success: function(data){
+        // show checks
+        location.href = url_for_checks(server_name, checkset_name, item_id, data.token, url_info);
+
+      },
+      complete: function (data) {
+
+      }
+
+    });
+
+  }

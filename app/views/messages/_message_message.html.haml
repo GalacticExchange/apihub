@@ -1,0 +1,158 @@
+.padd_top_m{style:"padding-top: 30px"}
+  -if message.from_user.username == @user.username
+    .flex-container-all
+      .flex-wrap.flex-grow
+      .flex-wrap{style:"max-width: 800px;"}
+        .flex-container-all
+          .flex-wrap
+            .padd_mdg{style:"border-radius: 10px; background-color:#f2f2f2; padding: 30px "}
+              %p.no_marg.break_word{:style=>"overflow-wrap: break-word; word-wrap: break-word; line-height: 1.7 !important;"}
+                =auto_link(nl2br((ActionView::Base.full_sanitizer.sanitize(message.message, tags: []))).html_safe)
+              %h6.no_marg{style:"color: #bbbbbb !important; padding: 20px 0px 0px 0px"}
+                = our_date_message(message.created_at)
+          .flex-wrap.padd_left_md
+            = image_tag avatar_url(message.from_user, :thumb),alt:"", :width=>"40pt",:class=>"img-circle no_marg padd_top_sm"
+  -else
+    .flex-container-all
+      .flex-wrap{style:"max-width: 800px;"}
+        .flex-container-all
+          .flex-wrap.padd_ri_md
+            = image_tag avatar_url(message.from_user, :thumb),alt:"", :width=>"40pt",:class=>"img-circle no_marg padd_top_sm"
+          .flex-wrap
+            .df{style:"border-radius: 10px; background-color:#f2f2f2; padding: 30px "}
+              %p.no_marg.break_word{:style=>"overflow-wrap: break-word; word-wrap: break-word; line-height: 1.7 !important;"}
+                =auto_link(nl2br((ActionView::Base.full_sanitizer.sanitize(message.message, tags: []))).html_safe)
+              %h6.no_marg{style:"color: #bbbbbb !important; padding: 20px 0px 0px 0px"}
+                = our_date_message(message.created_at)
+
+-#.row
+  .col-md-12
+    %h4{:style=>"overflow-wrap: break-word; word-wrap: break-word;", :class=>"break_word"}=auto_link(nl2br((ActionView::Base.full_sanitizer.sanitize(message.message, tags: []))).html_safe)
+
+-#if message.from_user.username == @user.username
+  -#.row
+    .col-md-1.no_padd_xs
+    .col-md-10.col-xs-10.no_padd_xs
+      .padd_md.border
+        %h5.no_marg.break_word{:style=>"overflow-wrap: break-word; word-wrap: break-word; line-height: 1.5 !important;"}=auto_link(nl2br((ActionView::Base.full_sanitizer.sanitize(message.message, tags: []))).html_safe)
+    = link_to user_path(:name => message.from_user.username), :class=>"undec" do
+      .col-md-1.col-xs-2.no_padd_xs
+        .pull-right
+          = image_tag avatar_url(message.from_user, :thumb),alt:"", :width=>"40pt",:class=>"img-circle no_marg padd_top_sm"
+-#else
+  .row
+    = link_to user_path(:name => message.from_user.username), :class=>"undec" do
+      .col-md-1.col-xs-2.no_padd_xs
+        = image_tag avatar_url(message.from_user, :thumb),alt:"", :width=>"40pt",:class=>"img-circle no_marg padd_top_sm"
+    .col-md-10.col-xs-10.no_padd_xs
+      .padd_md.border{:style=>"background-color: whitesmoke"}
+        %h5.no_marg.break_word{:style=>"overflow-wrap: break-word; word-wrap: break-word; line-height: 1.5 !important;"}=auto_link(nl2br((ActionView::Base.full_sanitizer.sanitize(message.message, tags: []))).html_safe)
+    .col-md-1.no_padd_xs
+
+
+
+-#.row
+  -if message.from_user.username == @user.username
+    .col-md-11.col-sm-11.col-xs-10.no_padd_ri
+      #my_one_mess.no_marg_bott
+        .my_mess_text
+          =auto_link(nl2br((ActionView::Base.full_sanitizer.sanitize(message.message, tags: []))).html_safe)
+          -#= nl2br(sanitize(message.message, tags: [])).html_safe
+    .col-md-1.col-sm-1.col-xs-2.message_avatar
+      .text-center
+        = image_tag avatar_url(message.from_user, :thumb), :width=>40,:class=>"img-circle no_marg inl"
+  -else
+    .col-md-1.col-sm-1.col-xs-2.message_avatar
+      .text-center
+        = image_tag avatar_url(message.from_user, :thumb), :width=>40, :class=>"img-circle no_marg inl"
+    .col-md-11.col-sm-11.col-xs-10.no_padd_left
+      #their_one_mess.no_marg_bott
+        .their_mess_text
+          =auto_link((ActionView::Base.full_sanitizer.sanitize(message.message, tags: [])).html_safe)
+
+
+-#if message.from_user.username == @user.username
+  %h4.text-center.mess_time
+    = our_date_message(message.created_at)
+  .row
+    .col-md-11.col-sm-11.col-xs-10.no_padd_ri
+      #my_one_mess.no_marg_bott
+        .my_mess_text
+          =auto_link((ActionView::Base.full_sanitizer.sanitize(message.message, tags: [])).html_safe)
+    .col-md-1.col-sm-1.col-xs-2.no_padd_left{:style=>"padding-top: 2px;"}
+      .text-center
+        = image_tag avatar_url(message.from_user, :thumb), :width=>40,:class=>"img-circle no_marg inl"
+
+
+-#else
+
+  %h4.text-center.mess_time
+    = our_date_message(message.created_at)
+  .row
+    .col-md-1.col-sm-1.col-xs-2.no_padd_ri{:style=>"padding-top: 2px;"}
+      .text-center
+        = image_tag avatar_url(message.from_user, :thumb), :width=>40, :class=>"img-circle no_marg inl"
+    .col-md-11.col-sm-11.col-xs-10.no_padd_left
+      #their_one_mess.no_marg_bott
+        .their_mess_text
+          =auto_link((ActionView::Base.full_sanitizer.sanitize(message.message, tags: [])).html_safe)
+
+
+
+  -##their_one_mess
+
+      = image_tag avatar_url(message.from_user, :thumb), :width=>15,:style=>"margin: 0px 0px 6px 0px; display: inline;", :class=>"img-circle"
+
+      .their_mess_text{:style=>"display: inline; width: 550px; padding: 10px 0px 10px 5px;  word-wrap: break-word;   padding: 10px 0px 10px 5px; font-size: 17px; color: #434343;"}
+
+      = message.message
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  -#if message.from_user.username == @user.username
+
+
+    -#@first_line_length = message.message.to_s.length*9;
+    -#@first_line_length =@first_line_length +40;
+
+    -@mess_arr = word_wrap(message.message, line_width: 40);
+
+    %h4.text-center.mess_time
+      = our_date_message(message.created_at)
+    #my_one_mess
+
+      .my_mess_text
+        = message.message
+
+
+
+      -#= link_to "Destroy", [message], :confirm => "Are you sure?", :method => :delete, remote: true, :class => "delete" if message.from_user_id == @user.id
+  -#else
+
+    %h4.text-center.mess_time
+      = our_date_message(message.created_at)
+
+    #their_one_mess
+
+      = image_tag avatar_url(message.from_user, :thumb), :width=>15,:style=>"margin: 0px 0px 6px 0px; display: inline;", :class=>"img-circle"
+
+      .their_mess_text{:style=>"display: inline; width: 550px; padding: 10px 0px 10px 5px;  word-wrap: break-word;   padding: 10px 0px 10px 5px; font-size: 17px; color: #434343;"}
+
+        = message.message
+
+      -#= link_to "Destroy", [message], :confirm => "Are you sure?", :method => :delete, remote: true, :class => "delete" if message.from_user_id == @user.id
+
+
+
+

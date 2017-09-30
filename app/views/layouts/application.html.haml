@@ -1,0 +1,38 @@
+!!! Strict
+%html
+  %head
+    = meta_tags rescue nil
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    = stylesheet_link_tag    "ours/sidebar_view", media: "all"
+    = stylesheet_link_tag    "outdated-browser/outdatedbrowser/outdatedbrowser.min", media: "all"
+
+
+    = javascript_include_tag "outdated-browser/outdatedbrowser/outdatedbrowser.min"
+    = javascript_include_tag :application
+
+
+    = csrf_meta_tag
+
+    = yield(:head)
+
+
+
+    =render "shared/head_icons"
+
+
+  %body{:class => (@app_page ? "app_page" : ""),}
+    #body#wrap
+      -#= render 'shared/header' unless @no_header
+      = render 'shared/header'  unless @no_header
+      = content_for?(:content) ? yield(:content) : yield
+
+
+    -#= render 'shared/beta_home_footer' unless @demo
+    -#=render "shared/logo_footer" unless @demo unless @no_footer
+
+
+
+

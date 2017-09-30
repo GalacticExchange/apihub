@@ -1,0 +1,32 @@
+- if flash[:notice]
+  #flash.app_wrap.border.item.marg_bott_md.item.animate-show(data-block="flash-msg")
+    .row.bord_bott.padd_top_md.padd_bott_md{style:"background-color: hsla(120, 54%, 49%, 0.7)"}
+      .flex-container-all.padd_left_md
+        .flex-wrap
+          =image_tag "new/icons/done_white.svg"
+        .flex-wrap{style:"flex-grow: 1"}
+          %h5.white{style:"margin: 3px 0px 0px 10px !important"}=flash[:notice]
+        #hide_flash.flex-wrap
+          =image_tag "new/icons/close_white.svg", :width => 20, :style=>"opacity: 0.8; cursor:  pointer; margin-right: 20px"
+
+
+- elsif flash[:error]
+  #flash.app_wrap.border.item.marg_bott_md.item.animate-show(data-block="flash-msg")
+    .row.bord_bott.padd_top_md.padd_bott_md{style:"background-color: hsla(0, 54%, 49%, 0.84)"}
+      .flex-container-all.padd_left_md
+        .flex-wrap
+          =image_tag "new/icons/error_white.svg"
+        .flex-wrap{style:"flex-grow: 1"}
+          %h5.white{style:"margin: 3px 0px 0px 10px !important"}=flash[:error]
+        #hide_flash.flex-wrap
+          =image_tag "new/icons/close_white.svg", :width => 20, :style=>"opacity: 0.8; cursor:  pointer; margin-right: 20px"
+
+
+:javascript
+  $(document).ready(function(){
+
+    $("#hide_flash").click(function(){
+        $("#flash").hide(1000);
+    });
+
+  });

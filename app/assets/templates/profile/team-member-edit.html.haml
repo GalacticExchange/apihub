@@ -1,0 +1,71 @@
+.div(ng-if="loaded")
+  .app_wrap.border.marg_bott_md
+    .fl-cont.grey_bg.padd_md.padd_left_md{style:"align-items: centecr;"}
+      .fl-wrap
+        %img{:alt => "Description", :"ng-src" => "{{member.avatar_url}}", :class=>"img-circle avarars-satur inl undec", :style=>"width: 45pt; margin-top: 1px"}
+
+      .fl-wrap.fl-grow.padd_left_md
+        %h2.sb-text.sb-h1-text.inl {{member.username}}
+
+        %a.undec(ng-href="/user/{{member.username}}")
+          .flex-container-all.marg_top_sm.hand_cursor{style:"align-items: center;"}
+            .flex-wrap.flex-growj
+              %p.no_marg.link-el Public profile
+            .flex-wrap.padd_left_sm
+              =image_tag "new/icons/arrow_link.svg", style:"width: 20px; margin-top: 4px;"
+
+    .padd_md{style:"padding: 30px !important;"}
+      %table
+        %tbody
+          %tr
+            %td.padd_bott_md.padd_ri_big
+              %h4.no_marg.gr Full name:
+            %td.padd_bott_md
+              %h4.no_marg {{member.firstName}} {{member.lastName}}
+          %tr(ng-if="!utils.isAdmin(utils.currentUser)")
+            %td.padd_bott_md.padd_ri_big
+              %h4.no_marg.gr Team Role:
+            %td.padd_bott_md
+              %h4.no_marg {{member.role}}
+          %tr
+            %td.padd_ri_big
+              %h4.no_marg.gr About:
+            %td
+              %h4.no_marg {{member.about ? member.about : '-'}}
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+
+.div(ng-if="loaded && utils.isAdmin(utils.currentUser)")
+  .app_wrap.border.marg_bott_md
+    .flex-container-all.grey_bg.padd_10.padd_left_md{style:"align-items: center;"}
+      .flex-wrap.padd_ri_10
+        =image_tag "new/icons/edit.svg", class:"card-icon"
+      .flex-wrap
+        %p.card-h Edit
+
+    .padd_md
+      .fl-cont
+        .fl-wrap.padd_ri_md
+          %h5.no_marg.gr Team role:
+
+      %popup-message(data-text="errText" data-type=" 'error' ")
+      .padd_top_10
+        %ui-select.hand_cursor(ng-model="memberUpd.role" theme="select2" search-enabled="false" style="width:400px;" ng-disabled="!canChooseRole(member)")
+          %ui-select-match {{$select.selected.name}}
+          %ui-select-choices(repeat="role in teamRoles track by role.id")
+            %div(ng-bind-html="role.name | highlight: $select.search")
+        .padd_top_md.fl-cont
+          .fl-wrap
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.marg_bott_sm(ng-disabled="spinner || !canChooseRole(member)" data-btn="change-role" ng-click="changeRole(member.username,memberUpd.role.name)") Update role
+          .fl-wrap.padd_left_md
+            %material-spinner.fade-element-in(ng-if="spinner")
+    .padd_md(ng-if="canRemoveMember(member)")
+      %h5.no_marg.gr Remove user from team
+      .padd_top_md.fl-cont
+        .fl-wrap
+          %button(data-btn="remove-member" ng-disabled="spinnerRemove"){:class=>'mdl-button mdl-js-button mdl-js-ripple-effect gex-btn-new-red', "ng-click"=>"removeMember(member)"} Remove
+        .fl-wrap.padd_left_md
+          %material-spinner.fade-element-in(ng-if="spinnerRemove")

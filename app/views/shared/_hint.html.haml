@@ -1,0 +1,16 @@
+.main_install#hint{:style=>"background-color: #f4f2d4; padding: 10px; height: 63px"}
+  .col-sm-10.col-xs-9
+    %h4.install_ri_text
+      Hint: #{hint_text}
+
+  .col-sm-2.col-xs-3
+    .pull-right#hide_hint
+      =image_tag "new/close.png", :width => 18, :style=>"opacity: 0.5; cursor:  pointer; margin: 12px"
+
+
+:javascript
+  $(document).ready(function(){
+    $("#hide_hint").click(function(){
+        $("#hint").hide(1000);
+    });
+  });

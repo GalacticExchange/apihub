@@ -1,0 +1,32 @@
+'use strict';
+
+angular.module('components').component('clusterDetails', {
+    templateUrl: '<%= asset_path("clusters/cluster-details.html") %>',
+    controller: ['$http', '$scope', '$routeParams', 'ROUTES',
+        function ($http, $scope, $routeParams, ROUTES) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+
+            fetchCluster(true);
+
+            function fetchCluster(firstTime) {
+                $http.get('/clusters/'+$scope.clusterId+'/info', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {clusterID: $scope.clusterId}
+                }).then(function (response) {
+                    $scope.cluster = response.data.cluster;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    console.log('Error fetching cluster: ' + GexUtils.getErrMsgServ(response));
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+        }
+    ]
+});

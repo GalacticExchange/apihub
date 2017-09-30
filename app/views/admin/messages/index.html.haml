@@ -1,0 +1,34 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Messages
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Dialog
+    %th From user
+    %th To user
+    %th Status
+    %th Message
+    %th Created
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td= item.dialog_id
+      %td= item.from_user.username
+      %td= item.to_user.username
+      %td
+        = render "statuses", item: item
+      %td= item.message
+      %td= item.created_at
+
+= paginate @items

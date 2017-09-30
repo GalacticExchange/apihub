@@ -1,0 +1,43 @@
+!!! Strict
+%html
+  %head
+    = meta_tags rescue nil
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    = csrf_meta_tag
+
+    = stylesheet_link_tag    "ours/sidebar_view", media: "all"
+    = stylesheet_link_tag    "ours/sidebar_view_fx", media: "all"
+
+    = javascript_include_tag :application
+
+    = render "shared/head_icons"
+
+    = yield(:head)
+    %title Galactic Exchange
+  %body{:class => (@app_page ? "app_page" : "")}
+
+    #popup
+      =render "shared/main_popup"
+    #body#wrap
+      =render "shared/snackbar"
+      = render 'shared/header'  unless @no_header
+      .flex-container
+        =render "shared/left_popup"
+        = render 'shared/flash'
+        = content_for?(:content) ? yield(:content) : yield
+
+        -#.inline-flex(data-block="main_menu")
+          .col-xs-12.no_padd.install_left_col.main_div_size.flex_col_sm
+            =render "shared/#{(@page_type ? @page_type : "workspace")}_column_left"
+
+        -#.inline-flex{:style=>"flex-grow: 1;"}
+          -#if hint_text != nil
+            =render "shared/hint"
+          .col-xs-12.main.main_div_size(data-block="main_content")
+            = render 'shared/flash'
+            = content_for?(:content) ? yield(:content) : yield
+
+

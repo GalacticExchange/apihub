@@ -1,0 +1,18 @@
+%h1 Instance "#{@item.uid}"
+%b Admin notes:
+%p
+  = @item.admin_notes
+= link_to 'edit', edit_admin_notes_admin_instance_path(@item)
+%br
+%b Sysinfo:
+= @item.sysinfo
+%br
+%b Data:
+= @item.data
+%br
+%b Last node id:
+= @item.last_node_id
+%br
+%b Created:
+= @item.created_at
+%br

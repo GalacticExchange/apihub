@@ -1,0 +1,93 @@
+.sidebar-header.gx-page(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text {{pageTitle}}
+    %p.sb-p-text.gr {{pageDescription}}
+  .flex-wrap(ng-if="loaded && !needInstallNode && (servicesGroups.length != 0)")
+    .service_dropdown_section
+
+
+      %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gx-btn.lite-blue.undec{:id=>"sv_groups_dropdown"}
+        .fl-cont
+          .fl-wrap.marg_ri_10{style:'margin-top: -1px;'}
+            =inline_svg 'new/icons/nodes_.svg', class: 'sm-icon gex-svg'
+          .fl-wrap.fl-grow
+            {{selectedGroup ? getNodeName(selectedGroup) : 'Choose node'}}
+          .fl-wrap.padd_left_md
+            =inline_svg "new/icons/down.svg", class:'sm-icon gex-svg'
+      %ul.choose_node_drop.border(style="min-width: 320px !important;" ng-mdl-select class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="sv_groups_dropdown")
+        .padd_bott_sm
+          .padd_15.padd_left_md
+            %h3.bold.no_marg.inl{style:" color: #585858;"} Change node
+
+          .div(ng-repeat="group in servicesGroups track by group.nodeId")
+            .flex-container-all.hand_cursor{style:'margin: 5px 10px; border-radius: 6px; padding: 10px;'}(ng-class="group.nodeId == selectedGroup.nodeId ? 'selected-el' : 'gr-hover-el' " ng-click="selectGroup(group, $event)" )
+              .fl-wrap.padd_left_sm
+                =inline_svg 'new/icons/nodes_.svg', class: 'md-icon left_popup_icon'
+              .flex-wrap.padd_left_15.flex-grow
+                %p.no_marg{style:'font-size: 12pt; font-weight: 600; color: #777777;'}(ng-class="group.nodeId == selectedGroup.nodeId ? 'white' : '' ") {{getNodeName(group)}}
+
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+
+%div(ng-if="loaded")
+  .fl-cont.padd_top_big(ng-if="needInstallNode")
+    .fl-wrap.fl-grow
+    .fl-wrap
+      .text-center
+        %h2.no_marg.bold.no-items-h Looks like you do not have any nodes in this cluster.
+        %p.padd_top_10.gr.padd_bott_md
+          You can add a new node, go to node management page or switch to another cluster
+        .div
+          %a(class="undec")
+            %button(class="mdl-button mdl-js-button mdl-js-ripple-effect gex-btn-new marg_ri_sm" ng-click="utils.goToNodesAndInstallNode(utils.currentCluster)") {{utils.currentCluster.clusterType == "aws" ? 'Add AWS node' : 'Add nodes'}}
+          %a(ng-href="{{ROUTES.getAddr('NODES', utils.currentCluster.id)}}")
+            %button(class="mdl-button mdl-js-button mdl-js-ripple-effect gex-btn-new marg_left_sm") Manage nodes
+    .fl-wrap.fl-grow
+
+  .fl-cont.padd_top_big(ng-if="!needInstallNode && !selectedGroup")
+    .fl-wrap.fl-grow
+    .fl-wrap
+      .text-center
+        %h2.no_marg.bold.no-items-h.gr No services available
+        -#%p.padd_top_10.gr.padd_bott_md
+          Something went wrong :(
+    .fl-wrap.fl-grow
+
+  .app_wrap.border.marg_bott_md(ng-if="!needInstallNode && selectedGroup")
+    .flex-container-all.grey_bg.padd_15.padd_left_md{style:"align-items: center;"}
+      -#.flex-wrap.padd_ri_15
+        =image_tag "new/icons/nodes_.svg", class:"card-icon"
+      .flex-wrap
+        %h6.bold.card-h.inl {{getNodeName(selectedGroup)}}
+
+    %table#servicesTable{:resizeable => "", :mode => "'BasicResizer'"}
+      %thead.padd_15.w-g_bg
+        %tr
+          %th#colName.table-h.t-col-left Name
+          -#%th#colStatus.table-h.t-col-center State
+          %th#colChecks.table-h.t-col-center.hidden-xs.hidden-sm Status checks
+          %th#colNode.table-h.t-col-center.hidden-xs Local IP
+          %th#colPort.table-h.t-col-center.hidden-xs.hidden-sm Port
+          %th#colProtocol.table-h.t-col-center.hidden-xs.hidden-sm Protocol
+          %th#colHostname.table-h.t-col-center.hidden-xs.hidden-sm.hidden-md Hostname
+          %th#colAction.table-h.t-col-ri.hidden-xs
+      %tbody
+        %tr.bord_bott(ng-repeat="service in selectedGroup.services track by service.id"){id:"{{service.name}}_block"}
+          %td.bold.t-col-left(data-div='name') {{service.title ? service.title : service.name}}
+          %td.t-col-center.hidden-xs.hidden-sm
+            %gx-checks(data-checks="servicesChecks[service.id]" data-status="service.status" data-item-id="service.id")
+          %td.t-col-center.hidden-xs(data-div='local_ip'){id:"{{service.name}}_public_ip"} {{service.public_ip}}
+          %td.t-col-center.hidden-xs.hidden-sm(data-div='port'){id:"{{service.name}}_port"} {{service.port}}
+          %td.t-col-center.hidden-xs.hidden-sm(data-div='protocol'){id:"{{service.name}}_protocol"} {{service.protocol}}
+          %td.t-col-center.hidden-xs.hidden-sm.hidden-md(data-div='host') {{service.host}}
+          %td
+            .hover-el.t-col-ri(mdc-ripple mdc-ripple-cond="utils.isDesktopClient || service.protocol == 'ssh'" data-div='connect_btn' ng-if="isShowConnectBtn(service)" ng-click="connectToService(service)")
+              .padd_left_md.link-el.flex-container-all
+                .flex-wrap.flex-grow
+                .flex-wrap
+                  Connect
+                .flex-wrap.padd_left_md
+                  =image_tag "new/icons/arrow_link.svg", style:"width: 20px;"

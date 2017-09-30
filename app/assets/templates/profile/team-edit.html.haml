@@ -1,0 +1,23 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text Edit team
+    %p.sb-p-text.gr Edit your team avatar and about.
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+.app_wrap.border.marg_bott_md(ng-if="loaded")
+  .row
+    .padd_md
+      .col-md-8.no_padd
+        .avatar
+          %img(ng-src="{{team.avatarUrl}}"  alt="team avatar" style="width: 220px;")
+        %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.marg_top_md(type="file" ngf-select="updateAvatar($file, $invalidFiles)" ngf-max-size="1MB" ngf-accept="'.gif,.jpg,.jpeg,.png'" ngf-pattern="'.gif,.jpg,.jpeg,.png'" style="width: 220px;" ng-disabled="disableUpdAvatarBtn") {{updAvatarBtnText}}
+        {{messageTextAvatar}}
+        .padd_top_big
+          %h5
+            About team:
+          %textarea.new-textarea{"ng-model"=> "team.about", :style => "width: 100%;height: 64px;"}
+          %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.marg_top_md.marg_bott_md(style="width: 220px;" ng-click="updateAbout()" ng-disabled="disableUpdAboutBtn") {{updAboutBtnText}}
+          {{messageTextAbout}}

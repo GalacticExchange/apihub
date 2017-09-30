@@ -1,0 +1,86 @@
+'use strict';
+
+angular.module('components').component('clustersWizardWait', {
+    templateUrl: '<%= asset_path("clusters/clusters-wizard-wait.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', '$location', 'ROUTES', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, $routeParams, $location, ROUTES, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+
+            var urlParams = $location.search();
+            $scope.clusterType = urlParams.clusterType;
+
+            fetchCluster(true);
+
+            function fetchCluster(firstTime) {
+                $http.get('/clusters/'+$scope.clusterId+'/info', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.cluster = response.data.cluster;
+
+                    $scope.installNodeText = $scope.cluster.clusterType == "aws" ? "Add slave AWS nodes" : "Add slave nodes";
+
+                    if (firstTime) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    console.log('Error fetching cluster: ' + response.statusText);
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            var fetchClusterInterval = $interval(function () {
+                fetchCluster();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+
+            $scope.switchCluster = function (cluster) {
+                if (cluster.status != 'active') {
+                    GexUtils.showMessageDialog("Sorry", "Cluster should be active to switch into.")
+                } else {
+                    window.location.href = "/profile/change_current_cluster?cluster_uid=" + cluster.id;
+                }
+            };
+
+            $scope.setClusterInstallNode = function (cluster) {
+                $http.post('/clusters/change', {clusterID: cluster.id}, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    GexUtils.goToNodesAndInstallNode(cluster);
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    GexUtils.showMessageDialog("Sorry", "Cluster change failed");
+                    console.log('Error changing current cluster: ' + response.statusText);
+                });
+            };
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchClusterInterval)) {
+                    $interval.cancel(fetchClusterInterval);
+                    fetchClusterInterval = undefined;
+                }
+            });
+
+            $scope.isInstallingState = function (cluster) {
+                return cluster.status == 'installing';
+            };
+
+            $scope.isErrorState = function (cluster) {
+                return cluster.status == 'install_error' || cluster.status == 'uninstall_error'
+                    || cluster.status == 'start_error';
+            };
+
+            $scope.isActiveState = function (cluster) {
+                return cluster.status == 'active';
+            };
+        }
+    ]
+});

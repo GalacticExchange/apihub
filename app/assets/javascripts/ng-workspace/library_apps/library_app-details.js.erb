@@ -1,0 +1,49 @@
+'use strict';
+
+angular.module('components').component('libraryAppDetails', {
+    templateUrl: '<%= asset_path("library_apps/library_app-details.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', 'ROUTES',  'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, $routeParams, ROUTES, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+            $scope.appName = $routeParams.appName;
+
+            function fetchLibraryApp(firstTime) {
+                $http.get('/appstore/application/' + $scope.appName, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {clusterId: $scope.clusterId, includeImages: true}
+                }).then(function (response) {
+                    $scope.app = response.data.app;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    var errMessage = 'Cannot load library application: ' + GexUtils.getErrMsgServ(response);
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', errMessage);
+                    } else {
+                        console.log(errMessage);
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            fetchLibraryApp(true);
+            var fetchLibraryAppInterval = $interval(function () {
+                fetchLibraryApp();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchLibraryAppInterval)) {
+                    $interval.cancel(fetchLibraryAppInterval);
+                    fetchLibraryAppInterval = undefined;
+                }
+            });
+        }
+    ]
+});

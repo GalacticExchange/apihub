@@ -1,0 +1,52 @@
+.gx-page
+  .sidebar-header(data-div="page-title")
+    .flex-wrap.flex-grow
+      %h2.sb-text.sb-h1-text AppHub™
+      %p.sb-p-text.gr
+        Apps optimized by Galactic Exchange team
+    .flex-wrap
+      .app_wrap.border
+        .mdl-tabs.mdl-js-tabs.mdl-js-ripple-effect
+          .mdl-tabs__tab-bar
+            %a.accepted.mdl-tabs__tab.mdl-tab.hand_cursor.is-active(href="")
+              =inline_svg "new/icons/handpick.svg", class: "mdl-tab-icon"
+              Handpicked
+            %a.accepted.mdl-tabs__tab.mdl-tab.hand_cursor(href="" ng-click="goToAutobildsApps()")
+              =inline_svg "new/icons/autobuild.svg", class: "mdl-tab-icon"
+              Opensource
+            %a.accepted.mdl-tabs__tab.mdl-tab.hand_cursor(href="" ng-click="goToDevApps()")
+              =inline_svg "new/icons/debug.svg", class: "mdl-tab-icon"
+              Development
+
+  %div(ng-if="!loaded")
+    .flex-center.padd_top_md
+      %material-spinner.fade-element-in
+
+  %div(ng-if="loaded")
+    .row{:style=>" margin-left: -15px; margin-right: -15px"}
+      .col-xl-2.col-lg-3.col-md-3.col-sm-6.col-xs-6.padd_bott_md.padd_ri_sm_xs.padd_left_sm_xs(ng-repeat="app in apps track by app.id")
+        .app_card.lite-gx-border(ng-attr-id="{{app.name + '_card'}}")
+          %a(ng-href="{{ROUTES.getAddr('LIBRARY_APP_INFO', clusterId, app.name)}}")
+            .app_pic_place
+              %img(ng-src="{{app.imageUrl}}" style="width: 100%;")
+          .app_info
+            .padd_top_10.padd_left_10
+              %h2.project_name.bold.no_marg.one-liner
+                {{app.title}}
+              %p.app_category.gr.marg_top_sm{style:"overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px;"}
+                {{app.categoryTitle}}
+
+            .padd_10
+              .div(ng-if="!app.status || app.status!=1")
+                .div(ng-if="app.clusterApplicationId")
+                  %a(ng-href="{{ROUTES.getAddr('APPLICATION_INFO', clusterId, app.clusterApplicationId)}}")
+                    %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.gex-sm-btn.green-btn(data-btn="open") Open
+                .div(ng-if="!app.clusterApplicationId")
+                  %a(ng-href="{{ROUTES.getAddr('LIBRARY_APP_INST', clusterId, app.name)}}" ng-if="utils.userPermissions.cluster_manage")
+                    %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.gex-sm-btn(data-btn="install") Install
+                  %a(ng-href="{{ROUTES.getAddr('LIBRARY_APP_INFO', clusterId, app.name)}}" ng-if="!utils.userPermissions.cluster_manage")
+                    %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.gex-sm-btn(data-btn="details") Details
+
+              .div(ng-if="app.status && app.status==1")
+                %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.gex-sm-btn(disabled data-btn="details")
+                  {{app.releaseDate ? "Coming in "+app.releaseDate : 'Coming soon'}}

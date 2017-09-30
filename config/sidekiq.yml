@@ -1,0 +1,14 @@
+---
+#:verbose: true
+#:pidfile: ./tmp/pids/sidekiq.pid
+#:logfile: ./log/sidekiq.log
+:concurrency: 1
+:timeout: 1800
+
+:queues:
+  - default
+  - log
+  - mailers
+  - clusters
+
+

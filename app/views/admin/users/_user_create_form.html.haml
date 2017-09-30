@@ -1,0 +1,41 @@
+
+
+= horizontal_simple_form_for([:admin, @user]) do |f|
+  -#= f.error_notification
+  = render 'shared/form_errors', {f: f}
+
+  %h5 Username
+  = f.input :username, placeholder: '', :label=>false
+
+
+  %h5 Email
+  = f.input :email, :label=>false
+
+  -#= f.input :email, placeholder: ''
+  -#= f.input :teamname, placeholder: ''
+  %h5 Team
+  = f.simple_fields_for :team do |f_team|
+    = f_team.input :name, :label=>false
+
+  %h5 Hadoop type name
+  = f.simple_fields_for :cluster_hadoop_types do |f_c_h_types|
+    = f_c_h_types.collection_select :name, @cluster_hadoop_types, :name, :title, selected: ClusterHadoopType::DEFAULT_NAME
+
+  %h5 First name
+  = f.input :firstname, placeholder: '', :label=>false
+  %h5 Last name
+  = f.input :lastname, placeholder: '', :label=>false
+
+  %h5 Country
+  = f.input :country, placeholder: '', :label=>false, :as => :string
+  %h5 Phone number
+  = f.input :phone_number, placeholder: '', :label=>false
+  %h5 Password
+  = f.input :password, hint: 'Minimum 8 characters.', :label=>false, :as => :string
+  -#%h5 Confirm your password
+  -#= f.input :password_confirmation, placeholder: '', :label=>false
+
+  .buttons
+    = f.button :submit, :class => "btn btn-default", :value=>"Create user"
+
+

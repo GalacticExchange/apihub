@@ -1,0 +1,647 @@
+'use strict';
+
+var directives = angular.module('directives');
+
+
+directives.directive('donutStatChart', function () {
+    return {
+        restrict: 'A',
+        scope: {
+            chartData: '=chartData'
+        },
+        link: function (scope, element) {
+            var newChart = new Chart(element[0].getContext("2d"), {
+                type: 'doughnut',
+                data: {labels: [""], datasets: [{data: [0], backgroundColor: []}]},
+                options: {
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        displayColors: false
+                    },
+                    cutoutPercentage: 60,
+                    elements: {
+                        center: {
+                            // the longest text that could appear in the center
+                            maxText: '100%',
+                            text: 'N/A',
+                            fontColor: 'rgba(67,67,67,0.5)',
+                            fontFamily: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+                            fontStyle: 'normal',
+                            // fontSize: 12,
+                            // if a fontSize is NOT specified, we will scale (within the below limits) maxText to take up the maximum space in the center
+                            // if these are not specified either, we default to 1 and 256
+                            minFontSize: 1,
+                            maxFontSize: 256
+                        }
+                    }
+                }
+            });
+
+            scope.$watch('chartData', function (newChartData) {
+                var douChart = newChart;
+                if (newChartData.working) {
+                    var dataUpd = scope.formatData(newChartData);
+                    douChart.config.options.elements.center.text = dataUpd[0] + "%";
+                    douChart.config.data.labels = dataUpd[1];
+                    douChart.config.data.datasets[0].data = dataUpd[2];
+                    douChart.config.data.datasets[0].backgroundColor = dataUpd[3];
+                    douChart.update();
+                } else {
+                    douChart.config.options.elements.center.text = "N/A";
+                    douChart.config.data.datasets[0].data = 0;
+                    douChart.update();
+                }
+            }, true);
+
+            scope.formatData = function (raw_data) {
+                var labels = [], colors = [], cpuValues = [];
+                var cpuApps = raw_data.cpu.apps;
+                var cpuColors = raw_data.cpu.colors;
+                var cpuLoad = 0;
+
+                for (var appName in cpuApps) {
+                    var usedByApp = cpuApps[appName].used;
+                    var appColor = cpuColors[appName];
+
+                    cpuLoad += parseInt(usedByApp);
+                    labels.push(appName);
+                    cpuValues.push(usedByApp);
+                    colors.push(appColor);
+                }
+
+                labels.push('Free');
+                cpuValues.push(100 - cpuLoad);
+
+                return [cpuLoad, labels, cpuValues, colors];
+            }
+        }
+    };
+});
+
+directives.directive('barStatChart', function () {
+    return {
+        restrict: 'A',
+        scope: {
+            chartData: '=chartData',
+            type: '@chartType'
+        },
+        link: function (scope, element) {
+            var newChart = new Chart(element[0].getContext("2d"), {
+                type: 'bar',
+                data: {
+                    labels: [""],
+                    datasets: [{
+                        backgroundColor: "rgba(29,135,228,0.6)",
+                        borderWidth: 0,
+                        hoverBackgroundColor: "rgba(29,135,228,0.8)",
+                        data: [0]
+                    }]
+                },
+                options: {
+                    title: {
+                        display: true,
+                        text: (scope.type == "ram" ? 'RAM' : 'DISK'),
+                        padding: 15
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        enabled: false
+                    },
+                    showInlineValues: true,
+                    scales: {
+                        xAxes: [{
+                            ticks: {
+                                max: 100,
+                                min: 0,
+                                stepSize: 10
+                            },
+                            barPercentage: 1,
+                            categoryPercentage: 1,
+                            display: false
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                fontColor: 'rgba(67,67,67,0.5)',
+                                padding: 5,
+                                fontSize: 10,
+                                max: 100,
+                                min: 0,
+                                stepSize: 25
+                            },
+                            gridLines: {
+                                drawBorder: false,
+                                drawTicks: false,
+                                offsetGridLines: true
+                            },
+                            barPercentage: 0.2,
+                            categoryPercentage: 0.5
+                        }]
+                    }
+                }
+            });
+
+            scope.$watch('chartData', function (newChartData) {
+                var barChart = newChart;
+                var type = scope.type;
+                var tooltip = $('#' + newChartData.nodeId + '_' + type + '_tooltip'); //todo move tooltip logic from jquery
+                if (newChartData.working) {
+                    var updData = scope.formatData(newChartData, type);
+                    barChart.config.data.datasets[0].data[0] = updData[0];
+                    scope.checkDanger(barChart);
+                    tooltip.text((type == 'ram' ? 'RAM' : 'Disk')
+                        + ' usage: ' + updData[2] + 'GB of ' + updData[1] + 'GB');
+                    barChart.update();
+                    tooltip.show();
+                } else {
+                    barChart.config.data.datasets[0].data[0] = 0;
+                    barChart.update();
+                    tooltip.hide();
+                }
+            }, true);
+
+            scope.checkDanger = function (barChart) {
+                if (barChart.config.data.datasets[0].data[0] > 90) {
+                    barChart.config.data.datasets[0].backgroundColor = 'rgba(245, 0, 41, 0.62)';
+                    barChart.config.data.datasets[0].hoverBackgroundColor = 'rgba(245, 0, 41, 0.8)';
+                } else {
+                    barChart.config.data.datasets[0].backgroundColor = 'rgba(29,135,228,0.6)';
+                    barChart.config.data.datasets[0].hoverBackgroundColor = 'rgba(29,135,228,0.8)';
+                }
+            };
+
+            scope.calcPercentBar = function (all, used) {
+                return Math.round(used / (all / 100))
+            };
+
+            scope.formatData = function (raw_data, type) {
+                if (type == 'ram') {
+                    var usedRam = parseFloat(raw_data.ram.all - raw_data.ram.used).toFixed(1);
+                    var totalRam = parseFloat(raw_data.ram.all).toFixed(1);
+                    var ramPerc = scope.calcPercentBar(totalRam, usedRam);
+                    return [ramPerc, totalRam, usedRam];
+                } else {
+                    var totalDisk = parseFloat(raw_data.disk.all).toFixed(2);
+                    var usedDisk = parseFloat(raw_data.disk.used).toFixed(2);
+                    var diskPerc = scope.calcPercentBar(totalDisk, usedDisk);
+                    return [diskPerc, totalDisk, usedDisk];
+                }
+            }
+        }
+    };
+});
+
+directives.directive('nodeCpuChart', function () {
+    return {
+        restrict: 'E',
+        scope: {
+            nodeId: '@nodeId'
+        },
+        templateUrl: '<%= asset_path("common/node-stat-cpu.html") %>',
+        controller: ['$http', '$scope', '$interval', 'ROUTES', 'HTTP_CONSTANTS',
+            function ($http, $scope, $interval, ROUTES, HTTP_CONSTANTS) {
+                $scope.utils = GexUtils;
+                $scope.ROUTES = ROUTES;
+
+                fetchNodeCpu();
+
+                function fetchNodeCpu() {
+                    $http.get('/stats/nodes_history/' + $scope.nodeId + '/cpu', {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json'
+                    }).then(function (response) {
+
+                        if (response.data[0] && response.data[0] == false) {
+                            if (!$scope.totalRam) {
+                                $scope.loadedFails = true;
+                                $scope.loaded = true;
+                                console.log('Error fetching node CPU data');
+                                return;
+                            }
+                        }
+
+                        $scope.initData = response.data[1];
+                        $scope.loaded = true;
+                    }, function errorCallback(response) {
+                        if (GexUtils.isResponseCanceled(response)) {
+                            return;
+                        }
+                        GexUtils.redirectIfSomeRespCodes(response);
+
+                        console.log('Error fetching node CPU data: ' + response.statusText);
+                        $scope.loadedFails = true;
+                        $scope.loaded = true;
+                    });
+                }
+
+
+                var fetchNodeCpuUpd = $interval(function () {
+                    if (!$scope.loaded || $scope.loadedFails) {
+                        return;
+                    }
+                    var lastTimeStr = $scope.updData ? $scope.updData[2] : $scope.initData[$scope.initData.length - 1][0];
+                    var lastTimeDate = new Date(lastTimeStr);
+                    var seconds = Math.round(lastTimeDate.getTime() / 1000);
+                    $scope.interval = 60;
+
+                    $http.get('/stats/nodes/' + $scope.nodeId + '/cpu/' + seconds + '/' + $scope.interval, {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json'
+                    }).then(function (response) {
+                        if (!response.data[0]) {
+                            return;
+                        }
+                        $scope.updData = response.data[1];
+                    }, function errorCallback(response) {
+                        if (GexUtils.isResponseCanceled(response)) {
+                            return;
+                        }
+                        GexUtils.redirectIfSomeRespCodes(response);
+
+                        console.log('Error fetching node statistic updates: ' + response.statusText);
+                    });
+
+                }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+                $scope.$on('$destroy', function () {
+                    if (angular.isDefined(fetchNodeCpuUpd)) {
+                        $interval.cancel(fetchNodeCpuUpd);
+                        fetchNodeCpuUpd = undefined;
+                    }
+                });
+            }
+        ],
+        link: function (scope, element) {
+            var chart, douChart;
+            scope.$watch('initData', function (initData) {
+                if (!scope.loaded) {
+                    return;
+                }
+
+
+                if (!initData) {
+                    scope.loadedFails = true;
+                    scope.loaded = true;
+                    console.log('Error fetching node CPU data');
+                    return;
+                }
+
+                var color = 'rgba(29, 135, 228, 0.5)', name = 'Total';
+                var dataset = {
+                    label: name,
+                    lineTension: 0.1,
+                    backgroundColor: color,
+                    borderColor: color,
+                    borderCapStyle: 'butt',
+                    borderDash: [],
+                    borderDashOffset: 0.3,
+                    borderJoinStyle: 'miter',
+                    pointBorderColor: "rgba(253,14,79,0)",
+                    pointBackgroundColor: "rgba(253,14,79,0)",
+                    pointBorderWidth: 0,
+                    pointHoverRadius: 1,
+                    pointHoverBackgroundColor: "#FD0E4F",
+                    pointHoverBorderColor: "#FD0E4F",
+                    pointHoverBorderWidth: 2,
+                    pointRadius: 1,
+                    pointHitRadius: 10,
+                    data: []
+                };
+
+                for (var point in initData) {
+                    var time = initData[point][0];
+                    var userCpu = initData[point][1];
+                    dataset.data.push({x: time, y: userCpu});
+                }
+
+                chart = new Chart(element.find('#cpu_line_chart')[0].getContext("2d"), {
+                    type: 'line',
+                    data: {
+                        datasets: [dataset]
+                    },
+                    options: {
+                        borderColor: "#434343",
+                        animationEasing: "easeOutExpo",
+                        animation: {
+                            duration: 800
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltips: {
+                            displayColors: false
+                        },
+                        scales: {
+                            xAxes: [{
+                                position: 'bottom',
+                                type: 'time',
+                                time: {
+                                    unitStepSize: 12,
+                                    displayFormats: {
+                                        minute: 'HH:mm:ss'
+                                    },
+                                    min: initData[0][0]
+                                }
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    fontColor: 'rgba(67,67,67,0.5)',
+                                    fontSize: 10,
+                                    max: 100,
+                                    min: 0,
+                                    stepSize: 25
+                                }
+                            }],
+                            gridLines: {
+                                tickMarkLength: 1500,
+                                drawBorder: true
+                            }
+                        }
+                    }
+                });
+
+                var douUsedCpu = initData[initData.length - 1][1];
+                douChart = new Chart(element.find('#cpu_dou_chart')[0].getContext("2d"), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Total', 'Free'],
+                        datasets: [{
+                            data: !_.isNil(douUsedCpu) ? [douUsedCpu, 100 - douUsedCpu] : [0, 0],
+                            backgroundColor: ['#1d87e4']
+                        }]
+                    },
+                    options: {
+                        legend: {
+                            display: false
+                        },
+                        tooltips: {
+                            displayColors: false
+                        },
+                        cutoutPercentage: 60,
+                        elements: {
+                            center: {
+                                // the longest text that could appear in the center
+                                maxText: '100%',
+                                text: !_.isNil(douUsedCpu) ? douUsedCpu + '%' : 'N/A',
+                                fontColor: 'rgba(67,67,67,0.5)',
+                                fontFamily: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+                                fontStyle: 'normal',
+                                // fontSize: 12,
+                                // if a fontSize is NOT specified, we will scale (within the below limits) maxText to take up the maximum space in the center
+                                // if these are not specified either, we default to 1 and 256
+                                minFontSize: 1,
+                                maxFontSize: 256
+                            }
+                        }
+                    }
+                });
+
+
+            }, true);
+
+            scope.$watch('updData', function (updData) {
+                if (!updData) {
+                    return;
+                }
+
+                var time = updData[2];
+                var usedCpu = updData[1];
+
+                var chartData = chart.chart.config.data.datasets[0].data;
+                var lastTime = chartData[chartData.length - 1].x;
+
+                if (lastTime != time) {
+                    if (chartData.length > 121) { //need 1 extra point for smooth animation
+                        chartData.shift();
+                    }
+                    chartData.push({x: time, y: usedCpu});
+                    chart.config.options.scales.xAxes[0].time.min = chartData[1].x;
+                    chart.update();
+
+                    if (!_.isNil(usedCpu)) {
+                        douChart.config.options.elements.center.text = usedCpu + "%";
+                        douChart.config.data.datasets[0].data = [usedCpu, 100 - usedCpu];
+                    } else {
+                        douChart.config.options.elements.center.text = "N/A";
+                        douChart.config.data.datasets[0].data = [0, 0];
+                    }
+                    douChart.update();
+                }
+            }, true);
+        }
+    };
+});
+
+directives.directive('nodeRamChart', function () {
+    return {
+        restrict: 'E',
+        scope: {
+            nodeId: '@nodeId'
+        },
+        templateUrl: '<%= asset_path("common/node-stat-ram.html") %>',
+        controller: ['$http', '$scope', '$interval', 'ROUTES', 'HTTP_CONSTANTS',
+            function ($http, $scope, $interval, ROUTES, HTTP_CONSTANTS) {
+                $scope.utils = GexUtils;
+                $scope.ROUTES = ROUTES;
+                $scope.isNil = _.isNil;
+
+                fetchNodeRam();
+
+                function fetchNodeRam() {
+                    $http.get('/stats/nodes_history/' + $scope.nodeId + '/memory', {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json'
+                    }).then(function (response) {
+                        $scope.totalRam = response.data[2];
+                        if (!$scope.totalRam) {
+                            $scope.loadedFails = true;
+                            $scope.loaded = true;
+                            console.log('Error fetching node total memory data: Total memory is empty');
+                            return;
+                        }
+
+                        var initData = response.data[1];
+                        $scope.usedRamNow = !_.isNil(initData[initData.length - 1][1])
+                            ? _.round($scope.totalRam - initData[initData.length - 1][1], 1) : undefined;
+                        if (!_.isNil($scope.usedRamNow)) {
+                            $scope.totalRamNow = _.round($scope.totalRam, 1);
+                            $scope.usedRadPercNow = _.round($scope.usedRamNow / $scope.totalRamNow * 100, 1);
+                        }
+
+                        $scope.initData = initData;
+                        $scope.loaded = true;
+                    }, function errorCallback(response) {
+                        if (GexUtils.isResponseCanceled(response)) {
+                            return;
+                        }
+                        GexUtils.redirectIfSomeRespCodes(response);
+
+                        console.log('Error fetching node memory data: ' + response.statusText);
+                        $scope.loadedFails = true;
+                        $scope.loaded = true;
+                    });
+                }
+
+
+                var fetchNodeRamUpd = $interval(function () {
+                    if (!$scope.loaded || $scope.loadedFails) {
+                        return;
+                    }
+                    var lastTimeStr = $scope.updData ? $scope.updData[2] : $scope.initData[$scope.initData.length - 1][0];
+                    var lastTimeDate = new Date(lastTimeStr);
+                    var seconds = Math.round(lastTimeDate.getTime() / 1000);
+                    $scope.interval = 60;
+
+                    $http.get('/stats/nodes/' + $scope.nodeId + '/memory/' + seconds + '/' + $scope.interval, {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json'
+                    }).then(function (response) {
+                        if (!response.data[0]) {
+                            return;
+                        }
+
+                        $scope.updData = response.data[1];
+                    }, function errorCallback(response) {
+                        if (GexUtils.isResponseCanceled(response)) {
+                            return;
+                        }
+                        GexUtils.redirectIfSomeRespCodes(response);
+
+                        console.log('Error fetching node statistic updates: ' + response.statusText);
+                    });
+
+                }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+                $scope.$on('$destroy', function () {
+                    if (angular.isDefined(fetchNodeRamUpd)) {
+                        $interval.cancel(fetchNodeRamUpd);
+                        fetchNodeRamUpd = undefined;
+                    }
+                });
+            }
+        ],
+        link: function (scope, element) {
+            var chart;
+            scope.$watch('initData', function (initData) {
+                if (!scope.loaded) {
+                    return;
+                }
+
+                //var color = 'rgba(56, 142, 60, 0.4)', name = 'Memory';
+                var color = 'rgba(168, 62, 245, 0.4)', name = 'Memory';
+                var dataset = {
+                    label: name,
+                    lineTension: 0.1,
+                    backgroundColor: color,
+                    borderColor: color,
+                    borderCapStyle: 'butt',
+                    borderDash: [],
+                    borderDashOffset: 0.3,
+                    borderJoinStyle: 'miter',
+                    pointBorderColor: "rgba(253,14,79,0)",
+                    pointBackgroundColor: "rgba(253,14,79,0)",
+                    pointBorderWidth: 0,
+                    pointHoverRadius: 1,
+                    pointHoverBackgroundColor: "#FD0E4F",
+                    pointHoverBorderColor: "#FD0E4F",
+                    pointHoverBorderWidth: 2,
+                    pointRadius: 1,
+                    pointHitRadius: 10,
+                    data: []
+                };
+
+                for (var point in initData) {
+                    var time = initData[point][0];
+                    var usedRam = !_.isNil(initData[point][1]) ? _.round(scope.totalRam - initData[point][1], 3) : undefined;
+                    dataset.data.push({x: time, y: usedRam});
+                }
+
+                chart = new Chart(element.find('#ram_line_chart')[0].getContext("2d"), {
+                    type: 'line',
+                    data: {
+                        datasets: [dataset]
+                    },
+                    options: {
+                        borderColor: "#434343",
+                        animationEasing: "easeOutExpo",
+                        animation: {
+                            duration: 800
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltips: {
+                            displayColors: false
+                        },
+                        scales: {
+                            xAxes: [{
+                                position: 'bottom',
+                                type: 'time',
+                                time: {
+                                    unitStepSize: 12,
+                                    displayFormats: {
+                                        minute: 'HH:mm:ss'
+                                    },
+                                    min: initData[0][0]
+                                }
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    fontColor: 'rgba(67,67,67,0.5)',
+                                    fontSize: 10,
+                                    max: Math.ceil(scope.totalRam),
+                                    min: 0,
+                                    stepSize: Math.ceil(scope.totalRam) / 4
+                                }
+                            }],
+                            gridLines: {
+                                tickMarkLength: 1500,
+                                drawBorder: true
+                            }
+                        }
+                    }
+                });
+            }, true);
+
+            scope.$watch('updData', function (updData) {
+                if (!updData) {
+                    return;
+                }
+
+                var time = updData[2];
+                var allRam = updData[0];
+                var usedRam = !_.isNil(updData[1]) && !_.isNil(allRam) ? _.round(allRam - updData[1], 3) : undefined;
+
+
+                if (!_.isNil(allRam)) {
+                    var ceiledAllRam = Math.ceil(allRam);
+                    chart.options.scales.yAxes[0].ticks.max = ceiledAllRam;
+                    chart.options.scales.yAxes[0].ticks.stepSize = ceiledAllRam / 4;
+                }
+
+                var chartData = chart.chart.config.data.datasets[0].data;
+                var lastTime = chartData[chartData.length - 1].x;
+
+                if (lastTime != time) {
+                    if (chartData.length > 121) { //need 1 extra point for smooth animation
+                        chartData.shift();
+                    }
+                    chartData.push({x: time, y: usedRam});
+                    chart.config.options.scales.xAxes[0].time.min = chartData[1].x;
+                    chart.update();
+
+                    if (!_.isNil(usedRam)) {
+                        scope.usedRamNow = _.round(usedRam, 1);
+                        scope.totalRamNow = _.round(allRam, 1);
+                        scope.usedRadPercNow = _.round(scope.usedRamNow / scope.totalRamNow * 100, 1);
+                    } else {
+                        scope.usedRamNow = undefined;
+                    }
+                }
+            }, true);
+        }
+    };
+});

@@ -1,0 +1,53 @@
+.flex-container-all.flex-center.padd_md{style:"hgeight: calc(100vh - 85px)"}
+  .flex-wrap{style:"flex-grow: 4"}
+  .flex-wrap{style:"flex-grow: 4; margin-top: 50px;"}
+    %h1.text-center{style:"font-weight: 600 !important; font-size: 40px !important;"} Your ClusterGX registration is complete
+
+    .padd_top_md{style:"max-width: 450px; margin: 0 auto;"}
+
+      - if !@need_verify
+        .app_wrap.border.item.marg_bott_md.item.animate-show
+          .row.bord_bott.padd_top_md.padd_bott_md.info-flash
+            .flex-container-all.padd_left_md
+              .flex-wrap
+                =image_tag "new/icons/done_white.svg"
+              .flex-wrap
+                %h5.white{style:"margin: 3px 0px 0px 10px !important"} User has been created
+      -else
+        .app_wrap.border.item.marg_bott_md.item.animate-show
+          .row.bord_bott.padd_top_md.padd_bott_md{style:"background-color: rgb(29, 135, 228)"}
+            .flex-container-all.padd_left_md
+              .flex-wrap
+                =image_tag "new/icons/mail_white.svg"
+              .flex-wrap
+                %h5.white{style:"margin: 3px 0px 0px 10px !important"} Check your email for further instructions.
+
+  .flex-wrap{style:"flex-grow: 4"}
+
+
+
+
+
+
+
+-# if !@need_verify
+
+  %h2.text-center.padd_top_per
+    Congratulations!
+
+  .col-md-4.col-md-offset-4
+    .alert.alert-success.text-center(role="alert")
+      User has been created
+
+-# else
+  %h2.text-center.padd_top_per
+    Congratulations!
+
+  .col-md-4.col-md-offset-4
+    .text-center
+      Further actions required!
+    .alert.alert-info.text-center(role="alert")
+      You must verify your email. Check your mailbox.
+
+
+

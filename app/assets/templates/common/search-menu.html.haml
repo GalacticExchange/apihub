@@ -1,0 +1,44 @@
+.row{:style=>"width: 100%; overflow-x: hidden;"}
+  .col-md-12.no_padd{:style=>"widht: 100%"}
+    .navbar-header
+      .row.bord_bott
+        .navbar-toggle{ :style=>"float: left; padding: 0px; margin: 0px; width: 100%;"}
+          .row
+            .col-xs-1.no_padd{:style=>"cursor: pointer"}
+              .padd_left_md
+                .close-icon{:style=>"padding-top: 14pt; display: none; margin-left: -2px", "ng-click"=> "hideXsMenu()"}
+                  =image_tag "new/icons/close.svg", :width=>"25pt", :style=>"opacity: 0.7"
+                .menu-icon{:style=>"padding-top: 18pt", "data-target" => "#myNavbar", "data-toggle" => "collapse", :type => "button", "ng-click"=> "showXsMenu()"}
+                  %span.icon-bar
+                  %span.icon-bar
+                  %span.icon-bar
+            .col-xs-10.no_padd{:style=>"text-align: left;"}
+              %h3.step_text.side_menu_h{:style=>"color: #434343"}
+                Search
+
+
+    #target.container-fluid.no_padd.no_marg
+      #myNavbar.collapse.navbar-collapse.no_padd.no_marg
+        %ul.nav.navbar-nav.no_padd.no_marg{:style=>"float: none; width: 100%"}
+          %ul.nav.navbar-nav.no_padd.no_marg{:style=>"float: none; width: 100%"}
+            .padd_bott_mdz.install_step
+              .flex-container-all
+                .flex-wrap
+                  %h3.step_text.side_menu_h SEARCH
+
+          %a(class="undec" ng-click="goToSection('searchUsers')")
+            .install_step.side_menu_element(ng-class="pageSelected == 'searchUsers' ? 'current_step' : ''")
+              %h3.step_text.side_menu_text.no_marg_top(ng-class="pageSelected == 'searchUsers' ? 'current_step_text' : ''")
+                Users
+                %span.badge.pull-right.marg_ri_md{:style=>"margin-top: 4px"} {{counters ? counters.usersCount : 0}}
+          %a(class="undec" ng-click="goToSection('searchTeams')")
+            .install_step.side_menu_element(ng-class="pageSelected == 'searchTeams' ? 'current_step' : ''")
+              %h3.step_text.side_menu_text(ng-class="pageSelected == 'searchTeams' ? 'current_step_text' : ''")
+                Teams
+                %span.badge.pull-right.marg_ri_md{:style=>"margin-top: 4px"} {{counters ? counters.teamsCount : 0}}
+          %a(class="undec" ng-click="goToSection('searchClusters')")
+            .install_step.side_menu_element(ng-class="pageSelected == 'searchClusters' ? 'current_step' : ''")
+              %h3.step_text.side_menu_text(ng-class="pageSelected == 'searchClusters' ? 'current_step_text' : ''")
+                Clusters
+                %span.badge.pull-right.marg_ri_md{:style=>"margin-top: 4px"} {{counters ? counters.clustersCount : 0}}
+

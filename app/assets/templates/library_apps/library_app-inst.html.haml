@@ -1,0 +1,155 @@
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+
+.gx-page(ng-if="loaded")
+  .sidebar-header.fl-center(data-div="page-title")
+    .fl-wrap.padd_ri_md
+      %img.border-flat(ng-src="{{libApp.imageUrl}}" style="max-width: 50px;")
+    .fl-wrap.fl-grow
+      %h2.sb-text.sb-h1-text {{libApp.title}}
+      %p.sb-p-text.gr
+        Configure {{libApp.title}} before installing.
+
+
+%form(novalidate="novalidate" class="simple_form new_cluster_application" ng-if="loaded")
+  #install_config_top.app_wrap.border.marg_bott_md
+
+    .padd_30
+      .bord_bott.marg_bott_md.padd_bott_10(ng-if="appInfo.metrics[libApp.name]")
+        %p.bold.no_marg{style:'color: #656565'} App Requirements
+        .fl-cont.padd_top_15.padd_bott_md
+          .fl-wrap.padd_ri_10(ng-repeat="(name, val) in appInfo.metrics[libApp.name]")
+            .gx-bage.gx-bage-lg{class:'trace-bage' , style:'padding: 12px 18px;border-radius: 6px; background-color: #efefef;'}
+              .fl-cont.fl-center
+                -#.fl-wrap.marg_ri_10
+                  .div(style='height: 14px; margin-top: -8px;')
+                    =inline_svg "new/icons/cont_.svg", class: 'apphub-help-icon lite-gr-svg', width: 14, height: 14
+                .fl-wrap
+                  %h6.no_marg.gr.bold
+                    .inl {{name}}:
+                    .inl.padd_left_sm.d_gr
+                      {{val}} GB
+
+      .bord_bott.marg_bott_md.marg_top_10.padd_bott_10(ng-if="appInfo.dependencies && ((appInfo.dependencies.components | numKeys) > 0 || (appInfo.dependencies.containers | numKeys) > 0 )")
+        %p.bold.no_marg{style:'color: #656565'} Depends on
+        .fl-cont.padd_top_15.padd_bott_md
+
+          .fl-wrap.padd_ri_10(ng-repeat="dep in appInfo.dependencies.containers")
+            .gx-bage.gx-bage-lg.hand_cursor{class:'trace-bage' , style:'padding: 12px 18px;border-radius: 6px; background-color: #efefef;', id: "{{dep}}_tooltip"}
+              .fl-cont.fl-center
+                .fl-wrap
+                  .div(style='height: 14px; margin-top: -8px;')
+                    =inline_svg "new/icons/cont_.svg", class: 'apphub-help-icon lite-gr-svg', width: 14, height: 14
+                .fl-wrap.marg_left_10
+                  %h6.no_marg.gr.bold
+                    {{dep}}
+            .mdl-tooltip{:for => "{{dep}}_tooltip", class:"head_tooltip"}
+              To install this application, {{dep}} container should be installed on the selected node.
+
+
+          .fl-wrap.padd_ri_10(ng-repeat="dep in appInfo.dependencies.components")
+            .gx-bage.gx-bage-lg.hand_cursor{class:'trace-bage' , style:'padding: 12px 18px;border-radius: 6px; background-color: #efefef;', id: "{{dep}}_tooltip"}
+              .fl-cont.fl-center
+                .fl-wrap
+                  .div(style='height: 14px; margin-top: -8px;')
+                    =inline_svg "new/icons/components.svg", class: 'apphub-help-icon lite-gr-svg', width: 14, height: 14
+                .fl-wrap.marg_left_10
+                  %h6.no_marg.gr.bold
+                    {{dep}}
+            .mdl-tooltip{:for => "{{dep}}_tooltip", class:"head_tooltip"}
+              To install this application, {{dep}} component should be enabled in the current cluster.
+
+
+
+      .row(ng-if="nodes && nodes.length > 0")
+        .marg_bott_md.marg_top_10
+          %p.bold.no_marg Select a node to install:
+
+          .fl-col.fl-grow.padd_top_15{style:'max-width: 600px;'}
+            %ui-select.hand_cursor(ng-model="selectNodeWrapper.selectedNode" theme="select2" search-enabled="false" style="width:100%")
+              %ui-select-match {{getNodeNameWithLocal($select.selected)}}
+              %ui-select-choices(repeat="node in nodes")
+                %div(ng-bind-html="getNodeNameWithLocal(node) | highlight: $select.search")
+
+      .fl-col.padd_top_15(ng-if="selectNodeWrapper.selectedNode")
+        %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(style="padding: 0px 40px !important;" ng-click="checkRequirements()" data-btn="continue") Install
+
+
+        -#.fl-cont.padd_top_15.padd_bott_md
+          .fl-wrap.padd_ri_10(ng-repeat="dep in appInfo.dependencies")
+            .gx-bage.gx-bage-lg{class:'trace-bage' , style:'padding: 12px 18px;border-radius: 6px; background-color: #efefef;'}
+              .fl-cont.fl-center
+                .fl-wrap
+                  .div(style='height: 14px; margin-top: -8px;')
+                    =inline_svg "new/icons/cont_.svg", class: 'apphub-help-icon lite-gr-svg', width: 14, height: 14
+                .fl-wrap.marg_left_10
+                  %h6.no_marg.gr.bold
+                    {{dep}}
+
+
+
+      .div(ng-if="!nodes || nodes.length == 0")
+        %h5.no_marg You need at least one active slave node in the current cluster to install this application.
+        .padd_top_md
+          %a(ng-href="{{ROUTES.getAddr('NODES', clusterId)}}" class="undec button mdl-button mdl-js-button mdl-js-ripple-effect gx-btn lite-blue marg_ri_sm")
+            Manage nodes
+    -#else
+    -#.row(ng-if="nodes && nodes.length > 0")
+      .fl-cont.fl-center.padd_md
+        .fl-col.padd_ri_md
+          %h5.d_gr{style:"font-size: 16px; "} Node
+        .fl-col.fl-grow
+          %ui-select.hand_cursor(ng-model="selectNodeWrapper.selectedNode" theme="select2" search-enabled="false" style="width:100%")
+            %ui-select-match {{getNodeNameWithLocal($select.selected)}}
+            %ui-select-choices(repeat="node in nodes")
+              %div(ng-bind-html="getNodeNameWithLocal(node) | highlight: $select.search")
+
+  .padd_top_md.padd_bott_md(ng-if="nodes && nodes.length != 0")
+    %h3.bold.no_marg App configuration
+    %p.sb-p-text.gr You could customize app configuration.
+
+  .app_wrap.border.marg_bott_md(ng-if="selectNodeWrapper.selectedNode" style="box-shadow: none" ng-repeat="(categoryName, category) in appProps")
+    .flex-container-all.grey_bg.padd_10.padd_left_md{style:"align-items: center;"}
+      .flex-wrap
+        %p.card-h.bold(style="text-transform: capitalize;") {{categoryName}}
+
+    .row.border_bott
+      .padd_sm.bord_bott.w-g_bg.padd_left_md.hidden-xs.hidden-sm
+        .row
+          .col-md-3.no_padd_left
+            %h5.no_marg Field
+          .col-md-4.no_padd_left
+            %h5.no_marg Value
+          .col-md-4{:style=>"margin-left: -5px"}
+            %h5.no_marg Description
+      .row.bord_bott.padd_left_sm(ng-repeat="(subCatName, subCat) in category")
+        %div(ng-if="subCat.visible == 1")
+          .col-md-3
+            %h5.padd_top_sm.marg_bott_sm {{subCatName}}
+            %h6.gr.no_marg_top{:style=>"font-size: 12pt"}
+              {{categoryName + '.' + subCatName}}
+          .col-md-4.no_padd
+            .install_config_field1{:style=>"padding: 10px"}
+              %input(type="text" name="{{categoryName + '.' + subCatName}}" ng-model="updAppProps[categoryName + '.' + subCatName]" ng-init="updAppProps[categoryName + '.' + subCatName]=subCat.default_value" ng-readonly="subCat.editable == 0")
+          .col-md-5
+            %h6.gr.padd_top_sm
+              {{subCat.editable == 0 ? subCat.description + ' (read-only field)' : subCat.description}}
+
+        %div(ng-if="!subCat.default_value" ng-repeat="(subSubCatName, subSubCat) in subCat")
+          .row.bord_bott(ng-if="subSubCat.visible == 1")
+            .col-md-3
+              %h5.padd_top_sm {{subCatName + ': ' + subSubCatName}}
+              %h6.gr.no_marg_top{:style=>"font-size: 12pt"}
+                {{categoryName + '.' + subCatName + '.' + subSubCatName}}
+            .col-md-4.no_padd
+              .install_config_field1{:style=>"padding: 10px"}
+                %input(type="text" name="{{categoryName + '.' + subCatName + '.' + subSubCatName}}" ng-model="updAppProps[categoryName + '.' + subCatName + '.' + subSubCatName]" ng-init="updAppProps[categoryName + '.' + subCatName + '.' + subSubCatName]=subSubCat.default_value" ng-readonly="subSubCat.editable == 0")
+            .col-md-5
+              %h6.gr.padd_top_sm
+                {{subSubCat.editable == 0 ? subSubCat.description + ' (read-only field)' : subSubCat.description}}
+
+  .padd_bott_md(ng-if="nodes && nodes.length > 0")
+    -#%button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(ng-click="submit()" data-btn="continue") Continue
+    %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(style="padding: 0px 40px !important;"  ng-click="checkRequirements()" data-btn="continue") Install

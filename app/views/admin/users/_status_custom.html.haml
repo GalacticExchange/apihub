@@ -1,0 +1,17 @@
+- if item.status == User::STATUS_NOT_VERIFIED
+  .label.label-success.label_custom{style:"background-color: #d06b21; border-radius: 5px;"} not verified
+
+- elsif item.status == User::STATUS_DISABLED
+  .label.label-danger.label_custom{style:"background-color: #d06b21; border-radius: 5px;"} disabled
+
+- elsif item.status == User::STATUS_DELETED
+  .label.label-default.label_custom.gr{style:"background-color: #d06b21; border-radius: 5px;"} deleted
+
+- elsif item.status == User::STATUS_PENDING_CREATE
+  .label.label-danger.label_custom{style:"background-color: #d06b21; border-radius: 5px;"} pending create
+
+- elsif item.status == User::STATUS_PENDING_DELETE
+  .label.label-danger.label_custom{style:"background-color: #d06b21; border-radius: 5px;"} pending delete
+
+- elsif item.status == User::STATUS_ACTIVE
+  .label.label-primary.label_custom{style:"background-color: #2ccc1a; border-radius: 5px;"} active

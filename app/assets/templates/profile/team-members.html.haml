@@ -1,0 +1,23 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text Members
+    %p.sb-p-text.gr List of your team members.
+  .flex-wrap(ng-if="canAddMember()")
+    %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(data-btn="add-member" ng-click ="addMember()")
+      Add member
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+
+.app_wrap.border.marg_bott_md.invitations_list{:style=>"border-bottom: 0px; ", "ng-class" => "inv_half_opacity"}(ng-if="(membersList.length > 0) && loaded")
+  .row.bord_bott.padd_top_15.padd_bott_15.table-row{class:"repeated-item"}(class="item" ng-animate=" 'animate' " ng-repeat="item in membersList track by item.id")
+    .flex-container-all
+      .flex-wrap.marg_left_md
+        %a{"ng-href" => "{{ROUTES.getAddr('TEAM_MEMBER_EDIT', item.username)}}"}
+          %img{:alt => "Description", :"ng-src" => "{{item.avatar_url}}", :class=>"img-circle avarars-satur inl undec", :style=>"width: 25pt; margin-top: 1px"}
+      .flex-wrap{style:"flex-grow: 1;"}
+        %a{"ng-href" => "{{ROUTES.getAddr('TEAM_MEMBER_EDIT', item.username)}}", "class"=>"undec"}
+          %p.no_marg.marg_left_md.bold{style:"margin-top: -5px !important;"} {{item.username}}
+          %h6.no_marg.marg_left_md.gr{style:"margin-top: 2px !important"} {{item.group_name}}

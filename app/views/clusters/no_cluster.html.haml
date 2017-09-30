@@ -1,0 +1,14 @@
+%h2.text-center.padd_top_md
+  Suddenly you don't have any clusters now.
+
+%h4.text-center.gr.padd_top_md
+  What you can do without cluster:
+
+%h4.text-center.padd_top_md
+
+  =link_to NgRoutes::SEARCH do
+    Search users, teams and clusters
+
+%h4.text-center.padd_top_md
+  =link_to NgRoutes::PROFILE_EDIT.gsub('{username}', @user.username) do
+    Edit your profile

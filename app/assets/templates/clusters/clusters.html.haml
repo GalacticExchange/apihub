@@ -1,0 +1,73 @@
+
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Clusters
+    %p.sb-p-text.gr
+      Please, choose a cluster to view and manage or create a new one.
+  .flex-wrap
+    %a(ng-href="{{ROUTES.getAddr('CLUSTERS_NEW_WIZARD')}}")
+      %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(data-btn="create-cluster") Create cluster
+
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+
+.fl-cont.padd_top_big(ng-if="(!clusters || !clusters.length > 0) && loaded")
+  .fl-wrap.fl-grow
+  .fl-wrap
+    .text-center.marg_left_big.marg_ri_big
+      %h2.no_marg.bold.no-items-h Looks like you do not have any clusters yet.
+      %p.no_marg.gr.marg_top_10
+        Click 'Create cluster' or go to shares clusters.
+  .fl-wrap.fl-grow
+
+
+#clusters.gx-page.app_wrap.border.marg_bott_md(ng-if="loaded && clusters.length>0" data-div = "cluster-list")
+  .row
+    .grey_bg.padd_left_md.padd_ri_md.padd_top_15.padd_bott_15
+      .row
+        .col-md-3.col-sm-5.col-xs-6.no_padd_left
+          %p.no_marg{style:"font-size: 15px;"}
+            Type / name
+        .col-md-2.col-sm-4.col-xs-6.no_padd
+          %p.no_marg{style:"font-size: 15px;"}
+            State
+        .col-md-3.col-sm-3.hidden-xs
+          %p.no_marg{style:"font-size: 15px;"}
+            Joined/Total nodes
+        .col-md-2.col-sm-3.hidden-xs
+          %p.no_marg{style:"font-size: 15px;"}
+            Region
+        .col-md-1.hidden-xs.hidden-sm
+  .gr-hover-el.row.bord_bott.table-row.hand_cursor(data-div="cluster-{{cluster.id}}" ng-repeat="cluster in clusters track by cluster.id")
+    .row.padd_left_md.padd_ri_md
+      .col-md-3.col-sm-5.col-xs-6.padd_top_md.padd_bott_md.no_padd_left(ng-click="switchCluster(cluster)")
+        .flex-container-all
+          .flex-wrap.padd_ri_md
+            .div(ng-if="cluster.clusterType == 'aws' ")
+              =image_tag "new/icons/aws.svg", class: "left_popup_icon no_marg ", style:"opacity: 0.7"
+            .div(ng-if="cluster.clusterType == 'onprem' || cluster.clusterType == '' ")
+              =image_tag "new/icons/onprem.svg", class: "left_popup_icon no_marg ", style:"opacity: 0.7"
+          .flex-wrap
+            %p.no_marg.bold(data-div="cluster-name")
+              {{cluster.name}}
+      .col-md-2.col-sm-4.col-xs-6.padd_top_md.padd_bott_md.no_padd_left(ng-click="switchCluster(cluster)" )
+        %gx-status(data-status="cluster.status" data-utils="utils" data-div="cluster-state")
+      .col-md-3.col-sm-3.hidden-xs.padd_top_md.padd_bott_md(ng-click="switchCluster(cluster)" data-div="num-of-nodes")
+        %p.no_marg.gr {{cluster.numberOfNodes ? cluster.numberOfJoined+'/'+ cluster.numberOfNodes : '-'}}
+      .col-md-2.col-sm-1.hidden-xs.padd_top_md.padd_bott_md(ng-click="switchCluster(cluster)")
+        %p.no_marg.gr.one-liner {{cluster.settings.awsRegionTitle ? cluster.settings.awsRegionTitle : '-'}}
+
+      .col-md-2.hidden-xs.hidden-sm.no_padd_ri(ng-if="utils.isAdmin(utils.currentUser)" div-block="do_settings_visible"){style:"height: 65px;"}
+        .pull-right.row-buttons{style:"height: 100%;"}
+          .fl-center{style:"height: 100%;"}
+            %a(ng-href="{{ROUTES.getAddr('CLUSTER_EDIT', cluster.id)}}" data-btn="settings-btn")
+              %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gx-btn.lite-blue.undec{style:'background-color: rgba(226, 241, 255, 0.82) !important;'}
+                .fl-cont
+                  .fl-wrap.marg_ri_10{style:'margin-top: -1px;'}
+                    =inline_svg 'new/icons/settings.svg', class: 'xsm-icon gex-svg'
+                  .fl-wrap
+                    Manage

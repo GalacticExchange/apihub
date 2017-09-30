@@ -1,0 +1,9 @@
+%h1 App settings
+
+%h2 gex_config:
+
+%ul
+  - @gex_config.each do |k,v|
+    %li
+      #{k}: #{v}
+

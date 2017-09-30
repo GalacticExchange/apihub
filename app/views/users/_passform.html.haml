@@ -1,0 +1,13 @@
+.row
+  .col-md-8
+
+    = horizontal_simple_form_for(@user, :url => updatepassword_path, :method => :put) do |f|
+      = render 'shared/form_errors', f: f
+
+      = f.input :password, hint: 'Minimum 8 characters.'
+      = f.input :password_confirmation, placeholder: 'Confirm your password'
+      = f.input :token, :as => :hidden, :input_html => { :value => @user.password_token}
+      %br
+      .col-sm-offset-3.col-sm-6{:style=>"margin-left: 181px"}
+        = f.button :submit, "Set new password", class: "btn btn-default btn btn-primary btn-lg"
+

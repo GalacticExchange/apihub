@@ -1,0 +1,180 @@
+'use strict';
+
+angular.module('components').component('clustersNewAws', {
+    templateUrl: '<%= asset_path("clusters/clusters-new-aws.html") %>',
+    controller: ['$location', '$http', '$scope', '$routeParams', 'ROUTES', 'paramsData',
+        function ($location, $http, $scope, $routeParams, ROUTES, paramsData) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+
+            var urlParams = $location.search();
+            $scope.clusterType = urlParams.clusterType;
+
+            var dataParams = paramsData.getData();
+
+            if(!dataParams){
+                var path = ROUTES.getNgAddr('CLUSTERS_NEW_WIZARD');
+                $location.path(path).search({clusterType: $scope.clusterType});
+            }
+
+            var components = dataParams.components;
+
+            function getAwsRegions(firstTime) {
+                $http.get('/clusters/new', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.regions = response.data.regions;
+                    $scope.aws_cluster = {awsRegion: $scope.regions[0]};
+
+                    if (firstTime) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    console.log('Error: ' + response.statusText + " " + response.status);
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            getAwsRegions(true);
+
+
+            function fetchKeys(firstTime) {
+                $http.get('/keys', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.keys = response.data.keys;
+
+                    if (firstTime) $scope.keysLoaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error fetching keys : ' + response.statusText);
+                    if (firstTime) $scope.keysLoaded = true;
+                });
+            }
+
+            fetchKeys(true);
+
+
+
+            $scope.addNewKey = function () {
+                if(!$scope.spinner) {
+                    $scope.keyCreation = true;
+                    $scope.newKey = {};
+                    $scope.aws_cluster.awsKeysId = undefined;
+                }
+            }
+
+            $scope.closeKeyPart = function () {
+                $scope.keyCreation = false;
+                $scope.newKey = { }
+            }
+
+
+            $scope.selectKey = function (key) {
+                if(!$scope.spinner){
+
+                    if($scope.aws_cluster.awsKeysId == key.id){
+                        $scope.aws_cluster.awsKeysId = undefined;
+                        return;
+                    }
+
+                    $scope.keyCreation = false;
+                    $scope.newKey = { }
+                    $scope.aws_cluster.awsKeysId = key.id;
+                }
+            }
+
+
+            $scope.isKeySelected = function (key) {
+                return $scope.aws_cluster.awsKeysId == key.id;
+            }
+
+
+            $scope.createKey = function (firstTime) {
+
+                var data = {
+                    name: $scope.newKey.name,
+                    creds: {
+                        aws_key_id: $scope.newKey.awsKeyId,
+                        aws_secret_key: $scope.newKey.awsKeySecret
+                    }
+                }
+
+                $http.post('/key/add/aws', data,
+                    {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json'
+                    }).then(function (response) {
+                    $scope.createdKey = response.data;
+                    $scope.selectKey($scope.createdKey);
+                    fetchKeys();
+                    if (firstTime) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Cannot create key: ' + response.statusText);
+                    if (firstTime) $scope.loaded = true;
+                });
+
+                $scope.createKey = true;
+            }
+
+
+
+            $scope.createAwsCluster = function (aws_cluster) {
+
+                if(!$scope.aws_cluster.awsKeysId){
+                    GexUtils.showMessageDialog('Error', 'Please, provide AWS keys to create a cluster.');
+                    return;
+                }
+
+
+
+                $scope.spinner = true;
+
+                var data = {
+                    awsKeyId: aws_cluster.awsKeyId,
+                    awsSecretKey: aws_cluster.awsKeySecret,
+                    awsKeysId: aws_cluster.awsKeysId,
+                    clusterType: 'aws',
+                    awsRegion: aws_cluster.awsRegion['id'],
+                    components: components
+                };
+
+                $http.post('/clusters', data, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.spinner = false;
+
+                    var cluster = response.data.cluster;
+
+                    var path = ROUTES.getNgAddr('CLUSTERS_WIZARD_WAIT', cluster.id);
+                    $location.path(path).search({clusterType: $scope.clusterType});
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    $scope.errors = response.data.errors;
+                    $scope.err_mess = true;
+                    $scope.spinner = false;
+                    console.log('Error: ' + response.statusText + " " + response.status);
+                });
+            }
+        }
+    ]
+});

@@ -1,0 +1,482 @@
+;(function () {
+    'use strict';
+
+    var GexUtils = {};
+
+    var isDesktopClient = navigator.userAgent.indexOf('Electron') >= 0;
+    GexUtils.isDesktopClient = isDesktopClient;
+    var electron;
+
+    if (GexUtils.isDesktopClient) {
+        electron = require('electron');
+        GexUtils.electron = electron;
+        GexUtils.require = electron.remote.require;
+        GexUtils.currentWebContents = electron.remote.getCurrentWebContents();
+        GexUtils.configProperties = electron.remote.getGlobal('programProperties');
+        GexUtils.clientVersion = GexUtils.configProperties.version;
+
+        var wrappedWindow = $(window);
+
+        wrappedWindow.click(function (e) {
+            if (e.which == 2 && e.target && e.target.nodeName == 'A') {
+                e.preventDefault();
+            }
+
+            var absoluteUrlPattern = /^(https?|ftp):\/\//i;
+            if (e.which == 1 && e.target && e.target.nodeName == 'A' && absoluteUrlPattern.test(e.target.getAttribute('href'))) {
+                e.preventDefault();
+                electron.shell.openExternal(e.target.getAttribute('href'))
+            }
+        });
+    }
+
+
+    GexUtils.nodeCommand = function (command, nodeId, afterSuccess) {
+        $.ajax({
+            url: '/nodes/' + nodeId + '/send_command',
+            data: {"cmd": command},
+            type: "GET",
+            dataType: "json",
+            contentType: "application/json",
+
+            beforeSend: function () {
+                GexUtils.showSnackbarMessage("Sending request...");
+            },
+
+            success: function (data) {
+                if (data && data.res) {
+                    var node_responses = {
+                        "start": "Node starting",
+                        "stop": "Node stopping",
+                        "restart": "Node starting"
+                    };
+                    GexUtils.showSnackbarMessage(node_responses[command]);
+                    afterSuccess();
+                }
+                else {
+                    GexUtils.showSnackbarMessage('Cannot execute command node ' + command + ': '
+                    + data && data.errors && data.errors[0] ? data.errors[0].message : '');
+                }
+            },
+
+            error: function (jqXHR) {
+                if (jqXHR.status == 0) {
+                    return; //connection aborted
+                }
+
+                if (jqXHR.responseJSON && jqXHR.responseJSON.errors && jqXHR.responseJSON.errors[0]) {
+                    GexUtils.showSnackbarMessage('Failed to send node command ' + command
+                        + '. Message: ' + jqXHR.responseJSON.errors[0].message);
+                } else {
+                    GexUtils.showSnackbarMessage('Failed to send node command ' + command
+                        + '. Status: ' + jqXHR.status + ' ' + jqXHR.statusText);
+                }
+            }
+        });
+    };
+
+    GexUtils.getCookie = function (cname) {
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    };
+
+    GexUtils.getToken = function () {
+        return GexUtils.getCookie('token');
+    };
+
+    //callback(nodeId, err)
+    GexUtils.getCurrentNodeId = function (callback) {
+        if (isDesktopClient) {
+            GexUtils.gexdGetRequest('/nodes/id', function (err, req, res, data) {
+                if (err) {
+                    callback(undefined, new Error('Cannot get node id: ' + (err.message ? err.message : err.code)));
+                    return;
+                }
+
+                callback(data ? data.nodeID : undefined);
+            });
+        } else {
+            return callback();
+        }
+    };
+
+    GexUtils.getLocalNodeInfo = function (callback/*({status: string , progress: int}, err)*/) {
+        GexUtils.gexdGetRequest('/nodes/local', function (err, req, res, data) {
+            if (err) {
+                callback(undefined, new Error('Cannot get local node information: ' + (err.message ? err.message : err.code)));
+                return;
+            }
+
+            callback(data);
+        });
+    };
+
+    //callback(err, req, res[, data])
+    //gexdGetRequest(url, [data,] callback)
+    GexUtils.gexdGetRequest = function (urlOrOptions, dataOrCallBack, callback) {
+        if (arguments.length == 2) {
+            gexdRequest(urlOrOptions, 'get', null, dataOrCallBack);
+        } else {
+            gexdRequest(urlOrOptions, 'get', data, callback);
+        }
+    };
+
+    GexUtils.gexdPostRequest = function (urlOrOptions, data, callback) {
+        gexdRequest(urlOrOptions, 'post', data, callback);
+    };
+
+    GexUtils.gexdPutRequest = function (urlOrOptions, data, callback) {
+        gexdRequest(urlOrOptions, 'put', data, callback);
+    };
+
+    GexUtils.gexdDelRequest = function (urlOrOptions, callback) {
+        gexdRequest(urlOrOptions, 'del', null, callback);
+    };
+
+    // download file only for electron
+    //callback(err, savePath);
+    GexUtils.downloadFileEl = function (url, callback, filePath) {
+        var currentTime = Date.now();
+        electron.ipcRenderer.once('dwn-file-resp-' + currentTime, function (event, resp) {
+            callback(resp.err, resp.savePath);
+        });
+        electron.ipcRenderer.send('dwn-file', {
+            url: url,
+            filePath: filePath,
+            time: currentTime
+        });
+    };
+
+    function gexdRequest(urlOrOptions, requestType, data, callback) {
+        var currentTime = Date.now();
+        var strPath = typeof urlOrOptions === 'object' ? urlOrOptions.path : urlOrOptions;
+        electron.ipcRenderer.once('gexd-resp-' + requestType + '-' + strPath + '-' + currentTime, function (event, resp) {
+            callback(resp.err, resp.req, resp.res, resp.data);
+        });
+        electron.ipcRenderer.send('gexd-req', {
+            requestType: requestType,
+            url: urlOrOptions,
+            data: data,
+            time: currentTime,
+            token: GexUtils.getToken()
+        });
+    }
+
+
+    //callback(err, req, res[, data])
+    //extRequest(serverUrl, path, sendToken, [data,] callback)
+    GexUtils.extGetRequest = function (serverUrl, pathOrOptions, sendToken, dataOrCallBack, callback) {
+        if (arguments.length == 4) {
+            extRequest(serverUrl, pathOrOptions, 'get', sendToken, null, dataOrCallBack);
+        } else {
+            extRequest(serverUrl, pathOrOptions, 'get', sendToken, data, callback);
+        }
+    };
+
+    function extRequest(serverUrl, pathOrOptions, requestType, sendToken, data, callback) {
+        var currentTime = Date.now();
+        var strPath = typeof pathOrOptions === 'object' ? pathOrOptions.path : pathOrOptions;
+        electron.ipcRenderer.once('ext-resp-' + requestType + '-' + strPath + '-' + currentTime, function (event, resp) {
+            callback(resp.err, resp.req, resp.res, resp.data);
+        });
+        electron.ipcRenderer.send('ext-req', {
+            requestType: requestType,
+            url: pathOrOptions,
+            serverUrl: serverUrl,
+            data: data,
+            time: currentTime,
+            token: sendToken ? GexUtils.getToken() : undefined
+        });
+    }
+
+    //callback(err, stdout, stderr)
+    GexUtils.exec = function (command, callback) {
+        var currentTime = Date.now();
+        electron.ipcRenderer.once('exec-resp-' + command + '-' + currentTime, function (event, resp) {
+            callback(resp.err, resp.stdout, resp.stderr);
+        });
+        electron.ipcRenderer.send('exec', {command: command, time: currentTime, token: GexUtils.getToken()});
+    };
+
+    GexUtils.nodeSyncMessage = function (name, data) {
+        return electron.ipcRenderer.sendSync(name, data);
+    };
+
+    GexUtils.checkConnection = function (url, timeout, callback) {
+        var currentTime = Date.now();
+        electron.ipcRenderer.once('check-conn-resp-' + currentTime, function (event, resp) {
+            callback(resp.res);
+        });
+        electron.ipcRenderer.send('check-conn', {url: url, connTimeout: timeout, time: currentTime});
+    };
+
+    //doesn't work with jquery wrapped objects
+    GexUtils.onetimeEvent = function (node, type, callback) {
+        function eventFunc(e) {
+            // remove event
+            e.target.removeEventListener(e.type, eventFunc);
+            // call handler
+            return callback(e);
+        }
+
+        // create event
+        node.addEventListener(type, eventFunc);
+    };
+
+
+    GexUtils.isShowStartButton = function (status) {
+        return ['installed', 'stopped', 'start_error', 'restart_error', 'stop_error'].indexOf(status) >= 0;
+    };
+
+    GexUtils.isShowStopButton = function (status) {
+        return ['active', 'joined', 'stopped', 'start_error', 'restart_error', 'stop_error'].indexOf(status) >= 0;
+    };
+
+    GexUtils.isShowRestartButton = function (status) {
+        return ['active', 'joined', 'start_error', 'stop_error', 'restart_error'].indexOf(status) >= 0;
+    };
+
+    GexUtils.getStatusColor = function (status) {
+        if (['active', 'running', 'joined', 'installed'].indexOf(status) >= 0) {
+            return 'green';
+        } else if (['install_error', 'start_error', 'restart_error', 'stop_error', 'remove_error',
+                'uninstall_error', 'not_installed', 'disconnected'].indexOf(status) >= 0) {
+            return 'red';
+        } else if (['installing', 'starting', 'stopping', 'removing', 'uninstalling', 'restarting'].indexOf(status) >= 0) {
+            return 'orange';
+        } else if (['removed', 'uninstalled', 'stopped', 'deleted'].indexOf(status) >= 0) {
+            return 'yellow';
+        }
+    };
+
+    GexUtils.stringToColour = function(str) {
+        var hash = 0;
+        for (var i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        var colour = '#';
+        for (var i = 0; i < 3; i++) {
+            var value = (hash >> (i * 8)) & 0xFF;
+            colour += ('00' + value.toString(16)).substr(-2);
+        }
+        return colour;
+    }
+
+    GexUtils.containerStatus = function (statusName) {
+        switch (statusName) {
+            case 'active':
+                return 'ON'
+                break;
+            case 'stopped':
+                return 'OFF'
+                break;
+            default:
+                return statusName;
+                break;
+        }
+    };
+
+    GexUtils.fixStatus = function (statusName) {
+        switch (statusName) {
+            case 'active':
+                return 'ON'
+                break;
+            case 'joined':
+                return 'ON'
+                break;
+            case 'stopped':
+                return 'OFF'
+                break;
+            default:
+                return statusName;
+                break;
+        }
+    };
+
+
+    //old
+    GexUtils.getStatusCircle = function (status) {
+        switch (GexUtils.getStatusColor(status)) {
+            case 'green':
+                return '<%= asset_path("new/icons/green_dot.png") %>';
+            case 'red':
+                return '<%= asset_path("new/icons/red_dot.png") %>';
+            case 'orange':
+                return '<%= asset_path("new/icons/orange_dot.png") %>';
+            case 'yellow':
+                return '<%= asset_path("new/icons/yellow_dot.png") %>';
+        }
+    };
+
+    //new
+    GexUtils.getNodeStatusCircle = function (status) {
+        switch (GexUtils.getStatusColor(status)) {
+            case 'green':
+                return '<%= asset_path("new/icons/green_dot.svg") %>';
+            case 'red':
+                return '<%= asset_path("new/icons/red_dot.svg") %>';
+            case 'orange':
+                return '<%= asset_path("new/icons/orange_dot.svg") %>';
+            case 'yellow':
+                return '<%= asset_path("new/icons/yellow_dot.svg") %>';
+        }
+    };
+
+
+    GexUtils.getCheckIcon = function (node) {
+        if (GexUtils.getStatusColor(node.state) == 'green') {
+            return '<%= asset_path("new/icons/check_gr.svg") %>';
+        } else {
+            return '<%= asset_path("new/icons/alert_orange.svg") %>';
+        }
+    };
+
+    GexUtils.isResponseCanceled = function (response) {
+        return !response || response.status == -1;
+    };
+
+    GexUtils.redirectIfSomeRespCodes = function (response) {
+        if (response && response.status == 503) { //maintenance
+            window.location.reload(true);
+        } else if (response && response.status == 403 && response.data && response.data.errorname &&
+            (response.data.errorname.toLowerCase() == 'auth_agent_empty' || response.data.errorname.toLowerCase() == 'token_invalid')) { //token expired or invalid
+            window.location.href = '/signin';
+        }
+    };
+
+    function cmpVersion(a, b) {
+        var i, cmp, len, re = /(\.0)+[^\.]*$/;
+        a = (a + '').replace(re, '').split('.');
+        b = (b + '').replace(re, '').split('.');
+        len = Math.min(a.length, b.length);
+        for (i = 0; i < len; i++) {
+            cmp = parseInt(a[i], 10) - parseInt(b[i], 10);
+            if (cmp !== 0) {
+                return cmp;
+            }
+        }
+        return a.length - b.length;
+    }
+
+    GexUtils.clientVerGte = function (version) {
+        return cmpVersion(GexUtils.clientVersion, version) >= 0;
+    };
+
+    GexUtils.clientVerLt = function (version) {
+        return cmpVersion(GexUtils.clientVersion, version) < 0;
+    };
+
+    GexUtils.goToNodesAndInstallNode = function (cluster) {
+        if (GexUtils.checkInstallNode(cluster)) {
+            if (cluster.clusterType == 'aws') {
+                window.location.href = '<%=NgRoutes::NODES_INST_APP_ONLY%>'.replace('{cluster_id}', cluster.id)+ '?nodeType=aws';
+            } else {
+                window.location.href = '<%=NgRoutes::NODES_INST_ONPREM%>'.replace('{cluster_id}', cluster.id);
+            }
+        }
+    };
+
+    GexUtils.openDocSite = function () {
+        var docSiteUrl = '<%=Gexcore::Settings.doc_url%>';
+        if (GexUtils.isDesktopClient) {
+            GexUtils.electron.shell.openExternal(docSiteUrl);
+        } else {
+            window.open(docSiteUrl, '_blank');
+        }
+    };
+
+    GexUtils.openInNewTab = function (url) {
+        if (GexUtils.isDesktopClient) {
+            GexUtils.electron.shell.openExternal(url);
+        } else {
+            window.open(url, '_blank');
+        }
+    };
+
+
+    GexUtils.getErrMsgServ = function (response) {
+        var data = response.data;
+        return data && data.errors && data.errors[0] ? data.errors[0].message
+            : 'Status: ' + response.status + " " + response.statusText;
+    };
+
+    GexUtils.statusChecksDispResult = function (node) {
+        if (node.status == 'joined') {
+            return node.state == 'running' ? 'passed' : 'failed';
+        } else {
+            return '—';
+        }
+    };
+
+    GexUtils.getStatusCheckColor = function (node) {
+        if (node.status == 'joined') {
+            return {color: GexUtils.getStatusColor(node.state) == 'green' ? '#00C853' : '#d8963d'};
+        } else {
+            return undefined;
+        }
+    };
+
+    GexUtils.getSelected = function () {
+        if (window.getSelection) {
+            return window.getSelection().toString();
+        } else if (document.getSelection) {
+            return document.getSelection().toString();
+        } else {
+            var selection = document.selection && document.selection.createRange();
+            if (selection.text) {
+                return selection.text.toString();
+            }
+            return "";
+        }
+    };
+
+    GexUtils.isSelected = function () {
+        return GexUtils.getSelected().toString() !== '';
+    };
+
+    GexUtils.goToCluster = function (cluster) {
+        if (cluster.status == 'active') {
+            window.location.href = "/profile/change_current_cluster?cluster_uid=" + cluster.id;
+        } else if (cluster.status == 'installing' || cluster.status == 'starting') {
+            GexUtils.showMessageDialog("Wait", "Please wait, this cluster is still installing.")
+        } else if (cluster.status == 'install_error' || cluster.status == 'start_error') {
+            GexUtils.showMessageDialog("Error", "Sorry, this cluster did not install well. Please check your configuration.")
+        } else {
+            GexUtils.showMessageDialog("Sorry", "Cluster should be active to switch into.")
+        }
+    };
+
+    GexUtils.isAdmin = function (user) {
+        return user.role == 'admin' || user.role == 'superadmin';
+    };
+
+    GexUtils.redirectToSearch = function (searchQuery) {
+        window.location.href = '<%=NgRoutes::SEARCH%>' + (searchQuery ? '?q=' + searchQuery : '');
+    };
+
+    GexUtils.checkInstallNode = function(cluster) {
+        if (!GexUtils.isDesktopClient && cluster.clusterType != 'aws') {
+            GexUtils.showMessageDialog('Info', 'You can only install node in the on-premise cluster when you run ClusterGX application. You can download it from <a target="_blank" href="http://galacticexchange.io/downloads">http://galacticexchange.io/downloads</a>');
+            return false;
+        } else {
+            return true;
+        }
+    };
+
+    GexUtils.validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
+    GexUtils.validHostnameRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+
+    window.GexUtils = GexUtils;
+}());
+
+

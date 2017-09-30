@@ -1,0 +1,62 @@
+'use strict';
+
+angular.module('components').component('userMainInfo', {
+    templateUrl: '<%= asset_path("profile/user-main-info.html") %>',
+    controller: ['$http', '$scope', 'ROUTES', '$routeParams',
+        function ($http, $scope, ROUTES, $routeParams) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.messageText = '';
+            $scope.disableSubmitBtn = false;
+            $scope.submitBtnText = 'Update Info';
+
+            $http.get('/userInfo', {
+                headers: {Accept: 'application/json'},
+                responseType: 'json',
+                params: {username: $routeParams.username}
+            }).then(function (response) {
+                $scope.user = response.data.user;
+
+                $scope.loaded = true;
+            }, function errorCallback(response) {
+                if (GexUtils.isResponseCanceled(response)) {
+                    return;
+                }
+                GexUtils.redirectIfSomeRespCodes(response);
+
+                console.log('Error fetching user information: ' + response.statusText);
+                $scope.loaded = true;
+            });
+
+
+            $scope.updateUser = function () {
+                $scope.messageText = '';
+                $scope.disableSubmitBtn = true;
+                $scope.submitBtnText = 'Updating...';
+
+                $http.put('/userInfo', {
+                    username: $scope.user.username,
+                    firstName: $scope.user.firstName,
+                    lastName: $scope.user.lastName,
+                    about: $scope.user.about
+                }, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    GexUtils.showSnackbarMessage('Updated successfully.');
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    GexUtils.showMessageDialog('Error', 'Cannot update user info: ' + GexUtils.getErrMsgServ(response));
+
+                    console.log('Error updating user information: ' + response.statusText);
+                }).then(function () {
+                    $scope.disableSubmitBtn = false;
+                    $scope.submitBtnText = 'Update Info';
+                });
+            }
+        }
+    ]
+});

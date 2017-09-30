@@ -1,0 +1,72 @@
+Dear <%=@user.firstname%>
+<br><br>
+Thank you for registering with Galactic Exchange.
+<br><br>
+Your ClusterGX™ account has been created and verified.
+<br><br>
+We sent an SMS message to the cell phone number you provided when registering.
+The SMS provides your account username and password credentials.
+You will need these account credentials as you add each node to your cluster.
+
+<br><br>
+
+If you are planning to run ClusterGX on Amazon Web Services (AWS), you can use ClusterGX from
+a web browser anywhere in the world, or install our desktop client, which runs on Windows, Mac and Ubuntu.
+The web browser version is faster start with, the desktop client provides more functionality, such as
+integrated SSH into your cluster nodes.
+
+
+<br><br>
+
+You can log in into the browser version here : <%=Gexcore::Settings.hub_url%>
+<br>
+To install the desktop client, go here: <%=Gexcore::Settings.download_url%>
+
+
+<br><br>
+Once you log in into ClusterGX through either the web browser or desktop client ,
+we will ask you for your AWS account access key and key id, so we can run ClusterGX in your AWS account.
+
+<br><br>
+
+In order to get a key id and a key do the following:
+
+<ul>
+  <li>
+    Sign in to your AWS account at  https://console.aws.amazon.com/iam/.
+  </li>
+  <li>
+    Choose Users.
+  </li>
+  <li>
+    Choose the name of the desired user, and then choose the Security Credentials tab.
+  </li>
+  <li>
+    Go to the Access Keys section
+  </li>
+  <li>
+    Choose download credentials to save the access key ID and secret access key to a CSV file on your computer.
+  </li>
+</ul>
+
+If you are in any trouble, read intructions here http://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey
+
+<br><br>
+
+If you are planning to run ClusterGX on your own machines (on-premises), you will need to install our desktop client
+on any laptop or desktop that will be used to manage the cluster.  Our desktop client is based on the same framework
+as Slack and is really easy to use.
+
+You can install the Desktop Client here : <%=Gexcore::Settings.download_url%>
+
+
+<br><br>
+
+You will then need to decide which machines will become nodes of the ClusterGX on-prem cluster.  If you want to run
+the cluster on desktops, you need to install  ClusterGX desktop client on each desktop that will be part of the cluster.
+You will then be able to enable it as cluster nodes. Desktop nodes can be used to quckly run ClusterGX on prem.
+
+<br><br>
+For a production level ClusterGX installation on-premises, you will need to install ClusterGX on bare metal servers.
+Please contact us at  <%=Gexcore::Settings.support_email%> for an easy install bare metal installation image.
+

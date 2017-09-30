@@ -1,0 +1,41 @@
+.left_menu.gx-page(ng-if="loaded" data-div="cluster-drop-down")
+  %ul.mdl-menu.mdl-menu--bottom-left.classs.mdl-js-menu.mdl-js-ripple-effect.border.no_padd(ng-mdl-select for="cluster_actions_drop" style="border-bottom: none;  margin-top: 84px; margin-left: 15px; min-width: 320px !important; max-height: 50vh; overflow-y: auto;")
+    #switch_cluster_div.bord_bott
+      .flex-container-all.padd_md.padd_bott_sm
+        -#.flex-wrap
+          =image_tag "new/icons/swap.svg", style:"width: 17px; opacity: 0.6"
+        .flex-wrap.flex-center
+          %h3.bold.no_marg.inl{style:" color: #585858;"} Change cluster
+
+      .flex-container-all.padd_top_10.padd_bott_10
+        .flex-wrap{style:"width: 100%;"}
+          %div(ng-repeat="cluster in clusters track by cluster.id")
+            -#if
+            %a(ng-if="!cluster.selected" ng-href="/profile/change_current_cluster?cluster_uid={{cluster.id}}" class="undec")
+              .gr-hover-el.left-menu-el.padd_12.fl-cont.gx-fl-center{style:'margin: 5px 10px; border-radius: 6px; padding: 12px;'}
+                .flex-wrap.padd_left_sm
+                  %img(ng-src="{{getClusterTypeIcon(cluster)}}" class="left_popup_icon")
+                .flex-wrap.padd_left_10.flex-grow
+                  %h3.bold
+                    {{cluster.name}}
+                .flex-wrap
+                  =image_tag "new/icons/shared.svg", "ng-if": "cluster.shared", class: "left_popup_icon", style:"width: 18px; height: 18px; opacity: 0.5"
+            -#else
+            .selected-el.left-menu-el.padd_12.fl-cont.gx-fl-center(ng-if="cluster.selected"){style:'margin: 5px 10px; border-radius: 6px; padding: 12px;'}
+              .flex-wrap.padd_left_sm
+                %img(ng-src="{{getClusterTypeIcon(cluster)}}" class="left_popup_icon left_popup_icon_selected")
+              .fl-wrap.padd_left_10.flex-grow
+                %h3.white.bold
+                  {{cluster.name}}
+              .flex-wrap
+                =image_tag "new/icons/shared_selected.svg", "ng-if": "cluster.shared", class: "left_popup_icon", style:"width: 18px; height: 18px; opacity: 0.5"
+
+
+    -#%a{:href=> NgRoutes::CLUSTERS, :class=>"undec", "data-link"=>"all-clusters"}
+      .hover-el
+        .padd_10.padd_left_md
+          .flex-container-all
+            .flex-wrap.flex-grow
+              %p.no_marg.link-el Admin area
+            .flex-wrap
+              =image_tag "new/icons/arrow_link.svg", style:"width: 20px;"

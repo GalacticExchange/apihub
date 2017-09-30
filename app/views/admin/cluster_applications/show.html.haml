@@ -1,0 +1,94 @@
+%h1 Application "#{@item.name}"
+UID: #{@item.uid}
+%br
+%b Status:
+= @item.status
+%br
+
+%b Cluster:
+= link_to @item.cluster.name, admin_cluster_path(@item.cluster_id)
+%br
+%b Team:
+= link_to @item.cluster.team.name, admin_team_path(@item.cluster.team)
+
+%br
+%b Library application:
+= link_to @item.library_application.name, admin_library_application_path(@item.library_application_id)
+%br
+
+%b Admin notes:
+%br
+%textarea
+  = @item.admin_notes
+%br
+
+%b Config
+%br
+config file: #{@config_filename}
+%br
+%textarea{:style => "width: 80%; min-height: 240px;"}
+  = @config_content
+%br
+%br
+%b Settings:
+%br
+%textarea{:style => "width: 80%;"}
+  = @item.settings
+%br
+%br
+%b Data in consul
+%br
+Data:
+%br
+%textarea(style="width:800px;height:120px;")
+  =@info_consul
+%br
+Settings:
+%br
+%textarea(style="width:800px;height:120px;")
+  =@info_consul_settings
+%br
+%br
+
+%br
+%br
+
+
+%h2 Commands
+
+%ul.list-inline#commands.commands-list
+  %li=link_to 'Uninstall', '#', :class=>'btn btn-danger btn-sm', :"data-name"=>'app_command', :"data-cmd"=>'uninstall'
+  %li=link_to 'Remove', '#', :class=>'btn btn-danger btn-sm', :"data-name"=>'app_command', :"data-cmd"=>'remove'
+
+#status_commands.bg-info.well
+
+
+%h2 Containers
+=link_to "All containers for app", admin_cluster_containers_path(filter_cmd: 'set', :application_id => @item.id)
+= render 'admin/cluster_containers/list', items: @item.containers
+
+
+%h2 Services
+= link_to "Services", admin_cluster_services_path(filter_cmd: 'set', application_id: @item.id, cluster_id: @item.cluster)
+
+= render 'admin/cluster_services/list', items: @item.services
+
+
+
+:javascript
+  $( document ).ready(function() {
+    // commands
+    $( '.commands-list a[data-name="app_command"]' ).click(function() {
+      var isGood=confirm('Are you sure?');
+      if (!isGood) {
+        return false;
+      }
+
+      run_ajax_command("/admin/cluster_applications/#{@item.id}/send_command", $(this).data('cmd'));
+      return false;
+    });
+
+  });
+
+
+= render 'admin/shared/js_commands'

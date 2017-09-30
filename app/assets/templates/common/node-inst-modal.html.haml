@@ -1,0 +1,15 @@
+%a#instNodeLink
+%a#closeInstNodeModal
+%div
+  .flex-container-all.flex-center{style:"height: 90vh"}
+    .flex-wrap{style:"flex-grow: 1"}
+    .flex-wrap{style:"flex-grow: 5; max-width: 750px;"}
+      .lite_shadow.border_radius.white_bg.text-cednter{style:"padding: 10px !important; "}
+        .pull-right
+          =image_tag "new/icons/off.svg", :style=>"width: 25px; opacity: 0.6;", :class=>"close-messageDialog close-btn", "ng-click"=>"closeModal()"
+        .div(ng-switch on="activePage" style="padding: 15px")
+          %node-inst-part-aws(ng-switch-when="instAws")
+          %node-inst-part(ng-switch-when="instOnprem" data-node-name="nodeName")
+          %node-uninst-part(ng-switch-when="uninstOnPrem" data-force-uninstall="forceUninstall" data-reinstall="reinstall")
+          %div(ng-switch-default)
+    .flex-wrap{style:"flex-grow: 1"}

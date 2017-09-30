@@ -1,0 +1,393 @@
+-#.feg{:style=>"display: inline-flex"}
+  %h5 rthwrt
+-#.fegd{:style=>"display: inline-flex"}
+  %h5 rthwrt
+
+.head
+  // logo part
+  .col-lg-2.col-md-3.col-sm-2.col-xs-2.no_padd_left.no_padd_ri
+    = link_to root_path, :class=>"undec" do
+      .visible-lg.visible-md
+        = image_tag 'new/logo/logo.png',:style=>"margin: 20px 0px 0px 20px; width: 150pt"
+      .visible-sm.visible-xs
+        = image_tag 'new/logo/logo_short.png', :style=>"margin: 16pt 0px 0px 15px; width: 60pt"
+
+  // search part
+  .col-lg-10.col-md-9.col-sm-10.no_padd_left.no_padd_ri.hidden-xs{:style=>"display: flex;"}
+    -if !@page_with_def_search
+      %section#searchbox{:style=>"padding-top: 17px; display: inline-flex; flex-grow: 1"}
+        = form_tag(search_path, :method => "get", :id => "search", :class => "header_search", :style=>"width: 100%; margin-bottom: 0px; height: 40px;", :role=>"search") do
+          = text_field_tag :q, params[:q], placeholder: "Search users, teams, clusters on Galactic Exchange", :class => "form-control", :id=>"qwer"
+
+    // right col buttons
+    -#.col-lg-3.col-md-4.col-sm-5.padd_ri_40
+
+    // for logged user
+    -if current_user
+      // current cluster
+      .padd_md{:style=>"margin-top: 2px"}
+        .hidden-xsk.inl
+          -if !@current_cluster.nil?
+            %button.mdl-button.mdl-js-button.mdl-button--icofn{:id=>"12", :width=>50, :style=>"border-radius: 0px; border: 1px solid rgba(212, 212, 212, 0.6);"}
+              %h5.no_marg
+                =@current_cluster.name
+                -if @all_clusters.length > 1
+                  =image_tag "new/down.png", :class=>"nodes_more_picq", :width => 20, :style=>"opacity: 0.7"
+
+            -if @all_clusters.length > 1
+              #drop_warp.inl
+                %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect{:for => "12"}
+                  -#%h6.gr.no_marg_bott{:style=>"padding-left: 16px"} Current cluster:
+                  -#%li.mdl-menu__item{:style=>"border-bottom: solid 1px rgba(212, 212, 212, 0.6);"}
+                    =@current_cluster.name
+                  -if !@all_clusters.nil?
+                    -if @all_clusters.length > 0
+                      -#%h6.gr.no_marg_bott{:style=>"padding-left: 16px"} Change to:
+                      -for cluster in  @all_clusters
+                        = link_to profile_change_current_cluster_path(:cluster_uid => cluster.uid), :class=>"undec"  do
+                          %li.mdl-menu__item
+                            =cluster.name
+
+
+        //search
+        .hidden-lg.hidden-md.hidden-sm.inl{:style=>"display: none !important;"}
+          .header_icon.header_search.inl
+            = link_to search_path, :class=>"undec hidden-lg hidden-md hidden-sm" do
+              =image_tag "small/search_header.svg", :width=>25
+
+        //messages
+        .header_icon.header_messages.inl
+
+          = link_to dialogs_path, :class=>"undec" do
+            .relative_container.relative_container{:style=>"position: relative; display: inline;"}
+              =image_tag "new/icons/message.png", :width=>30
+              -if !@unread_count.nil? && @unread_count>0
+                %span.badge.header_badge.dialogs_badge
+                  =@unread_count
+
+        //dropdown menu
+        .header_icon.header_dropdown.inl
+          %button#demo-menu-lower-left.mdl-button.mdl-js-button.mdl-button--icon{:style=>"width: 25pt; height: 25pt"}
+            = image_tag avatar_url(current_user, :thumb), :style=>"width: 25pt", :class=>"img-circle"
+          %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect{:for => "demo-menu-lower-left"}
+            = link_to user_path(:name => current_user.username), :class=>"undec" do
+              %li.mdl-menu__item Profile
+            = link_to team_path(:name => current_user.team.name), :class=>"undec" do
+              %li.mdl-menu__item My team
+            = link_to profileedit_path,  :style=>"text-decoration: none;" do
+              %li.mdl-menu__item Settings
+
+            %hr{:style=>"margin-top: 5px; margin-bottom: 5px"}
+
+            = link_to destroy_user_session_path, :method => :delete,  :class=>"undec" do
+              %li.mdl-menu__item Sign Out
+    -else
+      .pull-right{:style=>"padding-top: 0px"}
+
+
+        .hidden-xs{:style=>"padding-top: 7px;"}
+          -#= link_to new_user_session_path, :style=>"text-decoration: none;" do
+                %button.mdl-button.mdl-js-button.mdl-js-ripple-effect{:style=>"font-weight: 400 !important; border-radius: 6px; color: #434343"}
+                  Search
+          = link_to Gexcore::Settings.doc_url, :style=>"text-decoration: none;" do
+            %button.undec.btn-default.btn.btn-primary
+              Docs
+
+          -#&nbsp;
+          = link_to new_user_session_path, :style=>"text-decoration: none;" do
+            %button.undec.btn-default.btn.btn-primary
+              Sign In
+
+        .visible-xs
+          .header_icon.header_search.inl
+          = link_to search_path, :class=>"undec" do
+            =image_tag "small/search_header.svg", :width=>25
+
+
+          //dropdown menu
+          .header_icon.header_dropdown.inl
+            %button#demo-menu-lower-right.mdl-button.mdl-js-button.mdl-button--icon
+              =image_tag "small/hamb.svg", :width=>25, :style=>"margin-top: -2px"
+            %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect{:for => "demo-menu-lower-right"}
+              -#= link_to search_path, :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Search
+              = link_to website_page('download'), :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Download
+              = link_to new_user_session_path, :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Sign In
+
+
+
+
+
+  -#.col-md-10.wh_bg.cont_col.no_padd_left.no_padd_ri
+    .col-md-8.col-sm-6.hidden-xs.no_padd_left
+      -if !@page_with_def_search
+        %section#searchbox{:style=>"padding-top: 17px"}
+          = form_tag(search_path, :method => "get", :id => "search", :class => "header_search", :style=>"margin-bottom: 0px; height: 40px;", :role=>"search") do
+            = text_field_tag :q, params[:q], placeholder: "Search users, teams, clusters on Galactic Exchange", :class => "form-control", :id=>"qwer"
+
+
+    // right col buttons
+    .col-md-4.col-sm-6.col-xs-6{:style=>"padding-right: 40px !important;"}
+      .pull-right{:style=>"padding-top: 24px"}
+
+        // for logged user
+        -if current_user
+          //small ui (icons)
+          .hidden-lg.hidden-md
+
+            //search
+            .header_icon.header_search.inl
+              = link_to search_path, :class=>"undec" do
+                =image_tag "small/search_header.svg", :width=>25
+
+            //messages
+            .header_icon.header_messages.inl
+
+              = link_to dialogs_path, :class=>"undec" do
+                .relative_container.relative_container{:style=>"position: relative; display: inline;"}
+                  =image_tag "mess.png", :width=>30
+                  -if count_dialogs(current_user)>0
+                    %span.badge.header_badge.dialogs_badge
+                      =count_dialogs(current_user)
+
+            //dropdown menu
+            .header_icon.header_dropdown.inl
+              %button#demo-menu-lower-left.mdl-button.mdl-js-button.mdl-button--icon{:style=>"width: 40px; height: 40px"}
+                = image_tag avatar_url(current_user, :thumb), :width=>40, :class=>"img-circle"
+              %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect{:for => "demo-menu-lower-left"}
+                = link_to user_path(:name => current_user.username), :class=>"undec" do
+                  %li.mdl-menu__item Profile
+                -#= link_to dialogs_path, :style=>"text-decoration: none;" do
+                  %li.mdl-menu__item Messages
+                = link_to team_path(:name => current_user.team.name), :class=>"undec" do
+                  %li.mdl-menu__item My team
+                = link_to profileedit_path,  :style=>"text-decoration: none;" do
+                  %li.mdl-menu__item Settings
+
+                %hr{:style=>"margin-top: 5px; margin-bottom: 5px"}
+
+                = link_to destroy_user_session_path, :method => :delete,  :class=>"undec" do
+                  %li.mdl-menu__item Sign Out
+
+
+
+
+
+
+-#.head
+  .col-md-2.col-sm-6.col-xs-6.header_left_col.no_padd_left
+    = link_to "/", :class=>"undec" do
+      .hidden-xs.hidden-md
+        = image_tag 'new/logo/logo.png',:style=>"margin: 20px 0px 0px 20px; width: 200px"
+      .visible-xs.visible-md
+        = image_tag 'new/logo/logo_short.png', :width=>120, :style=>"margin: 15px 0px 0px 15px"
+
+  .col-md-7.wh_bg.cont_col.no_padd_left.no_padd_ri
+    .col-md-12.hidden-xs.hidden-sm.no_padd_left
+      -if !@flag
+        %section#searchbox{:style=>"padding-top: 17px"}
+          = form_tag(search_path, :method => "get", :id => "search", :class => "header_search", :style=>"margin-bottom: 0px; height: 40px;", :role=>"search") do
+            = text_field_tag :q, params[:q], placeholder: "Search users, teams, clusters on Galactic Exchange", :class => "form-control", :id=>"qwer"
+
+
+          -#= form_tag(search_path, :method => "get", :id => "search", :class => "header_search", :style=>"margin-bottom: 0px; height: 40px;") do
+            = text_field_tag :q, params[:q], placeholder: "Search documentation", :class => "form-control"
+
+
+
+
+  .col-md-3.col-sm-6.col-xs-6
+    .to_website_btn{:style=>"padding-top: 24px"}
+      .pull-right.hidden-lg.hidden-md{:style=>"padding-top: 0px"}
+        = link_to search_path, :style=> "padding: 2px 15px 0px 0px; text-decoration: none; display: inline;" do
+          =image_tag "small/search_header.svg", :width=>25, :style=>" padding: 2px 0px 0px 0px; margin-right: 5px"
+        %button#demo-menu-lower-right.mdl-button.mdl-js-button.mdl-button--icon
+          =image_tag "small/hamb.svg", :width=>25, :style=>"margin-top: -2px"
+        %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect{:for => "demo-menu-lower-right"}
+          -#= link_to search_path, :style=>"text-decoration: none;" do
+            %li.mdl-menu__item Search
+          = link_to website_page('download'), :style=>"text-decoration: none;" do
+            %li.mdl-menu__item Download
+          = link_to new_user_session_path, :style=>"text-decoration: none;" do
+            %li.mdl-menu__item Sign In
+
+      .buttons_home{:style=>"padding-top: 0px"}
+        -if current_user
+          .buttons.pull-right{:style=>" padding: 0px !important;"}
+            .hidden-lg.hidden-md{:style=>"display: inline;"}
+              = link_to search_path, :style=> "padding: 2px 25px 0px 0px; text-decoration: none; display: inline;" do
+                =image_tag "small/search_header.svg", :width=>25, :style=>" padding: 2px 0px 0px 0px; margin-right: 5px"
+
+            = link_to dialogs_path, :style=> "padding: 2px 25px 0px 0px; text-decoration: none;display: inline;" do
+              .relative_container.relative_container{:style=>"position: relative; display: inline;"}
+                =image_tag "mess.png", :width=>30, :style=>" padding: 2px 0px 0px 0px;"
+                -if count_dialogs(current_user)>0
+                  %span.badge.header_badge.dialogs_badge
+                    =count_dialogs(current_user)
+            -#=@not_read_dialogs
+
+            -#= link_to profileshow_path, :style=> "padding: 0px 5px 0px 5px; text-decoration: none;" do
+                      =image_tag "tmp_av.png", :width=>30
+            / Right aligned menu below button
+
+            %button#demo-menu-lower-left.mdl-button.mdl-js-button.mdl-button--icon{:style=>"margin-left: 5px; margin-right: 0px; width: 40px; height: 40px"}
+              = image_tag avatar_url(current_user, :thumb), :width=>40, :class=>"img-circle"
+            %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect{:for => "demo-menu-lower-left"}
+              = link_to user_path(:name => current_user.username), :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Profile
+              -#= link_to dialogs_path, :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Messages
+              = link_to team_path(:name => current_user.team.name), :style=>"text-decoration: none;" do
+                %li.mdl-menu__item My team
+              = link_to profileedit_path,  :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Settings
+
+
+              %hr{:style=>"margin-top: 5px; margin-bottom: 5px"}
+              -#= link_to profileedit_path, :style=>"text-decoration: none;" do
+                        %li.mdl-menu__item Settings
+              -#= link_to download_path, :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Download
+              = link_to destroy_user_session_path, :method => :delete, :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Sign Out
+
+
+
+
+
+
+
+
+        -else
+          .pull-right{:style=>"padding-top: 6px;"}
+            .hidden-sm.hidden-xs
+              -#= link_to new_user_session_path, :style=>"text-decoration: none;" do
+                %button.mdl-button.mdl-js-button.mdl-js-ripple-effect{:style=>"font-weight: 400 !important; border-radius: 6px; color: #434343"}
+                  Search
+              = link_to Gexcore::Settings.doc_url, :style=>"text-decoration: none;" do
+                %button.undec.btn-default.btn.btn-primary
+                  Docs
+
+              -#&nbsp;
+              = link_to new_user_session_path, :style=>"text-decoration: none;" do
+                %button.undec.btn-default.btn.btn-primary
+                  Sign In
+
+
+
+              -if !@download_btn
+                = link_to website_page('download'), :style=>"text-decoration: none;" do
+                  %button.undec.btn-default.btn.btn-primary
+                    Download
+
+
+
+
+
+
+
+-#if current_user
+  .head{:style=>"background-color: #FFFFFF !important; height: 59px; margin-top: 1px"}
+    .col-md-1.col-xs-1.header_left_col
+      = link_to root_path do
+        = image_tag 'icon_in_round.png', :width=>40, :style=>"margin: 10px 0px 10px 16px"
+    .col-md-6.hidden-xs.hidden-sm
+      -if  !@flag
+        .seach_bl{:style=>"padding-top: 13px"}
+          = render 'shared/header_search'
+    .col-md-2.col-xs-8.pull-right.header_right_col
+      .buttons.pull-right{:style=>"    padding-right: 0px !important;"}
+        .hidden-lg.hidden-md{:style=>"display: inline;"}
+          = link_to search_path, :style=> "padding: 2px 15px 0px 0px; text-decoration: none; display: inline;" do
+            =image_tag "small/search_header.svg", :width=>25, :style=>" padding: 2px 0px 0px 0px; margin-right: 5px"
+
+        = link_to dialogs_path, :style=> "padding: 2px 15px 0px 0px; text-decoration: none;display: inline;" do
+          .relative_container.relative_container{:style=>"position: relative; display: inline;"}
+            =image_tag "mess.png", :width=>30, :style=>" padding: 2px 0px 0px 0px;"
+            -if count_dialogs(current_user)>0
+              %span.badge.header_badge.dialogs_badge
+                =count_dialogs(current_user)
+        -#=@not_read_dialogs
+
+        -#= link_to profileshow_path, :style=> "padding: 0px 5px 0px 5px; text-decoration: none;" do
+                  =image_tag "tmp_av.png", :width=>30
+        / Right aligned menu below button
+
+        %button#demo-menu-lower-left.mdl-button.mdl-js-button.mdl-button--icon{:style=>"margin-left: 5px; margin-right: 20px"}
+          = image_tag avatar_url(current_user, :thumb), :width=>30, :class=>"img-circle"
+        %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect{:for => "demo-menu-lower-left"}
+          = link_to user_path(:name => current_user.username), :style=>"text-decoration: none;" do
+            %li.mdl-menu__item Profile
+          -#= link_to dialogs_path, :style=>"text-decoration: none;" do
+            %li.mdl-menu__item Messages
+          = link_to team_path(:name => current_user.team.name), :style=>"text-decoration: none;" do
+            %li.mdl-menu__item My team
+          = link_to profileedit_path,  :style=>"text-decoration: none;" do
+            %li.mdl-menu__item Settings
+
+
+          %hr{:style=>"margin-top: 5px; margin-bottom: 5px"}
+          -#= link_to profileedit_path, :style=>"text-decoration: none;" do
+                    %li.mdl-menu__item Settings
+          -#= link_to download_path, :style=>"text-decoration: none;" do
+            %li.mdl-menu__item Download
+          = link_to destroy_user_session_path, :method => :delete, :style=>"text-decoration: none;" do
+            %li.mdl-menu__item Sign Out
+    .col-md-6
+
+
+
+
+  %hr{:style=>" margin-bottom: 0px; margin-top: 1px;"}
+-#else
+  .head{:style=>"background-color: #FFFFFF !important; height: 88px; margin-top: 2px"}
+    .col-md-3.col-sm-6.col-xs-6.header_left_col
+      = link_to website_page("") do
+        .hidden-xs
+          = image_tag 'gex_can_lg.png', :width=>240, :style=>"margin: 4px 0px 0px 4px"
+        .visible-xs
+          = image_tag 'logos/round.png', :width=>74, :style=>"margin: 8px 0px 0px 8px"
+    .col-md-5.hidden-xs.hidden-sm
+      -if !@flag
+        .seach_bl{:style=>"padding-top: 26px"}
+          = render 'shared/header_search'
+    .col-md-4.col-sm-6.col-xs-6.header_right_col
+      .buttons.pull-right.hidden-lg.hidden-md{:style=>"padding-top: 27px"}
+        = link_to search_path, :style=> "padding: 2px 15px 0px 0px; text-decoration: none; display: inline;" do
+          =image_tag "small/search_header.svg", :width=>25, :style=>" padding: 2px 0px 0px 0px; margin-right: 5px"
+        %button#demo-menu-lower-right.mdl-button.mdl-js-button.mdl-button--icon
+          =image_tag "small/hamb.svg", :width=>25, :style=>"margin-top: -2px"
+        %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect{:for => "demo-menu-lower-right"}
+          -#= link_to search_path, :style=>"text-decoration: none;" do
+            %li.mdl-menu__item Search
+          = link_to website_page('download'), :style=>"text-decoration: none;" do
+            %li.mdl-menu__item Download
+          = link_to new_user_session_path, :style=>"text-decoration: none;" do
+            %li.mdl-menu__item Sign In
+
+      .buttons_home.pull-right{:style=>"padding-top: 25px"}
+        .hidden-sm.hidden-xs
+          -#= link_to new_user_session_path, :style=>"text-decoration: none;" do
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect{:style=>"font-weight: 400 !important; border-radius: 6px; color: #434343"}
+              Search
+          = link_to Gexcore::Settings.doc_url, :style=>"text-decoration: none;" do
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect{:style=>"font-weight: 400 !important; border-radius: 6px; color: #434343"}
+              Docs
+
+          -#&nbsp;
+          = link_to new_user_session_path, :style=>"text-decoration: none;" do
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect{:style=>"font-weight: 400 !important; border-radius: 6px; color: #434343"}
+              Sign In
+
+
+          &nbsp;
+          -if !@download_btn
+            = link_to website_page('download'), :style=>"text-decoration: none;" do
+              %button.mdl-button.mdl-js-button.mdl-button--raised.mdl-js-ripple-effect.mdl-button--accent.material_orange_btn
+                Download
+
+
+
+  %hr{:style=>" margin-bottom: 0px; margin-top: 1px;"}

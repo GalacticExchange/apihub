@@ -1,0 +1,20 @@
+.snackbar_container{:style=>" right: 13px; bottom: 13px; position: fixed; z-index:9999;"}
+  #gex-snackbar.mdl-js-snackbar.mdl-snackbar{:style=>"position: relative;"}
+    .mdl-snackbar__text
+    %button.mdl-snackbar__action{:type => "button", :style=>"display: none;"}
+
+:javascript
+
+  var snackbarContainer = document.querySelector('#gex-snackbar');
+
+  GexUtils.showSnackbarMessage = function (message_text,time){
+    var data = {timeout: (time ? time : 4000), message: message_text};
+
+    snackbarContainer.MaterialSnackbar.showSnackbar(data);
+  };
+
+  if (GexUtils.isDesktopClient) {
+    GexUtils.electron.ipcRenderer.on('show-snackbar-message', function(event, arg) {
+      GexUtils.showSnackbarMessage(arg);
+    });
+  }

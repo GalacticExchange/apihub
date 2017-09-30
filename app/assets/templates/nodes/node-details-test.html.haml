@@ -1,0 +1,221 @@
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+.no_marg.gx-page(ng-if="loaded")
+  .sidebar-header(data-div="page-title")
+    .flex-wrap.flex-grow
+      %h2.sb-text.sb-h1-text.inl.gr Node
+      %h2.sb-text.sb-h1-text.inl {{node.name}}
+      %h2.sb-text.sb-h1-text.inl(ng-if="node.local") (it's your local node)
+      %p.sb-p-text.gr Use this window to manage node.
+    .flex-wrap
+      .flex-container-all
+        .flex-wrap.padd_ri_sm
+          %a(ng-href="{{ROUTES.getAddr('NODES_STATISTICS', utils.currentClusterId, node.id)}}" class="undec inl")
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.cmn-btn.lite-blue.undec
+              .fl-cont
+                .fl-wrap.marg_ri_10{style:'margin-top: -1px;'}
+                  =inline_svg 'new/icons/statistics.svg', class: 'sm-icon gex-svg'
+                .fl-wrap
+                  Statistics
+
+            -#%button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.inl
+              Node statistics
+        .flex-wrap.marg_left_sm(ng-if="utils.userPermissions.cluster_manage")
+          %a(ng-href="{{ROUTES.getAddr('NODES_SETTINGS', utils.currentClusterId, node.id)}}"){:id=>"node_settings"}
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.cmn-btn.lite-blue.undec
+              .fl-cont
+                .fl-wrap.marg_rif_10{style:'margin-top: -1px;'}
+                  =inline_svg 'new/icons/settings.svg', class: 'sm-icon gex-svg'
+
+
+
+  .app_wrap.border.marg_bott_md.padd_30{style:'padding: 30px;'}
+
+    .fl-cont.gx-fl-center.padd_bott_md
+      .fl-wrap.padd_ri_10
+        .card-h-icon
+          .svg-wrap
+            =inline_svg "new/icons/info_bl.svg", class: "sm-icon white-svg fx-sm-icon"
+      .fl-wrap
+        %p.card-h.bold Info
+
+    .div.padd_top_10.padd_left_10
+      %table
+        %tbody
+          %tr
+            %td.padd_ri_big
+              %h4.no_marg.gr State:
+            %td
+              .div(data-div="node-state")
+                .no_marg(ng-if="node.local && node.status == 'installing' && node.installStatus"){style:"padding-bottom: 15px"}
+                  .progress_text{:style=>"margin-top: -8px; margin-bottom: 5px"}
+                    %p.inl
+                      %img(ng-src="{{utils.getStatusCircle(node.status)}}" class="status-dot")
+                      Installing
+                    %p.gr.inl.marg_left_sm ({{node.installStatus}})
+                  .progress_cont{:style=>"width: 50%"}
+                    %mdl-progress(progress="{{node.installProgress}}")
+
+                %h4.no_marg(ng-if="!(node.local && node.status == 'installing' && node.installStatus)")
+                  %img(ng-src="{{utils.getStatusCircle(node.status)}}" class="status-dot")
+                  {{utils.fixStatus(node.status)}}{{node.status =='installing' ? ' (will take a few minutes)' : ''}}
+
+                -#%tr
+                  %td.padd_ri_big
+                    %h4.no_marg.gr Status checks:
+                  %td
+                    %h4.no_marg(data-div="node-checks"){:style=>"margin-top: -5px"}
+                      %img(ng-if="node.status=='joined'" ng-src="{{utils.getCheckIcon(node)}}" style="margin-bottom: 3px; margin-right: 0px; width: 20px;")
+                      {{utils.statusChecksDispResult(node)}}
+
+          %tr(ng-if="node.settings.aws_instance_type")
+            %td.padd_ri_big.padd_top_md
+              %h4.no_marg.gr AWS instance type:
+            %td.padd_top_md
+              %h4.no_marg {{node.settings.aws_instance_type}}
+
+
+    .div{style:'padding: 40px 0 30px 0;'}
+      .bord_bott
+
+
+    .fl-cont.gx-fl-center.padd_bott_md
+      .fl-wrap.padd_ri_10
+        .card-h-icon
+          .svg-wrap
+            =inline_svg "new/icons/command.svg", class: "sm-icon white-svg fx-sm-icon"
+      .fl-wrap
+        %p.card-h.bold Commands
+
+    .div
+      %h4.no_marg.gr.padd_md.text-center{style:"margin-top: 30px !important;"}(ng-if="!utils.isShowStartButton(node.status) && !utils.isShowStopButton(node.status) && !utils.isShowRestartButton(node.status) && !(utils.isDesktopClient && utils.currentCluster.clusterType != 'aws')") No commands available
+
+      .flex-container
+        .padd_left_md
+        .padd_without_left_md(ng-if="utils.isShowStartButton(node.status)")
+          .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="start-node" ng-click="nodeCommand('start', node.id)")
+            %h4.no_marg.bold{style:"padding-top: 6px;"}
+              =image_tag "new/icons/play_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+              Start
+        .padd_without_left_md(ng-if="utils.isShowStopButton(node.status)")
+          .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="stop-node" ng-click="nodeCommand('stop', node.id)")
+            %h4.no_marg.bold{style:"padding-top: 6px;"}
+              =image_tag "new/icons/stop_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+              Stop
+        .padd_without_left_md(ng-if="utils.isShowRestartButton(node.status)")
+          .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="restart-node" ng-click="nodeCommand('restart', node.id)")
+            %h4.no_marg.bold{style:"padding-top: 6px;"}
+              =image_tag "new/icons/restart_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+              Restart
+        .padd_without_left_md(ng-if="utils.isDesktopClient && utils.currentCluster.clusterType != 'aws'")
+          .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="logs-node" ng-click="nodeLogs(node)")
+            %h4.no_marg.bold{style:"padding-top: 6px;"}
+              =image_tag "new/icons/lines_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+              Local Logs
+        .padd_without_left_md(ng-if="node.remoteInstLog")
+          .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="logs-node" ng-click="openInstallLogs(node)")
+            %h4.no_marg.bold{style:"padding-top: 6px;"}
+              =image_tag "new/icons/lines_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+              Install Logs
+        .padd_without_left_md(ng-if="node.remoteUninstLog")
+          .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="logs-node" ng-click="openUninstallLogs(node)")
+            %h4.no_marg.bold{style:"padding-top: 6px;"}
+              =image_tag "new/icons/lines_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+              Uninstall Logs
+
+
+
+    .div{style:'padding: 40px 0 30px 0;'}
+      .bord_bott
+
+
+    .fl-cont.gx-fl-center.padd_bott_md
+      .fl-wrap.padd_ri_10
+        .card-h-icon
+          .svg-wrap
+            =inline_svg "new/icons/check.svg", class: "sm-icon white-svg fx-sm-icon"
+      .fl-wrap
+        %p.card-h.bold Status checks
+
+
+    .div
+
+      %p.no_marg.gr In progress...
+      -#%checks-details-ext(data-container-id="node.id" data-status="node.status" data-item-type=" 'node' ")
+
+
+
+
+
+    .div{style:'padding: 40px 0 30px 0;'}
+      .bord_bott
+
+
+    .fl-cont.gx-fl-center.padd_bott_md
+      .fl-wrap.padd_ri_10
+        .card-h-icon
+          .svg-wrap
+            =inline_svg "new/icons/cont_.svg", class: "sm-icon white-svg fx-sm-icon"
+      .fl-wrap
+        %p.card-h.bold Containers
+
+
+    .div
+
+      %p.no_marg.gr In progress...
+
+
+
+
+
+
+
+
+
+  -#.row
+    .col-md-12.col-sm-12.col-xs-12.no_padd{:style=>"display: flex;"}(ng-if="utils.userPermissions.cluster_manage")
+      .app_wrap.border.marg_bott_md{:style=>"width: 100%"}
+        .flex-container-all.grey_bg.padd_10.padd_left_md{style:"align-items: center;"}
+          .flex-wrap.padd_ri_10
+            =image_tag "new/icons/command.svg", class:"card-icon"
+          .flex-wrap
+            %p.card-h Commands
+
+        %h4.no_marg.gr.padd_md.text-center{style:"margin-top: 30px !important;"}(ng-if="!utils.isShowStartButton(node.status) && !utils.isShowStopButton(node.status) && !utils.isShowRestartButton(node.status) && !(utils.isDesktopClient && utils.currentCluster.clusterType != 'aws')") No commands available
+
+        .flex-container.padd_10
+          .padd_left_md
+          .padd_without_left_md(ng-if="utils.isShowStartButton(node.status)")
+            .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="start-node" ng-click="nodeCommand('start', node.id)")
+              %h4.no_marg.bold{style:"padding-top: 6px;"}
+                =image_tag "new/icons/play_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+                Start
+          .padd_without_left_md(ng-if="utils.isShowStopButton(node.status)")
+            .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="stop-node" ng-click="nodeCommand('stop', node.id)")
+              %h4.no_marg.bold{style:"padding-top: 6px;"}
+                =image_tag "new/icons/stop_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+                Stop
+          .padd_without_left_md(ng-if="utils.isShowRestartButton(node.status)")
+            .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="restart-node" ng-click="nodeCommand('restart', node.id)")
+              %h4.no_marg.bold{style:"padding-top: 6px;"}
+                =image_tag "new/icons/restart_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+                Restart
+          .padd_without_left_md(ng-if="utils.isDesktopClient && utils.currentCluster.clusterType != 'aws'")
+            .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="logs-node" ng-click="nodeLogs(node)")
+              %h4.no_marg.bold{style:"padding-top: 6px;"}
+                =image_tag "new/icons/lines_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+                Local Logs
+          .padd_without_left_md(ng-if="node.remoteInstLog")
+            .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="logs-node" ng-click="openInstallLogs(node)")
+              %h4.no_marg.bold{style:"padding-top: 6px;"}
+                =image_tag "new/icons/lines_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+                Install Logs
+          .padd_without_left_md(ng-if="node.remoteUninstLog")
+            .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="logs-node" ng-click="openUninstallLogs(node)")
+              %h4.no_marg.bold{style:"padding-top: 6px;"}
+                =image_tag "new/icons/lines_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+                Uninstall Logs
+
+-#%container-list-ext(data-page="node" data-node-id="{{nodeId}}")

@@ -1,0 +1,55 @@
+'use strict';
+
+angular.module('components').component('teamMembers', {
+    templateUrl: '<%= asset_path("profile/team-members.html") %>',
+    controller: ['$http', '$scope', '$interval', 'ROUTES', 'HTTP_CONSTANTS', '$location',
+        function ($http, $scope, $interval, ROUTES, HTTP_CONSTANTS, $location) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+
+            function fetchMembers(firstTime) {
+                $http.get('/profile/team/members', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.membersList = response.data;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load team members: ' + GexUtils.getErrMsgServ(response));
+                    } else {
+                        console.log('Error load team members : ' + GexUtils.getErrMsgServ(response));
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            fetchMembers(true);
+
+            var fetchInvInterval = $interval(function () {
+                fetchMembers();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchInvInterval)) {
+                    $interval.cancel(fetchInvInterval);
+                    fetchInvInterval = undefined;
+                }
+            });
+
+            $scope.addMember = function() {
+                sessionStorage.setItem('memberAddFlag', 'true');
+                $location.url(ROUTES.TEAM_INVITATIONS);
+            }
+
+            $scope.canAddMember = function() {
+              return GexUtils.currentUser.role ===  'admin' || GexUtils.currentUser.role === 'superadmin';
+            }
+        }
+    ]
+});

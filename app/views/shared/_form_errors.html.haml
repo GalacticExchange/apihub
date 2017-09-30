@@ -1,0 +1,19 @@
+
+
+
+
+
+
+- if f.object && f.object.errors.full_messages.count>0
+
+  #flash.app_wrap.border.item.marg_bott_md.item.animate-show
+    .row.bord_bott.padd_top_md.padd_bott_md.error-flash
+      - f.object.errors.full_messages.each do |msg|
+        .flex-container-all.padd_left_md
+          .flex-wrap.marg_ri_md{style:"flex-grow: 1"}
+            %h5.white{style:"margin: 3px 0px 0px 10px !important"}=msg
+
+
+      -#= msg
+      -#%br
+

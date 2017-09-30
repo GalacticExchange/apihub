@@ -1,0 +1,79 @@
+= stylesheet_link_tag "ours/tpl_admin", media: "all"
+
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Nodes
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Status
+    %th UID
+    %th Name
+    %th Cluster
+    %th Team
+    %th Apps
+    %th Containers
+    %th Services
+    %th State
+    %th Type
+    %th Instance
+    %th Commands
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td
+        = render "statuses", item: item
+      %td= item.uid
+      %td
+        = link_to "#{item.name}", admin_node_path(:id => item.id)
+      %td
+        - if item.cluster
+          = link_to admin_cluster_path(:id => item.cluster.id) do
+            = item.cluster.name
+      %td
+        - if item.cluster && item.cluster.team
+          = link_to admin_team_path(:id => item.cluster.team.id) do
+            = item.cluster.team.name
+      %td
+        - if item.cluster
+          - if item.hadoop_app_id.nil?
+            App-only
+          - else
+            = link_to 'Hadoop', admin_cluster_application_path(item.hadoop_app_id)
+
+      %td
+        = link_to admin_cluster_containers_path(:filter_cmd=>'set', :node_id => item.id) do
+          containers
+          %span
+            (#{@containers_count[item.id] || 0})
+      %td
+        = link_to admin_cluster_services_path(:filter_cmd=>'set', :node_id => item.id) do
+          services
+          %span
+            -#(#{@containers_count[item.id] || 0})
+
+      %td
+        TODO
+      %td
+        = item.node_type_name
+        %br
+        = item.host_type.name
+      %td
+        -if item.instance
+          .big
+            = link_to "#{item.instance.uid}", admin_instance_path(id: item.instance.id)
+      %td
+        = link_to admin_log_debug_index_path(:filter_cmd=>'set', :node_id => item.id, :node=>item.name) do
+          Logs
+
+= paginate @items

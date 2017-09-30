@@ -1,0 +1,107 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Create cluster
+    %p.sb-p-text.gr
+      Step 1: Choose the type.
+  .flex-wrap
+    %cluster-install-steps(data-current-step='1')
+    -#.flex-container-all
+      .flex-wrap.padd_10
+        .step-el.flex-center 1
+      .flex-wrap.padd_10
+        .step-el.flex-center.gr_bg 2
+      .flex-wrap.padd_10.no_padd_ri
+        .step-el.flex-center.gr_bg 3
+
+
+-# %a(ng-href="{{ROUTES.getAddr('CLUSTERS_NEW_ONPREM')}}" class="undec")
+-# %a(ng-href="{{ROUTES.getAddr('CLUSTERS_NEW_AWS')}}" class="undec")
+
+.gx-page
+  .fl-cont.padd_bott_md
+    .div(ng-click='createOnprem()')
+      .fl-wrap.padd_md.hand_cursor.lite-gx-border(data-div="on-premise-card"){style:'width: 700px;'}
+        .fl-cont.gx-fl-center
+          .fl-wrap.padd_ri_md
+            .div.grad{style:'border-radius: 50%; backgrfound-color: #5d5d5d; padding: 20px;'}
+              =inline_svg "new/icons/storage_color.svg", class: "lg-icon white-svg"
+          .fl-wrap.fl-grow.padd_left_md.padd_ri_md
+            %h3.bold.no_marg{style:"font-size: 20pt; color: #585858;"} On-Premise
+            .fl-cont.marg_top_10
+              .fl-wrap.padd_ri_10
+                =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+              .fl-wrap
+                %h5.no_marg.gr{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+                  Create a cluster of servers and desktops in your office or datacenter
+          .fl-wrap.padd_left_md.padd_ri_10.marg_left_md
+            =inline_svg "new/icons/next.svg", class:"lg-icon gex-svg"
+
+  .fl-cont.padd_bott_md
+    .div(ng-click='createAws()')
+      .fl-wrap.padd_md.hand_cursor.lite-gx-border(data-div="aws-card"){style:'width: 700px;'}
+        .fl-cont.gx-fl-center
+          .fl-wrap.padd_ri_md
+            .div.grad-aws{style:'border-radius: 50%; backgrfound-color: #5d5d5d; padding: 20px;'}
+              =inline_svg "new/icons/aws.svg", class: "lg-icon white-svg"
+          .fl-wrap.fl-grow.padd_left_md.padd_ri_md
+            %h3.bold.no_marg{style:"font-size: 20pt; color: #585858;"} AWS
+            .fl-cont.marg_top_10
+              .fl-wrap.padd_ri_10
+                =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+              .fl-wrap
+                %h5.no_marg.gr{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+                  Create a cluster of AWS virtual machines
+          .fl-wrap.padd_left_md.padd_ri_10.marg_left_md
+            =inline_svg "new/icons/next.svg", class:"lg-icon gex-svg"
+
+
+-#.gex-content.gx-page
+  .row{style:"max-width: 800px;"}
+    .col-md-6.no_padd_left.padd_bott_md(data-div="on-premise-card")
+      .borderr.gx-border
+        %a(ng-href="{{ROUTES.getAddr('CLUSTERS_NEW_ONPREM')}}" class="undec")
+          .bord_bott.padd_bott_md.hover-efl.flex-center{style:"min-height: 300px;"}
+            .div
+              .padd_md.flex-center.no_padd_bott
+                .div.grad{style:'border-radius: 50%; backgrfound-color: #5d5d5d; padding: 40px;'}
+                  =inline_svg "new/icons/storage_color.svg", class: "xlg-icon white-svg"
+              .padd_top_10
+                %h3.bold.text-center.marg_top_10.no_marg_bott{style:"font-size: 20pt; color: #585858;"} On-Premise
+
+
+        .fl-cont.padd_md.marg_top_10.marg_bott_10{style:"min-height: 100px;"}
+          .fl-wrap.padd_ri_10
+            =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+          .fl-wrap
+            %h5.no_marg.gr{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+              Create a cluster of servers and desktops in your office or datacenter
+
+        .flex-center.padd_md.no_padd_top
+          %a(ng-href="{{ROUTES.getAddr('CLUSTERS_NEW_ONPREM')}}" style="width: 100%;")
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(data-btn="on-premise-btn" disabledd="disabled"){style:"width: 100%; font-sfize: 17px !important;"} Create On-Premise
+
+    .col-md-6.no_padd_ri.padd_bott_md(data-div="aws-card")
+      .borderr.gx-border
+        %a(ng-href="{{ROUTES.getAddr('CLUSTERS_NEW_AWS')}}" class="undec")
+          .bord_bott.padd_bott_md.hovfer-el.flex-center{style:"min-height: 300px;"}
+            .div
+              .padd_md.flex-center.no_padd_bott
+                =image_tag "new/icons/aws_blue.svg", style: "width: 100px; opacityd: 0.7"
+              %h2.bold.text-center AWS
+
+
+        .fl-cont.padd_md.marg_top_10.marg_bott_10{style:"min-height: 100px;"}
+          .fl-wrap.padd_ri_10
+            =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+          .fl-wrap
+            %h5.no_marg.gr{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+              Create a cluster of AWS virtual machines
+
+
+        .flex-center.padd_md.no_padd_top
+          %a(ng-href="{{ROUTES.getAddr('CLUSTERS_NEW_AWS')}}" style="width: 100%;")
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(data-btn="aws-btn"){style:"width: 100%; font-sizhe: 17px !important;"} Create on AWS
+
+
+

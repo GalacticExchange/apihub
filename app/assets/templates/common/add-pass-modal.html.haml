@@ -1,0 +1,25 @@
+%a#addPassModal
+%a#closeaddPassModal
+.gx-page
+  .gx-modal
+    .fl-cont.fl-center{style:"height: 90vh"}
+      .fl-wrap.fl-grow
+      .fl-wrap.text-center{style:"flex-grow: 5; max-width: 750px;"}
+        .lite_shadow.border_radius.white_bg.padd_10
+          .pull-right
+            =image_tag "new/icons/off.svg", class: "close-icon", "ng-click": "closeModal()"
+          .padd_md
+            %h2 SSH Key Passphrase
+            %p SSH private key needs passphrase, please enter it.
+          .fl-cont.fl-center
+            .fl-wrap.fl-grow
+            .fl-wrap.fl-grow{style:'flex-grow: 2;'}
+              .padd_10
+                .padd_bott_10
+                  .new-input-with-icon(ng-init="passwordShow = false; fieldDisabled = false;" ng-class="{'new-input_err': err.message, 'new-input-with-icon-dis': fieldDisabled}" uib-popover="{{err.message}}" popover-is-open="err.show" popover-trigger="'none'")
+                    %input(ng-model="password" name="sshPassphrase" onfocus="$(this).parent().addClass('new-input-with-icon-focus')" onblur="$(this).parent().removeClass('new-input-with-icon-focus')" ng-attr-type="{{passwordShow ? 'text' : 'password'}}" ng-change="validatePassword(true)" ng-focus="err.show = !!err.message" ng-blur="err.show = false" ng-disabled="fieldDisabled")
+                    =image_tag "new/icons/eye.svg", "ng-mousedown": "passwordShow = fieldDisabled ?  false : true", "ng-mouseup": "passwordShow = false", "ng-mouseleave":"passwordShow = false"
+                .padd_top_10
+                  %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(ng-click="addPass()") Submit
+            .fl-wrap.fl-grow
+      .fl-wrap.fl-grow

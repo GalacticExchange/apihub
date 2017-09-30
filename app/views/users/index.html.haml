@@ -1,0 +1,32 @@
+%h1 Listing users
+.row
+  .col-md-3
+    .list-group
+      = link_to NgRoutes::SEARCH, :class => "list-group-item active" do
+        Users
+        %span.badge #{@users.size}
+      = link_to teams_path(:t => @q), :class => "list-group-item" do
+        Teams
+        %span.badge #{@teams.size}
+      = link_to clusters_path, :class => "list-group-item" do
+        Clusters
+        %span.badge #{@clusters.size}
+
+  .col-md-9
+    %table.table.table-striped.table-bordered.table-hover
+      %thead
+        %tr
+          %th Name
+          %th Email
+
+
+      %tbody
+        - @users.each do |user|
+          %tr
+            %td= user.username
+            %td= user.email
+    -#        %td= link_to 'Show', user
+            %td= link_to 'Edit', edit_user_path(user)
+            %td= link_to 'Destroy', user, :method => :delete, :data => { :confirm => 'Are you sure?' }
+
+    %br

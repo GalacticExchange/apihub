@@ -1,0 +1,57 @@
+'use strict';
+
+angular.module('components').component('libraryAppList', {
+    templateUrl: '<%= asset_path("library_apps/library_app-list.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', 'ROUTES', '$location', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, $routeParams, ROUTES, $location, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+
+            function fetchLibraryApps(firstTime) {
+                $http.get('/appstore/applications', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {clusterId: $scope.clusterId, includeImages: true}
+                }).then(function (response) {
+                    $scope.apps = response.data.apps;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    var errMessage = 'Cannot load library apps: ' + GexUtils.getErrMsgServ(response);
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', errMessage);
+                    } else {
+                        console.log(errMessage);
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            fetchLibraryApps(true);
+
+            var fetchLibraryAppsInterval = $interval(function () {
+                fetchLibraryApps();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.goToAutobildsApps = function () {
+                $location.url(ROUTES.getNgAddr('APPHUB_LIST', $scope.clusterId));
+            };
+
+            $scope.goToDevApps = function () {
+                $location.url(ROUTES.getNgAddr('DEVELOPMENT_LIST', $scope.clusterId));
+            };
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchLibraryAppsInterval)) {
+                    $interval.cancel(fetchLibraryAppsInterval);
+                    fetchLibraryAppsInterval = undefined;
+                }
+            });
+        }
+    ]
+});

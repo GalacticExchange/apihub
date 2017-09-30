@@ -1,0 +1,52 @@
+-# todo: refactor it
+
+.gx-page.fl-cont.gx-fl-center(class="step-selected-{{currentStep}}")
+  .fl-wrap.step.step-1(class="{{getStepColor(currentStep,1)}}")
+    .fl-cont.gx-fl-center
+      .fl-wrap.padd_ri_10(ng-if="currentStep != 1")
+        .div(ng-if="currentStep != 1 && step1 == 'aws' ")
+          =inline_svg "new/icons/aws.svg", class:"xsm-icon white-svg"
+        .div(ng-if="currentStep != 1 && step1 == 'onprem' ")
+          =inline_svg "new/icons/dns.svg", class:"xsm-icon white-svg"
+      .fl-wrap.padd_top_10.padd_bott_10
+        %h6.bold.no_marg.white
+          .div(ng-if="currentStep == 1")
+            Choose cluster type
+          .div(ng-if="currentStep != 1 && step1 == 'aws' ")
+            AWS
+          .div(ng-if="currentStep != 1 && step1 == 'onprem' ")
+            Onprem
+
+  .fl-wrap.padd_left_sm.padd_ri_sm
+    =inline_svg "new/icons/next.svg", class:"sm-icon lite-gr-svg"
+
+  .fl-wrap.step.step-2(class="{{getStepColor(currentStep,2)}}")
+    .fl-cont.gx-fl-center
+      .fl-wrap.padd_ri_10(ng-if="currentStep > 2")
+        .div
+          =inline_svg "new/icons/done.svg", class:"xsm-icon white-svg"
+        -#.div(ng-if="currentStep != 1")
+          =inline_svg "new/icons/next.svg", class:"xsm-icon gex-svg"
+      .fl-wrap.padd_top_10.padd_bott_10
+        %h6.bold.no_marg.white
+          .div(ng-if="currentStep < 3")
+            Select components
+          .div(ng-if="currentStep > 2")
+            Components selected
+
+  .fl-wrap.padd_left_sm.padd_ri_sm
+    =inline_svg "new/icons/next.svg", class:"sm-icon lite-gr-svg"
+
+  .fl-wrap.step.step-3(class="{{getStepColor(currentStep,3)}}")
+    .fl-cont.gx-fl-center
+      .fl-wrap.padd_ri_10(ng-if="currentStep > 3")
+        .div
+          =inline_svg "new/icons/done.svg", class:"xsm-icon white-svg"
+          -#.div(ng-if="currentStep != 1")
+            =inline_svg "new/icons/next.svg", class:"xsm-icon gex-svg"
+      .fl-wrap.padd_top_10.padd_bott_10
+        %h6.bold.no_marg.white
+          .div(ng-if="currentStep < 4")
+            Configure
+          .div(ng-if="currentStep > 3")
+            Configured

@@ -1,0 +1,63 @@
+'use strict';
+
+angular.module('components', []);
+
+angular.module('components').component('clustersManageMenu', {
+    templateUrl: '<%= asset_path("common/clusters-manage-menu.html") %>',
+    controller: ['$http', '$scope', 'ROUTES', '$route',
+        function ($http, $scope, ROUTES, $route) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.currentUser = GexUtils.currentUser;
+            $scope.currentTeam = GexUtils.currentTeam;
+            selectMenuItem($route.current.originalPath);
+
+            $scope.$on('$routeChangeStart', function (event, next) {
+                selectMenuItem(next.$$route.originalPath);
+            });
+
+            function selectMenuItem(routePath) {
+                if (routePath == ROUTES.CLUSTERS || routePath == ROUTES.CLUSTER_EDIT || routePath == ROUTES.CLUSTERS_NEW_AWS
+                    || routePath == ROUTES.CLUSTERS_NEW_ONPREM || routePath == ROUTES.CLUSTERS_NEW_WIZARD
+                    || routePath == ROUTES.CLUSTERS_WIZARD_WAIT || routePath == ROUTES.CLUSTERS_NEW_COMPONENTS) {
+                    $scope.pageSelected = 'clusters';
+                }  else if (routePath == ROUTES.CLUSTERS_SHARED) {
+                    $scope.pageSelected = 'clusters-shared';
+                }  else if (routePath == ROUTES.KEYS) {
+                    $scope.pageSelected = 'keys';
+                }  else if (routePath == ROUTES.TEAM_MEMBERS || routePath == ROUTES.TEAM_MEMBER_EDIT) {
+                    $scope.pageSelected = 'teamMembers';
+                } else if (routePath == ROUTES.TEAM_INVITATIONS) {
+                    $scope.pageSelected = 'teamInvitations';
+                } else if (routePath == ROUTES.TEAM_EDIT) {
+                    $scope.pageSelected = 'teamEdit';
+                } else {
+                    console.error('Error url for left menu: ' + routePath);
+                }
+            }
+
+            $scope.hideXsMenu = function () {
+                $('.collapse').collapse('hide');
+                var closeIcon = $('.close-icon');
+                closeIcon.hide();
+                closeIcon.animate({opacity: 0}, 300);
+                var menuIcon = $('.menu-icon');
+                menuIcon.show();
+                menuIcon.animate({opacity: 1}, 300);
+            };
+
+            $scope.showXsMenu = function () {
+                var closeIcon = $('.close-icon');
+                closeIcon.show();
+                closeIcon.animate({opacity: 1}, 300);
+                var menuIcon = $('.menu-icon');
+                menuIcon.hide();
+                menuIcon.animate({opacity: 0}, 300);
+            };
+
+            $scope.isAdmin = function() {
+                return $scope.currentUser.role === 'admin' || $scope.currentUser.role === 'superadmin';
+            }
+        }
+    ]
+});

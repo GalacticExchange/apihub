@@ -1,0 +1,39 @@
+.flex-container
+  =render "shared/left_popup"
+  .inline-flex
+    .col-xs-12.no_padd.install_left_col.main_div_size.flex_col_sm
+      = render 'left_column', another_user_name: nil
+  .inline-flex{:style=>"flex-grow: 1;"}
+    .col-md-12.col-xs-12.main.main_div_size
+      .row
+        .text-center.padd_top_big
+          %h2.no_marg No dialogs yet.
+
+
+
+
+-#.col-md-3.col-sm-4.col-xs-12.no_padd.install_left_col.main_div_size.dialog_col_fx_sm
+  -#= render 'left_column', another_user_name: nil
+-#.col-md-9.col-sm-8.col-xs-12.no_padd.dialog_col_fx_md
+  .main.main_div_size
+    .app_wrap.marg_bott_md
+      .row
+        .text-center.padd_top_big
+          %h2.no_marg No dialogs yet.
+
+
+
+
+-##wrap
+  .container
+    .row
+      .text-center
+        .profile_header.padd_top_md
+          %h2.inl
+            Your
+          %h2.inl.gr
+            dialogs
+    .row
+
+      .col-md-10.col-md-offset-1.col-xs-12.col-sm-12.padd_bott_big
+        =render "dialogs/left_column", another_user_name: nil

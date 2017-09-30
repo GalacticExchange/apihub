@@ -1,0 +1,240 @@
+'use strict';
+
+angular.module('components').component('logList', {
+    templateUrl: '<%= asset_path("logs/log-list.html") %>',
+    controller: ['$http', '$scope', 'ROUTES', '$location', '$anchorScroll',
+        function ($http, $scope, ROUTES, $location, $anchorScroll) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.logLevels = ['trace', 'debug', 'info', 'warning', 'error', 'critical'];
+            $scope.search = {};
+
+            initUrlSearchParams();
+            urlSearchParamsToFields();
+
+            $scope.pagination = {
+                maxSize: 5,
+                currentPage: $location.search().pg,
+                totalItems: 1,
+                itemsPerPage: $location.search().itemsPerPage
+            };
+
+            function fetchLogs(params) {
+                $http.get('/logs', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: params
+                }).then(function (response) {
+                    $scope.logs = response.data.results;
+                    $scope.pagination.totalItems = response.data.total;
+
+                    if (!$scope.loaded) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (!$scope.loaded) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load logs: ' + response.statusText);
+                        $scope.loaded = true;
+                    } else {
+                        console.log('Error fetching logs: ' + response.statusText);
+                    }
+                });
+            }
+
+            $scope.clearSearchForm = function () {
+                var search = $scope.search;
+                search.user = undefined;
+                $location.search('username', undefined);
+                search.node = undefined;
+                $location.search('nodeID', undefined);
+                search.source = undefined;
+                $location.search('source', undefined);
+                search.query = undefined;
+                $location.search('q', undefined);
+                search.minLevel = $scope.logLevels[0];
+                $location.search('minLevel', search.minLevel);
+                $location.search('pg', 1);
+                $scope.pagination.currentPage = 1;
+            };
+
+            $scope.submitSearchForm = function () {
+                if (checkFieldsSubmit()) {
+                    var search = $scope.search;
+                    $location.search('username', search.user ? search.user : undefined);
+                    $location.search('nodeID', search.node ? search.node.id : undefined);
+                    $location.search('source', search.source ? search.source : undefined);
+                    $location.search('q', search.query ? search.query : undefined);
+                    $location.search('minLevel', search.minLevel);
+                    $location.search('pg', 1);
+                    $scope.pagination.currentPage = 1;
+                }
+            };
+
+            function checkFieldsSubmit() {
+                var res = true;
+                for (var err in $scope.fieldsErr) {
+                    if ($scope.fieldsErr[err]) {
+                        showFieldTooltip('Wrong value here', err);
+                        res = false;
+                    }
+                }
+                return res;
+            }
+
+            function showFieldTooltip(text, fieldName) {
+                $("#" + fieldName + "_f").addClass("shake");
+                setTimeout(hideFieldTooltip, 500, fieldName);
+            }
+
+            function hideFieldTooltip(fieldName) {
+                $("#" + fieldName + "_f").removeClass("shake");
+            }
+
+            $scope.fieldsErr = {
+                "node": false,
+                "user": false,
+                "source": false
+            };
+
+            function autoCompleteStrongMatch(data, value) {
+                var resp = data.map(function (obj) {
+                    if (obj[1] == value) {
+                        return true;
+                    }
+                });
+                resp = !!resp[0];
+                return resp;
+            }
+
+            function validateField(data, value, fieldType, focus) {
+                if (((data.length == 0 && value.length != 0) || (!autoCompleteStrongMatch(data, value) && !focus) )
+                    && !(!focus && value.length == 0)) {
+                    $scope.fieldsErr[fieldType] = true;
+                } else {
+                    $scope.fieldsErr[fieldType] = false;
+                    hideFieldTooltip(fieldType);
+                }
+            }
+
+            $scope.findAutocomplete = function (url, value, fieldType, focus) {
+                return $http.get(url, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        clusterID: GexUtils.currentClusterId,
+                        q: value
+                    }
+                }).then(function (response) {
+
+                    // if for node object throw
+                    if (!(value !== null && typeof value === 'object')) {
+                        validateField(response.data, value, fieldType, focus);
+                    }
+
+                    return response.data.map(function (element) {
+                        return url == '/autocomplete_node_name' ? {id: element[0], name: element[1]} : element[1];
+                    })
+                }, function errorCallback(response) {
+                    console.log('Error ' + url + ': ' + response.statusText);
+                });
+            };
+
+            $scope.$on('$routeUpdate', function (event) {
+                $scope.pagination.currentPage = $location.search().pg;
+                fetchLogs($location.search());
+            });
+
+            $scope.pageChanged = function () {
+                if ($location.hash() !== 'top_of_logs') {
+                    $location.hash('top_of_logs');
+                } else {
+                    $anchorScroll();
+                }
+                $location.search('pg', $scope.pagination.currentPage);
+            };
+
+            $scope.switchJsonView = function (log) {
+                log.showFull = !log.showFull;
+            };
+
+            $scope.showJsonLog = function (log) {
+                return log.showFull ? prettifyJson(JSON.stringify(JSON.parse(log.data), undefined, 4)) : log.data.slice(0, 160);
+            };
+
+            function prettifyJson(json) {
+                json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,
+                    function (match) {
+                        var cls = 'number';
+                        if (/^"/.test(match)) {
+                            if (/:$/.test(match)) {
+                                cls = 'key';
+                            } else {
+                                cls = 'string';
+                            }
+                        } else if (/true|false/.test(match)) {
+                            cls = 'boolean';
+                        } else if (/null/.test(match)) {
+                            cls = 'null';
+                        }
+                        return '<span class="' + cls + '">' + match + '</span>';
+                    });
+            }
+
+            function initUrlSearchParams() {
+                var search = $location.search();
+                var updated = false;
+                if (!search.minLevel) {
+                    $location.search('minLevel', $scope.logLevels[0]);
+                    updated = true;
+                }
+                if (!search.itemsPerPage) {
+                    $location.search('itemsPerPage', 10);
+                    updated = true;
+                }
+                if (!search.pg) {
+                    $location.search('pg', 1);
+                    updated = true;
+                }
+                if (!search.clusterID) {
+                    $location.search('clusterID', GexUtils.currentClusterId);
+                    updated = true;
+                }
+
+                if (!updated) {
+                    fetchLogs($location.search());
+                }
+            }
+
+            function urlSearchParamsToFields() {
+                var searchFields = $scope.search;
+                var urlSearchParams = $location.search();
+
+                searchFields.query = urlSearchParams.q;
+                searchFields.minLevel = urlSearchParams.minLevel;
+                searchFields.user = urlSearchParams.username;
+                if (urlSearchParams.nodeID) {
+                    $http.get('/nodes/' + urlSearchParams.nodeID + '/info', {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json'
+                    }).then(function (response) {
+                        searchFields.node = response.data.node;
+                    }, function errorCallback(response) {
+                        console.log('Error fetching node for filter: ' + response.statusText);
+                    });
+                }
+                searchFields.source = urlSearchParams.source;
+            }
+
+            $scope.validateIfEmpty = function (fieldValue, fieldName) {
+                if (_.isNil(fieldValue) || fieldValue === '') {
+                    $scope.fieldsErr[fieldName] = false;
+                    hideFieldTooltip(fieldName);
+                }
+            }
+        }
+    ]
+});

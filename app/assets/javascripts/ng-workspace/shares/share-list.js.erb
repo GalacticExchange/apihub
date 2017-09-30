@@ -1,0 +1,325 @@
+'use strict';
+
+angular.module('components').component('shareList', {
+    templateUrl: '<%= asset_path("shares/share-list.html") %>',
+    controller: ['$http', '$scope', '$interval', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.focusSearch = false;
+
+            var doneIconSrc = '<%= asset_path("new/icons/done_white.svg") %>';
+            var forwardIconSrc = '<%= asset_path("new/icons/forward_white.svg") %>';
+            var searchIconSrc = '<%= asset_path("new/icons/search.svg") %>';
+
+            $scope.share = {};
+            $scope.spinner = false;
+
+            function fetchShares(firstTime) {
+                $http.get('/userShares', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {clusterID: GexUtils.currentClusterId}
+                }).then(function (response) {
+                    $scope.sharesList = response.data.shares;
+
+                    if (firstTime) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error fetching shares: ' + response.statusText);
+                    if (firstTime) {
+                        $scope.loaded = true;
+                        GexUtils.showMessageDialog('Error', 'Cannot load shares: ' + response.statusText);
+                    }
+                });
+            }
+
+            function fetchPendingShares(firstTime) {
+                $http.get('/shareInvitations', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {clusterID: GexUtils.currentClusterId}
+                }).then(function (response) {
+                    $scope.pendingSharesList = response.data.invitations;
+
+                    if (firstTime) $scope.pendingLoaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+
+                    console.log('Error fetching pending shares: ' + response.statusText);
+                    if (firstTime) {
+                        $scope.pendingLoaded = true;
+                        GexUtils.showMessageDialog('Error', 'Cannot load invitations: ' + response.statusText);
+                    }
+                });
+            }
+
+            fetchPendingShares(true);
+            fetchShares(true);
+
+            var fetchSharesInterval = $interval(function () {
+                fetchShares();
+                fetchPendingShares();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchSharesInterval)) {
+                    $interval.cancel(fetchSharesInterval);
+                    fetchSharesInterval = undefined;
+                }
+            });
+
+            $scope.$watch('share.username', function (newVal) {
+                if (newVal) {
+                    if (newVal == '') {
+                        $scope.usersList = [];
+                    }
+                    else {
+                        updateSearchResults(newVal);
+                    }
+                }
+            });
+
+            //update invitation list
+            function updateSearchResults(newVal) {
+                $http.get('/search/users', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        q: newVal
+                    }
+                }).then(function (response) {
+                    $scope.usersList = response.data.result;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+
+                    console.log('Error updating search results: ' + response.statusText);
+                });
+            }
+
+            $scope.confirmDeleteShare = function (username) {
+                GexUtils.showConfirmDialog('Delete share', 'Do you really want to delete the share for this user ' + username + ' ?', function () {
+                    $scope.$apply(function () {
+                        $scope.deleteShare(username);
+                    });
+                });
+            };
+
+            $scope.confirmDeleteEmailShare = function (id, email) {
+                GexUtils.showConfirmDialog('Delete invitation', 'Do you really want to delete the invitation for this email ' + email + ' ?', function () {
+                    $scope.$apply(function () {
+                        $scope.deletePendingShare(id);
+                    });
+                });
+            };
+
+            $scope.deleteShare = function (username) {
+                $http.delete('/shares', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        username: username,
+                        clusterID: GexUtils.currentClusterId
+                    }
+                }).then(function () {
+                    fetchShares();
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+
+                    console.log('Error deleting share: ' + response.statusText);
+                });
+
+            };
+
+            $scope.deletePendingShare = function (id) {
+                $http.delete('/invitations', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {id: id}
+                }).then(function () {
+                    fetchPendingShares();
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+
+                    console.log('Error deleting pending share: ' + response.statusText);
+                });
+
+            };
+
+            $scope.createShare = function (username) {
+
+                $scope.spinner = true;
+
+                var data = {
+                    username: username,
+                    clusterID: GexUtils.currentClusterId
+                };
+
+                $http.post('/shares', data, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function () {
+                    $scope.spinner = false;
+
+                    $scope.close_popup();
+                    $scope.utils.showSnackbarMessage("Cluster shared with " + username);
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+
+                    GexUtils.showMessageDialog('Whooops...', response.data.errors[0].message);
+                    console.log('Error creating share: ' + response.statusText);
+
+                });
+            };
+
+
+            function validateEmail(email) {
+                var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                return re.test(email);
+            }
+
+
+            $scope.createEmailShare = function (email) {
+                if (email == '' || email == undefined) {
+                    showPopupError('Email is empty');
+                } else {
+                    if (validateEmail(email)) {
+                        $scope.spinner = true;
+                        createEmailRequest(email);
+                    } else {
+                        showPopupError('Email not valid');
+                    }
+                }
+            };
+
+
+            function createEmailRequest(email) {
+                var data = {
+                    email: email,
+                    clusterID: GexUtils.currentClusterId
+                };
+
+                $http.post('/shareInvitations', data, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.share.email = '';
+
+                    fetchShares();
+                    $scope.utils.showSnackbarMessage("Share created");
+                    $scope.close_popup();
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    showPopupError('Error creating share: ' + response.statusText);
+                    console.log('Error creating share: ' + response.statusText);
+                }).then(function () {
+                    $scope.spinner = false;
+                });
+            }
+
+
+            $scope.createdAnimation = function (type) {
+                var invButton = $('#create_' + type + '_inv_btn');
+                if (type == "email") {
+                    invButton.addClass('green_btn');
+                    invButton.removeClass('gex_primary_bg');
+                } else {
+                    invButton.addClass('green_btn');
+                    invButton.removeClass('grey_btn');
+                }
+
+                $('#create_' + type + '_inv_btn_icon').attr("src", doneIconSrc);
+
+
+                $scope.submitButtonsDisable = true; //disable submit btn to prevent re-submit
+
+
+                setTimeout(after_done_animation, 1000, type);
+            };
+
+            function hide_notifications() {
+                $scope.share_sent = false;
+            }
+
+
+
+            function showPopupError(errText) {
+                $scope.errText = errText;
+            }
+
+            function hidePopupError() {
+                $scope.errText = undefined;
+            }
+
+            $scope.close_popup = function () {
+                $scope.createActive = false;
+                $scope.invHalfOpacity = false;
+                hidePopupError();
+            };
+
+
+
+            function after_done_animation(type) {
+                //hide 'create' block
+                $scope.createActive = false;
+                $scope.invHalfOpacity = '';
+
+                fetchShares();
+                fetchPendingShares();
+
+                // take back color and icon on btn
+                var invButton = $('#create_' + type + '_inv_btn');
+                var invButtonIcon = $('#create_' + type + '_inv_btn_icon');
+                if (type == "email") {
+                    invButton.addClass('gex_primary_bg');
+                    invButton.removeClass('green_btn');
+                    invButtonIcon.attr("src", forwardIconSrc);
+                }
+                else {
+                    invButton.addClass('grey_btn');
+                    invButton.removeClass('green_btn');
+                    invButtonIcon.attr("src", searchIconSrc);
+                }
+                $scope.share_sent = true;
+                setTimeout(hide_notifications, 1500);
+
+
+                $scope.share.email = '';
+                $scope.share.username = '';
+
+                $scope.submitButtonsDisable = false;
+            }
+
+            $scope.createNewBtnClick = function () {
+                $scope.createActive = true;
+                $scope.invHalfOpacity = 'half_opacity';
+            };
+
+            $scope.closeNewIcon = function () {
+                $scope.createActive = false;
+                $scope.invHalfOpacity = '';
+            };
+
+            $scope.isClusterSharedWith = function (username) {
+                return $scope.sharesList.find(function (share) {
+                    return share.username == username;
+                });
+            };
+        }
+    ]
+});

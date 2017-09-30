@@ -1,0 +1,85 @@
+%h2 Cluster
+ID: #{@cluster.id}
+%br
+Name: #{@cluster.name}
+%br
+UID: #{@cluster.uid}
+%br
+
+%h2 Nodes
+
+%table.table.table-striped
+  %tr
+    %td #
+    %td Node name
+    %td Status
+    %td State
+    %td CPU, % used
+    %td Memory, GB free
+
+  - @nodes.each do |node|
+    %tr
+      %td=node.node_number
+      %td
+        %b=node.name
+        %br
+        =node.uid
+
+      %td=node.status
+      %td
+        %div{id: "node_#{node.id}_state"}
+
+      %td
+        %div{id: "node_#{node.id}_metrics_cpu"}
+      %td
+        %div{id: "node_#{node.id}_metrics_memory"}
+
+#status
+
+:javascript
+  var interval = 10000;
+
+
+  jQuery(function($) {
+      update_data();
+
+  });
+
+  function update_data(){
+  $('#status').html('Updating...');
+
+  $.ajax({
+    url: "/admin/clusters/#{@cluster_id}/nodes_performance",
+    type: "GET",
+    dataType: "json",
+    contentType: "application/json",
+    success: function(data){
+      $('#status').html('');
+
+      for( var i=0; i<data.length; i++ ){
+        var id = data[i].id.toString();
+
+        // set values
+        set_node_value('node_'+id+'_state', data[i].state);
+        set_node_value('node_'+id+'_metrics_cpu', data[i].counters.cpu);
+        set_node_value('node_'+id+'_metrics_memory', data[i].counters.memory);
+
+
+      }
+    },
+    complete: function (data) {
+      // Schedule the next
+      setTimeout(update_data, interval);
+    }
+
+  });
+  }
+
+  function set_node_value(id, counter){
+    if (counter){
+      $('#'+id).html('<b>'+counter.value+'</b><br><span class="notes">'+counter.date+'</span>');
+    }
+    else{
+      $('#'+id).html('ERROR');
+    }
+  }

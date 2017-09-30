@@ -1,0 +1,40 @@
+-if @dashboard
+  - d = @dashboard['dashboard']
+
+  .padd_top_md{style:'width: 100%; padding: 30px;'}
+    .sidebar-header
+      .flex-wrap.flex-grow
+        %h2.sb-text.sb-h1-text
+          Dashboard
+        %p.sb-p-text.gr
+          =d['description']
+
+    .row{:style=>" margin-left: -15px; margin-right: -15px"}
+      -d['links'].each do |block|
+        .col-xl-3.col-lg-3.col-md-3.col-sm-6.col-xs-6.padd_bott_md.padd_ri_sm_xs.padd_left_sm_xs
+          .app_card.border
+            .app_pic_place
+              =link_to block['link'], class:'undec' do
+                =image_tag "/dashboards/#{@current_cluster.id}/#{block['img']}", style: 'width: 100%;'
+            .app_info
+              .padd_top_md.padd_left_15
+                =link_to block['link'], class:'undec' do
+                  %h2.project_name.bold.no_marg{style:'font-size: 18pt !important;'}
+                    =block['title']
+                %p.app_category.gr.marg_top_sm{style:"overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px;"}
+                  =block['description']
+              .padd_15
+                =link_to block['link'] do
+                  %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.gex-sm-btn.green-btn(data-btn="open") Open
+
+  .padd_top_md{style:'width: 100%; padding: 30px;'}
+    .sidebar-header
+      .flex-wrap.flex-grow
+        %h2.sb-text.sb-h1-text
+          Administration
+        %p.sb-p-text.gr
+          Desc here...
+
+
+-else
+  =render 'dashboard/no_dashboards'

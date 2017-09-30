@@ -1,0 +1,65 @@
+'use strict';
+
+angular.module('components').component('clustersNewOnprem', {
+    templateUrl: '<%= asset_path("clusters/clusters-new-onprem.html") %>',
+    controller: ['$location', '$http', '$scope', '$routeParams', 'ROUTES', 'messageEx', 'paramsData',
+        function ($location, $http, $scope, $routeParams, ROUTES, messageEx, paramsData) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+            $scope.onprem_cluster = {};
+
+            var urlParams = $location.search();
+            $scope.clusterType = urlParams.clusterType;
+
+            var dataParams = paramsData.getData();
+
+            if(!dataParams){
+                var path = ROUTES.getNgAddr('CLUSTERS_NEW_WIZARD');
+                $location.path(path).search({clusterType: $scope.clusterType});
+            }
+
+            var components = dataParams.components;
+
+            $scope.createOnpremCluster = function () {
+                $scope.spinner = true;
+                var data = {
+                    clusterType: 'onprem',
+                    components: components,
+                    proxyIP: $scope.onprem_cluster.proxyIP,
+                    proxyUser: $scope.onprem_cluster.proxyUser,
+                    proxyPassword: $scope.onprem_cluster.proxyPassword,
+                    staticIPs: !!$scope.onprem_cluster.staticIPs
+                };
+
+                if (data.staticIPs) {
+                    data.gatewayIP = $scope.onprem_cluster.gatewayIP;
+                    data.networkMask = $scope.onprem_cluster.networkMask;
+                    data.networkIPRangeStart = $scope.onprem_cluster.networkIPRangeStart;
+                    data.networkIPRangeEnd = $scope.onprem_cluster.networkIPRangeEnd;
+                }
+
+                $http.post('/clusters', data, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.spinner = false;
+
+                    var cluster = response.data.cluster;
+                    var path = ROUTES.getNgAddr('CLUSTERS_WIZARD_WAIT', cluster.id);
+                    $location.path(path).search({clusterType: $scope.clusterType});
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    messageEx.setMessage('Error: cannot create cluster');
+                    $scope.errors = response.data.errors;
+                    $scope.err_mess = true;
+                    $scope.spinner = false;
+                    console.log('Error: ' + response.statusText + " " + response.status);
+                });
+            };
+        }
+    ]
+});

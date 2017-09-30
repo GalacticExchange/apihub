@@ -1,0 +1,47 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Applications
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th UID
+    %th Status
+    %th Name
+    %th Team
+    %th Cluster
+    %th Library app
+    %th Services
+    %th Commands
+
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td= item.uid
+      %td
+        = item.status
+      %td
+        = link_to item.name, admin_cluster_application_path(item.id)
+      %td
+        = link_to item.cluster.team.name, admin_team_path(item.cluster.team_id) if item.cluster rescue "error"
+      %td
+        = link_to item.cluster.name, admin_cluster_path(item.cluster_id) if item.cluster
+      %td
+        = link_to item.library_application.name, admin_library_application_path(item.library_application_id) if item.library_application
+
+      %td
+        = link_to "Services (#{@count_services[item.id] || 0})", admin_cluster_services_path(filter_cmd: 'set', application_id: item.id, cluster_id: item.cluster_id)
+      %td
+        = link_to "Logs", admin_log_debug_index_path(filter_cmd: 'set', application_id: item.id, cluster_id: item.cluster_id)
+
+
+= paginate @items

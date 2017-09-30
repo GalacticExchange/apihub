@@ -1,0 +1,4 @@
+<% if @message.present? %>
+$("#mess_div").prepend("<%= escape_javascript( render partial: 'messages/message_message', locals: {message: @message}) %>");
+$("#message_message").val("");
+<% end %>

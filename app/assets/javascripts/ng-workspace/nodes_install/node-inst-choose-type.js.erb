@@ -1,0 +1,23 @@
+'use strict';
+
+angular.module('components').component('nodeInstChooseType', {
+    templateUrl: '<%= asset_path("nodes_install/node-inst-choose-type.html") %>',
+    controller: ['$scope', 'ROUTES', '$location',
+        function ($scope, ROUTES, $location) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+
+            var path = ROUTES.getNgAddr('NODES_INST_APP_ONLY' , GexUtils.currentCluster.id);
+
+            $scope.addLocal = function () {
+                $location.path(path).search({nodeType: 'local'});
+            };
+
+            $scope.addRemote = function () {
+                $location.path(path).search({nodeType: 'remote'});
+            };
+
+
+        }
+    ]
+});

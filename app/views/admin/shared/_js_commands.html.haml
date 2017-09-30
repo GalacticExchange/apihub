@@ -1,0 +1,25 @@
+:javascript
+
+  // common
+    function run_ajax_command(url, cmd){
+      $('#status_commands').html("Sending...");
+
+      $.ajax({
+        url: url,
+        data: {"cmd": cmd},
+        type: "GET",
+        dataType: "json",
+        contentType: "application/json",
+        beforeSend: function(){
+        // Handle the beforeSend event
+        },
+        success: function(resp){
+        //$('#status_commands').html("Result: "+data.res);
+
+        },
+        complete: function (data) {
+          $('#status_commands').html("Result: "+JSON.stringify(data.responseJSON));
+        }
+
+      });
+      }

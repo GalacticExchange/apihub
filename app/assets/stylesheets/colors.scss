@@ -1,0 +1,61 @@
+//== Colors
+
+// spiggeno s children
+
+$col-green: #51d466; // 72c02c
+$col-green1: #21ba49;
+$col-green2: #236c36;
+$col-green-light-1: #cdff76;
+
+$col-blue: #185F97; // main blue #4765A0, #428BCA
+$col-blue2: #2f506c;
+$col-blue3: #365d7e;
+$col-blue4: #428BCA;
+$col-blue5: #6091ba;
+$col-blue-light-1: #54c8eb;
+$col-blue-light-2: #179bc2;
+
+$col-yellow: #FFFE0B;
+$col-yellow2: #FCD419;
+$col-yellow_middle: #F6DC00;
+$col-yellow_dark:#f49522; //#E97900 ///
+
+
+$col-orange: #F69323; //main orange
+
+$col-gray: #666666; // main color #666666
+
+$gray-darker: lighten(#000, 13.5%); // #222
+$gray-dark: #7b8a8b; // #333
+$gray-dark-middle: #666; // #666
+$gray: #95a5a6; // #555
+$gray-light: #b4bcc2; // #999
+$gray-lighter: #DCDCDC;
+$gray-lightest: #ecf0f1; // #eee
+$gray-lightest2: #f9f9f9;
+
+// scheme 1 - green
+$col-primary: $col-blue;
+$col-second: $col-orange;
+
+//
+$brand-primary: $col-primary;
+$brand-success: $col-second;
+$brand-info: $col-blue-light-1;
+$brand-warning: $col-orange;
+$brand-danger: #E74C3C;
+
+
+
+//$accent-color-gex: #d54728;
+//$accent-color-gex: #2b83c7;
+$accent-color-gex: #1d87e4;
+//$accent-color-gex: #48d0cc;
+$line-color-gex: rgba(212,212,212,0.6);
+$grey-color-gex: #7f7f7f;
+$text-color-gex: #434343;
+
+$link-color-gex: #0d75d0;
+
+
+$lite-grey-gex: #f1f1f1;

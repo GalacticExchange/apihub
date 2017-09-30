@@ -1,0 +1,16 @@
+#wrap
+  .container{:style=>"padding-top: 10px;"}
+    .text-center
+      =image_tag "dialogs.png", :id=>"messages_pic"
+    .col-md-3
+    .col-md-6
+      %hr
+      %h1
+        = link_to user_path(:name => @another_user.username), :style=> " text-decoration: none;" do
+          =image_tag "back.png", :width=>20,:style=>"margin-bottom: 11px; margin-right: 4px; opacity: 0.4"
+          = image_tag avatar_url(@another_user, :thumb), :width=>45,:style=>"margin-bottom: 11px; margin-right: 4px", :class=>"img-circle"
+        = link_to "#{@another_user.username}", user_path(:name => @another_user.username), :style=> " text-decoration: none; color: #434343"
+
+
+      = render "form"
+

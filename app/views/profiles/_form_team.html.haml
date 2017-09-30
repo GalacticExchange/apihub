@@ -1,0 +1,14 @@
+.padd_top_md
+  %h5
+    About team:
+  .forms{:style=>"padding-top: 8px;"}
+    = horizontal_simple_form_for(@team, :url => update_team_path, :method => :put) do |f|
+      -#= f.error_notification
+      = render 'shared/form_errors', {f: f}
+
+      .field{:style=>"width: 100% !important"}
+        = f.input :about, :label=>"About", as: :text, placeholder: '', :label=>false
+
+      = f.submit  :class => "mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md ", :value=>"Update info"
+
+

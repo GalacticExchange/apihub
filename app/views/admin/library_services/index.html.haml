@@ -1,0 +1,40 @@
+= stylesheet_link_tag "ours/tpl_admin", media: "all"
+
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Library services
+    .col-md-5
+      .pull-right
+        = link_to new_admin_library_service_path do
+          %btn.btn.btn-info New service
+
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Enabled
+    %th= link_to_sortable_column :pos, 'Pos'
+
+    %th Name
+    %th Title
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td
+        = render "admin/shared/label_yesno", v: item.enabled
+      %td= item.pos
+      %td
+        = link_to item.name, admin_library_service_path(item.id)
+      %td
+        = link_to item.title, admin_library_service_path(item.id)
+
+= paginate @items

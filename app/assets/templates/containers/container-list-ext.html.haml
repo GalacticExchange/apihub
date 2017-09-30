@@ -1,0 +1,32 @@
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+.app_wrap.border.marg_bott_md(ng-if="loaded"){:style=>"border-bottom: 0px"}
+  .flex-container-all.grey_bg.padd_10.padd_left_md{style:"align-items: center;"}
+    .flex-wrap.padd_ri_10
+      =image_tag "new/icons/cont_.svg", class:"card-icon"
+    .flex-wrap
+      %p.card-h {{(!containers || containers.length == 0) ? 'No containers' : 'Containers' }}
+
+  %table#containerTable(ng-if="containers && containers.length > 0"){:resizeable => "", :mode => "'BasicResizer'"}
+    %thead.padd_15.w-g_bg
+      %tr
+        %th#colName.table-h.t-col-left Name
+        %th#colStatus.table-h.t-col-center State
+        %th#colChecks.table-h.t-col-center.hidden-xs.hidden-sm Status checks
+        %th#colNode.table-h.t-col-center.hidden-xs Node
+        %th#colApp.table-h.t-col-center.hidden-xs.hidden-sm Application
+        %th#colIp.table-h.t-col-ri.hidden-xs Local IP
+        %th#colGexIp.table-h.t-col-ri.hidden-xs GEX IP
+    %tbody
+      %tr.bord_bott.gr-hover-el(data-div='{{container.id}}' ng-repeat="container in containers track by container.id" ng-click="openContainer(container.id)")
+        %td.bold.t-col-left {{container.name}}
+        %td.t-col-center.gr
+          %gx-status(data-status="container.status" data-utils="utils")
+        %td.t-col-center.hidden-xs
+          %gx-checks(data-checks="contChecks[container.id]" data-status="container.status" data-item-id="container.id")
+        %td.t-col-center.hidden-xs {{container.masterContainer ? 'master' : container.nodeName}}
+        %td.t-col-center.hidden-xs.hidden-sm {{container.applicationName}}
+        %td.t-col-ri.hidden-xs {{container.local_ip ? container.local_ip : '-'}}
+        %td.t-col-ri.hidden-xs {{container.gex_ip ? container.gex_ip : '-'}}

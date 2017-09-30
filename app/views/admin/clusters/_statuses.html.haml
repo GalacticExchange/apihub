@@ -1,0 +1,27 @@
+- if item.active?
+  .label.label-primary active
+
+- elsif item.installed?
+  .label.label-success installed
+
+- elsif item.installing?
+  .label.label-success installing
+
+- elsif item.install_error?
+  .label.label-danger install error
+
+- elsif item.uninstalling?
+  .label.label-default uninstalling
+
+- elsif item.removed?
+  .label.label-default removed
+
+- elsif item.removing?
+  .label.label-default removing
+
+- elsif item.remove_error?
+  .label.label-danger remove error
+
+- else
+  =item.status
+

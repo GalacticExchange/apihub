@@ -1,0 +1,91 @@
+'use strict';
+
+angular.module('components', []);
+
+angular.module('components').component('searchMenu', {
+    templateUrl: '<%= asset_path("common/search-menu.html") %>',
+    controller: ['$http', '$scope', 'ROUTES', '$route', '$location',
+        function ($http, $scope, ROUTES, $route, $location) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            selectMenuItem($route.current.originalPath);
+
+            $scope.searchText = $location.search().q;
+            if (!_.isNil($scope.searchText) && $scope.searchText !== '') {
+                getSearchCounters();
+            }
+
+            $scope.$on('$routeChangeStart', function (event, next) {
+                selectMenuItem(next.$$route.originalPath);
+            });
+
+            function selectMenuItem(routePath) {
+                if (routePath == ROUTES.SEARCH_USERS) {
+                    $scope.pageSelected = 'searchUsers';
+                } else if (routePath == ROUTES.SEARCH_TEAMS) {
+                    $scope.pageSelected = 'searchTeams';
+                } else if (routePath == ROUTES.SEARCH_CLUSTERS) {
+                    $scope.pageSelected = 'searchClusters';
+                } else {
+                    console.error('Error url for left menu: ' + routePath);
+                }
+            }
+
+            $scope.goToSection = function(sectionName) {
+                if (sectionName == 'searchUsers') {
+                    $location.path(ROUTES.getNgAddr('SEARCH_USERS'));
+                } else if (sectionName == 'searchTeams') {
+                    $location.path(ROUTES.getNgAddr('SEARCH_TEAMS'));
+                } else if (sectionName == 'searchClusters') {
+                    $location.path(ROUTES.getNgAddr('SEARCH_CLUSTERS'));
+                }
+                $location.hash(null);
+                $location.search('pg', 1);
+            };
+
+            $scope.$on('$locationChangeStart', function (event) {
+                var tempSearch = $location.search().q;
+                if (tempSearch !== undefined && tempSearch !==  $scope.searchText) {
+                    $scope.searchText = tempSearch;
+                    getSearchCounters();
+                }
+            });
+
+            function getSearchCounters() {
+                $http.get('/search/counters', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {q: $location.search().q}
+                }).then(function (response) {
+                    $scope.counters = response.data.counters;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error fetching search counters: ' + response.statusText);
+                });
+            }
+
+            $scope.hideXsMenu = function () {
+                $('.collapse').collapse('hide');
+                var closeIcon = $('.close-icon');
+                closeIcon.hide();
+                closeIcon.animate({opacity: 0}, 300);
+                var menuIcon = $('.menu-icon');
+                menuIcon.show();
+                menuIcon.animate({opacity: 1}, 300);
+            };
+
+            $scope.showXsMenu = function () {
+                var closeIcon = $('.close-icon');
+                closeIcon.show();
+                closeIcon.animate({opacity: 1}, 300);
+                var menuIcon = $('.menu-icon');
+                menuIcon.hide();
+                menuIcon.animate({opacity: 0}, 300);
+            };
+        }
+    ]
+});

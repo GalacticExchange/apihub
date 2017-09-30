@@ -1,0 +1,9 @@
+-icon_name = type
+-select =  selected ? "_selected" : ""
+-#icon_name
+
+-if shared
+  =image_tag "new/icons/shared#{select}.svg", class: "left_popup_icon ", style:"width: 18px; height: 18px; opacity: 0.5"
+-else
+  =image_tag "new/icons/#{icon_name+select}.svg", class: "left_popup_icon left_popup_icon#{select}"
+

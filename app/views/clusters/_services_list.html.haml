@@ -1,0 +1,70 @@
+.app_wrap.border.marg_bott_md{:style=>"border-bottom: 0px"}
+  .row
+    -if !any_items(items)
+      .padd_md.grey_bg
+        %h3.no_marg.nested_header.inl
+          No services
+    -else
+      .padd_md.grey_bg
+        %h3.no_marg.nested_header
+          Services
+      .row
+        .w-g_bg
+          .row.padd_left_md.padd_ri_md
+            .col-md-2.col-sm-3.col-xs-4.no_padd_left_xs
+              %p.no_marg.gr
+                Name
+            .col-md-2.col-sm-3.hidden-xs
+              %p.no_marg.gr
+                Public IP
+            .col-md-2.col-sm-3.col-xs-4
+              %p.no_marg.gr
+                Status
+            .col-md-2.hidden-xs.hidden-sm
+              %p.no_marg.gr
+                Port
+            .col-md-2.col-xs-4.col-sm-3
+              %p.no_marg.gr
+                Hostname
+            .col-md-2.hidden-xs.hidden-sm
+              %p.no_marg.gr
+                Action
+
+      -items.each do |service|
+        .row.bord_bott.padd_top_sm.padd_bott_sm.padd_left_md.padd_ri_md.table-row
+          .col-md-2.col-sm-3.col-xs-4.no_padd_left_xs
+            %p.no_marg.bold.force_break
+              =service.name
+          .col-md-2.col-sm-3.hidden-xs
+            %p.no_marg.force_break
+              =service.get_public_ip
+          .col-md-2.col-sm-3.col-xs-4
+            %p.no_marg.force_break
+              =service.status
+          .col-md-2.hidden-sm.hidden-xs
+            %p.no_marg.force_break
+              =service.port_in
+              #{"/"}
+              =service.port_out
+          .col-md-2.col-sm-3.col-xs-4
+            %p.no_marg.force_break
+              =service.hostname
+          .col-md-2.hidden-sm.hidden-xs.no_paddf{:style=>"margin-top: -3px"}
+            -if @isClient && service.status== 'active' && ((service.protocol == "http" || service.protocol == "https") && !service.container.is_master || service.protocol == "ssh")
+              %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec.marg_ri_sm{:style=>"line-height: 26px; height: 26px; font-size: 10pt !important; padding-top: 0px !important; margin-top: 2px;", :onclick => "openNativeService(event)", "data-name" => "#{service.name}", "data-public_ip" => "#{service.get_public_ip}", "data-status" => "#{service.status}", "data-port" => "#{service.port_out}", "data-host" => "#{service.hostname}", "data-master-container" => "#{service.container.is_master}", "data-protocol" => "#{service.protocol}"}
+                -if service.protocol == "http" || service.protocol == "https"
+                  Connect browser
+                -else
+                  -if service.protocol == "ssh"
+                    Connect
+
+= javascript_include_tag :service_helper
+
+:javascript
+
+  function openNativeService(event) {
+    var data = event.currentTarget.dataset;
+    var service = {host: data.host, masterContainer: data.masterContainer == 'true', name: data.name, port: data.port,
+      protocol: data.protocol, public_ip: data.public_ip, statis: data.status};
+    GexServiceHelper.openNative(service, "#{@current_user.username}", GexUtils.getToken());
+  }

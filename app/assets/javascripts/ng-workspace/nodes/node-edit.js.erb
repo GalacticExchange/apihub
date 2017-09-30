@@ -1,0 +1,173 @@
+'use strict';
+
+angular.module('components').component('nodeEdit', {
+    templateUrl: '<%= asset_path("nodes/node-edit.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', '$location', 'ROUTES', 'HTTP_CONSTANTS', '$q', '$route',
+        function ($http, $scope, $interval, $routeParams, $location, ROUTES, HTTP_CONSTANTS, $q, $route) {
+            $scope.utils = GexUtils;
+            $scope.installNodePop = {};
+
+            fetchNode(true);
+
+
+            $scope.isAwsNode = function (node) {
+               return !!node.settings.aws_instance_type;
+            }
+
+            function fetchNode(firstTime) {
+                var nodeInfo = $q(function (resolve, reject) {
+                    $http.get('/nodes/' + $routeParams.nodeId + '/info', {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json',
+                        params: {
+                            with_removed: true
+                        }
+                    }).then(function (response) {
+                        resolve({node: response.data.node});
+                    }, function errorCallback(response) {
+                        if (GexUtils.isResponseCanceled(response)) {
+                            return;
+                        }
+                        GexUtils.redirectIfSomeRespCodes(response);
+
+                        reject(new Error('Cannot load node: ' + GexUtils.getErrMsgServ(response)));
+                    });
+                });
+
+                var getNodeId = $q(function (resolve, reject) {
+                    GexUtils.getCurrentNodeId(function (nodeId, err) {
+                        if (err) {
+                            var errMessage = 'Cannot get local node id: ' + err.message;
+                            if (firstTime) {
+                                GexUtils.showMessageDialog('Error', errMessage);
+                            } else {
+                                console.log(errMessage);
+                            }
+                        }
+
+                        resolve({localNodeId: nodeId});
+                    });
+                });
+
+                $q.all([nodeInfo, getNodeId]).then(function (data) {
+                    return $q(function (resolve) {
+                        $scope.node = data[0].node;
+                        $scope.node.local = $scope.node.id == data[1].localNodeId;
+
+                        resolve(data);
+                    });
+                }).catch(function (err) {
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', err.message);
+                    } else {
+                        console.log(err.message);
+                    }
+                }).finally(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            var fetchNodeInterval = $interval(function () {
+                fetchNode();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchNodeInterval)) {
+                    $interval.cancel(fetchNodeInterval);
+                    fetchNodeInterval = undefined;
+                }
+            });
+
+            $scope.reinstallNode = function () {
+                GexUtils.showConfirmDialog('Reinstall node', 'Do you really want to reinstall the node?', function () {
+                    $scope.$apply(function () {
+                        $location.path(ROUTES.getNgAddr('NODES_UNINST_LOCAL', GexUtils.currentCluster.id))
+                            .search('reinstall', true).search('nodeName', $scope.node.name);
+                    });
+                });
+            };
+
+            $scope.showInstallNodeBtn = function (node) {
+                return (GexUtils.isDesktopClient && node.local || GexUtils.currentCluster.clusterType == 'aws' ||
+                    GexUtils.isDesktopClient && GexUtils.currentCluster.clusterType != 'aws' && node.hostType == 'dedicated')
+                    && node.status != 'removed';
+            }
+
+            $scope.uninstallNode = function () {
+                GexUtils.showConfirmDialog('Uninstall node', 'Do you really want to uninstall the node?', function () {
+                    if (GexUtils.currentCluster.clusterType == 'aws') {
+                        $scope.spinner = true;
+                        $scope.uninstallSpinner = true;
+                        $http.post('/nodes/' + $routeParams.nodeId + '/uninstall', {}, {
+                            headers: {Accept: 'application/json'},
+                            responseType: 'json'
+                        }).then(function (response) {
+                            if ($route.current.$$route.originalPath == ROUTES.NODES_SETTINGS) {
+                                $location.url(ROUTES.getNgAddr('NODES', GexUtils.currentCluster.id));
+                            }
+                        }, function errorCallback(response) {
+                            if (GexUtils.isResponseCanceled(response)) {
+                                return;
+                            }
+                            GexUtils.redirectIfSomeRespCodes(response);
+
+                            GexUtils.showMessageDialog('Error', GexUtils.getErrMsgServ(response));
+                        }).then(function () {
+                            $scope.spinner = false;
+                            $scope.uninstallSpinner = false;
+                        });
+                    } else if ($scope.node.hostType == 'dedicated') {
+                        $scope.$apply(function () {
+                            $location.url(ROUTES.getNgAddr('NODES_UNINST_REMOTE', GexUtils.currentCluster.id, $scope.node.id));
+                        });
+                    } else {
+                        $scope.$apply(function () {
+                            $location.url(ROUTES.getNgAddr('NODES_UNINST_LOCAL', GexUtils.currentCluster.id));
+                        });
+                    }
+                });
+            };
+
+            $scope.uninstallNodeForce = function () {
+                $scope.spinner = true;
+                $scope.forceUninstallSpinner = true;
+                GexUtils.showConfirmDialog('Force uninstall node', 'Do you really want to force uninstall the node?',
+                    function () {
+                        $scope.$apply(function () {
+                            $location.path(ROUTES.getNgAddr('NODES_UNINST_LOCAL', GexUtils.currentCluster.id)).search('force', true);
+                        });
+                    });
+            };
+
+            $scope.removeNode = function () {
+                GexUtils.showConfirmDialog('Remove node', 'This is a dangerous operation!!! '
+                    + 'Removing the node will only delete information about the node from our servers. '
+                    + 'The files on your local machine will not be deleted. Do you really want to remove the node?',
+                    function () {
+                        $scope.spinner = true;
+                        $scope.removeSpinner = true;
+                        $http.delete('/nodes/' + $scope.node.id, {
+                            headers: {Accept: 'application/json'},
+                            responseType: 'json'
+                        }).then(function (response) {
+                            if ($route.current.$$route.originalPath == ROUTES.NODES_SETTINGS) {
+                                $location.url(ROUTES.getNgAddr('NODES', GexUtils.currentCluster.id));
+                            }
+                        }, function errorCallback(response) {
+                            if (GexUtils.isResponseCanceled(response)) {
+                                return;
+                            }
+                            GexUtils.redirectIfSomeRespCodes(response);
+
+                            GexUtils.showMessageDialog('Error', 'Node removing fails: ' + GexUtils.getErrMsgServ(response));
+                        }).then(function () {
+                            $scope.spinner = true;
+                            $scope.removeSpinner = false;
+                        });
+                    }
+                );
+            };
+
+        }
+    ]
+});

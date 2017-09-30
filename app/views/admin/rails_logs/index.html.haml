@@ -1,0 +1,15 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Rails logs
+        %small
+          <i class="ace-icon fa fa-angle-double-right"></i>
+          choose the logs
+%ul
+  %li
+    = link_to "rails logs", admin_get_log_path(:name => 'logs')
+  %li
+    = link_to "sidekiq loglog", admin_get_log_path(:name => 'sq_logs')
+  %li
+    = link_to "sidekiq all logs", admin_get_log_path(:name => 'd_sd_logs')

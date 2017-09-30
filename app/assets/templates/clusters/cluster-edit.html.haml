@@ -1,0 +1,162 @@
+.sidebar-header.gx-page(data-div="page-title" )
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text.inl.gr Cluster
+    %h2.sb-text.sb-h1-text.inl(ng-if="loaded") {{cluster.name}}
+    %p.sb-p-text.gr
+      Here you can edit this cluster.
+  .flex-wrap(ng-if="loaded")
+    %a(ng-click="switchCluster(cluster)")
+      %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gx-btn.lite-blue.undec(data-btn="create-cluster")
+        .fl-cont
+          -#.fl-wrap.marg_ri_10{style:'margin-top: -1px;'}
+            =inline_svg 'new/icons/dashboard.svg', class: 'sm-icon gex-svg'
+          .fl-wrap
+            Go to workflow
+
+
+      -#%button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(data-btn="create-cluster") Go to workflow
+
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+
+.div.gx-page(ng-if="loaded")
+
+
+
+  .app_wrap.border.marg_bott_md.padd_30
+    .fl-cont.gx-fl-center.padd_bott_md
+      .fl-wrap.padd_ri_10
+        .card-h-icon
+          .svg-wrap
+            =inline_svg "new/icons/info_bl.svg", class: "sm-icon white-svg fx-sm-icon"
+      .fl-wrap
+        %p.card-h.bold Info
+
+    .div.padd_top_10.padd_left_10.gx-font
+      %table
+        %tbody
+          %tr
+            %td.padd_bott_md.padd_ri_big
+              %h4.no_marg.gr State:
+            %td.padd_bott_md
+              %h4.no_marg
+                %img(ng-src="{{utils.getStatusCircle(cluster.status)}}" class="status-dot")
+                {{utils.fixStatus(cluster.status)}}
+          %tr
+            %td.padd_ri_big
+              %h4.no_marg.gr Cluster type:
+            %td
+              %h4.no_marg {{cluster.clusterType === 'aws' ? 'AWS' : 'On-Premise'}}
+          %tr
+            %td.padd_ri_big.padd_top_md
+              %h4.no_marg.gr Region:
+            %td.padd_top_md
+              %h4.no_marg {{cluster.clusterType === 'aws' ? cluster.aws_region.title : '-'}}
+          %tr
+            %td.padd_ri_big.padd_top_md
+              %h4.no_marg.gr Joined nodes:
+            %td.padd_top_md
+              %h4.no_marg {{cluster.numberOfNodes ? cluster.numberOfJoined : '-'}}
+          %tr
+            %td.padd_ri_big.padd_top_md
+              %h4.no_marg.gr Total nodes:
+            %td.padd_top_md
+              %h4.no_marg {{cluster.numberOfNodes ? cluster.numberOfNodes : '-'}}
+
+
+
+    .div{style:'padding: 40px 0 30px 0;'}
+      .bord_bott
+
+
+    .fl-cont.gx-fl-center.padd_bott_md
+      .fl-wrap.padd_ri_10
+        .card-h-icon
+          .svg-wrap
+            =inline_svg "new/icons/components.svg", class: "sm-icon white-svg fx-sm-icon"
+      .fl-wrap
+        %p.card-h.bold
+          Components
+          -#.div(ng-if="componentsLoaded")
+            {{}}
+
+
+    .div.padd_top_10.padd_left_10(ng-if="componentsLoaded")
+
+      %h6.no_marg.padd_bott_10{style:"line-height: 1.5 !important; color: #616161;     font-size: 14px;"}
+        Big Data components that were enabled for this cluster.
+
+
+      .fl-cont.fl-flow.padd_top_15
+        .fl-wrap.padd_ri_md.padd_bott_md(ng-repeat="component in clusterComponents")
+          .gx-bage.gx-bage-lg{class:'trace-bage {{componentBg(component)}}' , style:'padding: 14px 30px; border-radius: 6px; background-color: #efefef;'}
+            .fl-cont.fl-center
+              .fl-wrap.marg_ri_10(style='height: 14px; margin-top: -8px;')
+                .div(ng-if="!component.enabled" style="opacity: 0.6")
+                  =inline_svg "new/icons/circle.svg", class: 'xsm-icon lite-gr-svg'
+                .div(ng-if="component.enabled")
+                  =inline_svg "new/icons/circle.svg", class: 'xsm-icon gex-svg'
+              .fl-wrap
+                %h6.no_marg.bold{style:'font-size: 11pt;', class: '{{componentFontColor(component)}}'}
+                  .inl {{component.name}}
+
+    .div{style:'padding: 40px 0 30px 0;'}
+      .bord_bott
+
+    .fl-cont.gx-fl-center.padd_bott_md
+      .fl-wrap.padd_ri_10
+        .card-h-icon
+          .svg-wrap
+            =inline_svg "new/icons/disconnected.svg", class: "sm-icon white-svg fx-sm-icon"
+      .fl-wrap
+        %p.card-h.bold Danger zone
+
+
+    .div.padd_top_md.padd_left_10
+      %div
+        %h5.bold.marg_bott_10.no_marg_top Uninstall cluster
+
+        .fl-cont.padd_bott_sm
+          -#.fl-wrap.padd_ri_10
+            =inline_svg "new/icons/info_black.svg", class:'lite-gr-svg'
+          .fl-wrap
+            %h6.no_marg.padd_bott_10{style:"line-height: 1.5 !important; color: #616161;     font-size: 14px;"}
+              Uninstall empty cluster (without slave nodes) - you need to remove all slave nodes manually first.
+
+        %button(data-btn="uninstall-cluster"){:class=>'mdl-button mdl-js-button mdl-js-ripple-effect btn-lite-red cmn-btn', "ng-click"=>"removeClusterWrap(cluster.id)"}
+          .fl-cont
+            .fl-wrap.marg_ri_10{style:'margin-top: -1px;'}
+              =inline_svg 'new/icons/mark_failed.svg', class: 'sm-icon red-svg'
+            .fl-wrap
+              Uninstall
+
+        %div.padd_bott_md.padd_top_md.marg_top_10(ng-if=" cluster.clusterType === 'aws' ")
+          .fl-cont.gx-fl-center.padd_bott_10.padd_top_15
+            .fl-wrap.padd_ri_md
+              %h5.bold.no_marg Uninstall whole cluster
+            .fl-wrap
+              .gx-bage.gx-bage-sm.lite-gr-bage.gr Beta
+
+
+          .fl-cont.padd_bott_sm
+            -#.fl-wrap.padd_ri_10
+              =inline_svg "new/icons/info_black.svg", class:'lite-gr-svg'
+            .fl-wrap
+              %h6.no_marg.padd_bott_10{style:"line-height: 1.5 !important; color: #616161;     font-size: 14px;"}
+                Uninstall whole cluster (all nodes and applications in this cluster will be uninstalled).
+
+          %button(data-btn="uninstall-cluster-all"){:class=>'mdl-button mdl-js-button mdl-js-ripple-effect btn-lite-red cmn-btn', "ng-click"=>"removeClusterAllWrap(cluster.id)"}
+            .fl-cont
+              .fl-wrap.marg_ri_10{style:'margin-top: -1px;'}
+                =inline_svg 'new/icons/backspace.svg', class: 'sm-icon red-svg'
+              .fl-wrap
+                Uninstall
+
+
+
+
+
+

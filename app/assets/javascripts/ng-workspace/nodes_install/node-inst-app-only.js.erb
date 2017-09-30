@@ -1,0 +1,34 @@
+'use strict';
+
+angular.module('components').component('nodeInstAppOnly', {
+    templateUrl: '<%= asset_path("nodes_install/node-inst-app-only.html") %>',
+    controller: ['$scope', 'ROUTES', '$location',
+        function ($scope, ROUTES, $location) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+
+            var urlParams = $location.search();
+
+            switch (urlParams.nodeType){
+                case "local":
+                    var path = ROUTES.getNgAddr('NODES_INST_LOCAL' , GexUtils.currentCluster.id);
+                    break;
+                case "remote":
+                    var path = ROUTES.getNgAddr('NODES_INST_REMOTE' , GexUtils.currentCluster.id);
+                    break;
+                case "aws":
+                    var path = ROUTES.getNgAddr('NODES_INST_AWS' , GexUtils.currentCluster.id);
+                    break;
+            }
+
+            $scope.withHadoop = function () {
+                $location.path(path).search({withHadoop: true});
+            };
+
+            $scope.appOnly = function () {
+                $location.path(path).search({withHadoop: false});
+            };
+
+        }
+    ]
+});

@@ -1,0 +1,292 @@
+= javascript_include_tag "mdl/material.min"
+= stylesheet_link_tag    "ours/tpl_admin", media: "all"
+
+.marg_top_md.marg_bott_md.flex-container.flex-center{style:"justify-content: initial;"}
+  .flex-wrap
+    -#%h3.no_marg.inl.gr.bold.marg_ri_sm User
+    %h3.no_marg.inl.bold=@user.username
+  .flex-wrap.padd_left_md
+    = link_to  admin_edit_user_status_path(id: @user) do
+      #{render "status_custom", item: @user}
+  -if @yt_user
+    =link_to "#{ File.join(Gexcore::Settings.youtrack_url,'issue',@yt_user['id'])}" do
+      .flex-wrap.padd_left_md
+        =image_tag "new/icons/yt.png", style:" width: 24px"
+  .flex-wrap.flex-grow.padd_left_md
+    =image_tag "country-4x3/#{@user.country.downcase}.svg", width: 32, alt: 'no flag', style:"box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);"
+  .flex-wrap
+    = link_to "Login as #{@user.username}", admin_login_as_user_path(username: @user.username), class:'btn btn-primary btn-sm', target: :_blank
+    = link_to "Change password", admin_admineditpassword_path(id: @user), class:'btn btn-primary btn-sm'
+    = link_to "Edit admin notes", admin_edit_user_notes_path(@user), class:'btn btn-primary btn-sm'
+    -#= link_to "Change status",  admin_edit_user_status_path(id: @user), class:'btn btn-primary btn-sm'
+
+-#if @yt_user
+  .marg_top_md.marg_bott_md.flex-container.flex-center{style:"justify-content: initial;"}
+    .flex-wrap
+      %h4.no_marg.inl.gr.bold.marg_ri_sm #{@yt_user["field"][5]["value"]}
+
+
+
+.card_wrap.border.marg_bott_md.invitations_list
+  .bord_bott.padd_15.lite_bg
+    %h4.no_marg.gr GEX Info
+  .row
+    .flex-container{style:"padding: 20px 35px !important;"}
+      .flex-wrap.flex-grow
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm Team:
+          %h5.inl.bold=link_to @user.team.name, admin_team_path(:id => @user.team.id)
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm Clusters:
+          -@user.team.clusters.each do |item|
+            %h5.inl.bold=link_to item.name, admin_cluster_path(:id => item.id)
+          -#%h5.inl.bold=link_to @user.home_cluster.name, admin_cluster_path(:id => @user.home_cluster.id)
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm First name:
+          %h5.inl.bold= @user.firstname
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm Last name:
+          %h5.inl.bold= @user.lastname
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm Joined:
+          %h5.inl.bold= our_date(@user.created_at)
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm Phone number:
+          %h5.inl.bold=@user.phone_number
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm Email:
+          %h5.inl.bold= @user.email
+
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm Registration options:
+          %h5.inl.bold= @user.registration_options || ""
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm Admin notes:
+          %h5.inl= (nl2br @user.admin_notes || "").html_safe
+          = link_to 'edit', admin_edit_user_notes_path(@user)
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm About:
+          %h5.inl.bold= @user.about
+
+        .marg_top_md.marg_bott_15
+          %h4 Login/Registration/YT Update:
+
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm sign_in_count:
+          %h5.inl #{@user.sign_in_count}
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm current_sign_in_at:
+          %h5.inl #{@user.current_sign_in_at}
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm last_sign_in_at:
+          %h5.inl #{@user.last_sign_in_at}
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm current_sign_in_ip:
+          %h5.inl #{@user.current_sign_in_ip}
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm last_sign_in_ip:
+          %h5.inl #{@user.last_sign_in_ip}
+
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm registration_ip:
+          %h5.inl #{@user.registration_ip}
+        .padd_bott_10
+          %h5.gr.inl.marg_ri_sm customer_info_updated:
+          %h5.inl #{@user.customer_info_updated}
+
+      .flex-wrap
+        = image_tag avatar_url(@user, :medium)
+
+-if @yt_user
+  .card_wrap.border.marg_bott_md.invitations_list
+    .bord_bott.padd_15.lite_bg.flex-container.hand_cursor{"data-target" => "#yt_info", "data-toggle" => "collapse"}
+      .flex-wrap.flex-grow
+        %h4.no_marg.gr Youtrack Info
+      .flex-wrap
+        =image_tag "new/icons/next.svg", class:"rotate_90 ", style:"opacity: 0.6; width: 20px;"
+    #yt_info.row.collapse{style:"padding: 20px 35px !important;"}
+      .padd_mdh
+        .div
+          %p
+            %b Youtrack id:
+            =@yt_user['id']
+
+          %p
+            %b Info updated:
+            =@user.customer_info_updated
+
+          %br
+          -@yt_user["field"].each do |field|
+            %p
+              %b=field["name"]
+              =field["value"]
+
+
+
+.card_wrap.border.marg_bott_md.invitations_list
+  .bord_bott.padd_15.lite_bg
+    %h4.no_marg.gr Actions
+  .row
+    .padd_md{style:"padding: 20px 35px !important;"}
+
+      %ul.list-inline#commands
+        %li=link_to 'Get token', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'user_command', :"data-cmd"=>'get_token'
+        -#%li=link_to 'Nodes performance', "/admin/users/#{@user.id}/show_nodes_perf", :class=>'btn btn-primary btn-sm', :target => '_blank'
+        - if !@user.verified?
+          %li=link_to 'Verify', admin_verify_user_path(username: @user.username), :class=>'btn btn-primary btn-sm'
+          -# link_verify = Gexcore::VerificationService.get_link_for_user(@user, @user.confirmation_token)
+          -#%li=link_to 'Verify', link_verify, :class=>'btn btn-primary btn-sm', :target => '_blank'
+
+      #status_commands.bg-info.well
+
+
+
+-#.old
+
+  %h1 #{@user.username}
+  %p
+    %b Login as user:
+    = link_to "#{@user.username}", admin_login_as_user_path(username: @user.username), class:'btn btn-primary btn-sm'
+  %p
+    %b
+      = link_to 'Change password', admin_admineditpassword_path(id: @user)
+  .row
+    .col-md-9
+      %b Admin notes:
+      %p
+        = (nl2br @user.admin_notes || "").html_safe
+      = link_to 'edit', admin_edit_user_notes_path(@user)
+    .col-md-3
+      = image_tag avatar_url(@user, :medium)
+  %br
+  %br
+  %b Status:
+  #{render "status", item: @user}
+  = link_to 'edit', admin_edit_user_status_path(id: @user)
+  = link_to "Verify user", admin_verify_user_path(username: @user.username), class:'btn btn-primary btn-sm' if @user.status == User::STATUS_NOT_VERIFIED
+  %p
+  %p
+    %b Team:
+    = link_to @user.team.name, admin_team_path(:id => @user.team.id) if @user.team
+  %p
+    %b Cluster:
+    = link_to @user.home_cluster.name, admin_cluster_path(:id => @user.home_cluster.id) if @user.home_cluster
+  %p
+    %b Firstname:
+    = @user.firstname
+  %p
+    %b Lastname:
+    = @user.lastname
+  %p
+    %b About:
+    = @user.about
+  %p
+    %b Joined:
+    = our_date(@user.created_at)
+  %p
+    %b Invitation:
+    = @user.invitation_id
+  %p
+    %b Phone:
+    = @user.phone_number
+  %p
+    %b Country:
+    =image_tag "country-4x3/#{@user.country.downcase}.svg", width: 32, alt: 'no flag', style:"    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);"
+    = @user.country
+
+  %p
+    %b Registration IP:
+    = @user.registration_ip
+  %p
+    %b Registration options:
+    %p
+      = @user.registration_options || ""
+
+
+  -if @yt_user
+    .div{style:"padding: 20px 0px;"}
+      %button.btn.btn-sm.btn-primary{"data-target" => "#yt-info", "data-toggle" => "collapse"} Show YouTrack user info
+      #yt-info.collapse
+        .div{style:"padding: 20px 0px;"}
+          %p
+            %b Youtrack id:
+            =@yt_user['id']
+
+          %p
+            %b Info updated:
+            =@user.customer_info_updated
+
+          %br
+          -@yt_user["field"].each do |field|
+            %p
+              %b=field["name"]
+              =field["value"]
+
+
+
+
+
+
+  %h2 Logins log
+  %ul
+    %li
+      sign_in_count: #{@user.sign_in_count}
+    %li
+      current_sign_in_at: #{@user.current_sign_in_at}
+    %li
+      last_sign_in_at: #{@user.last_sign_in_at}
+    %li
+      current_sign_in_ip: #{@user.current_sign_in_ip}
+    %li
+      last_sign_in_ip: #{@user.last_sign_in_ip}
+
+
+  %h2 Commands
+
+  %ul.list-inline#commands
+    %li=link_to 'Get token', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'user_command', :"data-cmd"=>'get_token'
+    %li=link_to 'Nodes performance', "/admin/users/#{@user.id}/show_nodes_perf", :class=>'btn btn-primary btn-sm', :target => '_blank'
+    - if !@user.verified?
+      - link_verify = Gexcore::VerificationService.get_link_for_user(@user, @user.confirmation_token)
+      %li=link_to 'Verify', link_verify, :class=>'btn btn-primary btn-sm', :target => '_blank'
+
+  #status_commands.bg-info.well
+
+:javascript
+  // commands
+  $( '#commands a[data-name="user_command"]' ).click(function() {
+    //$('#status_commands').html("Handler for .click() called." );
+    send_command($(this).data('cmd'));
+  });
+
+  function send_command(cmd){
+    if (cmd=='get_token'){
+      return send_get_token(#{@user.id});
+    }
+
+  }
+
+  function send_get_token(user_id){
+
+    $('#status_commands').html("Sending...");
+
+    $.ajax({
+      url: "/admin/users/#{@user.id}/get_token",
+      data: {},
+      type: "GET",
+      dataType: "json",
+      contentType: "application/json",
+      beforeSend: function(){
+        // Handle the beforeSend event
+      },
+      success: function(data){
+        //$('#status_commands').html("Result: "+data.token);
+
+
+      },
+      complete: function (data) {
+        $('#status_commands').html("Result: "+JSON.stringify(data.responseJSON));
+      }
+
+    });
+  }

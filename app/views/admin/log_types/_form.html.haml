@@ -1,0 +1,52 @@
+.col-md-8
+  %form#edit_log_type.simple_form.form-horizontal{"accept-charset" => "UTF-8", :action => "/admin/log_types/#{@log_type['_id']}", :method => "post", :novalidate => "novalidate"}
+    %input{:name => "utf8", :type => "hidden", :value => "✓"}/
+    %input{:name => "_method", :type => "hidden", :value => "patch"}/
+    %input{:name => "authenticity_token", :type => "hidden", :value => "#{form_authenticity_token}"}/
+    .form-group.string.required.log_type_name
+      %label.control-label.string.required{:for => "log_type_name"}
+        %abbr{:title => "required"} *
+        Name
+      %input#log_type_name.form-control.string.required{:name => "log_type[name]", :type => "text", :value => "#{@log_type['name']}"}/
+    .form-group.string.required.log_type_title
+      %label.control-label.string.required{:for => "log_type_title"}
+        %abbr{:title => "required"} *
+        Title
+      %input#log_type_title.form-control.string.required{:name => "log_type[title]", :type => "text", :value => "#{@log_type['title']}"}/
+    .form-group.text.optional.log_type_description
+      %label.control-label.text.optional{:for => "log_type_description"} Description
+      %textarea#log_type_description.form-control.text.optional{:name => "log_type[description]", :rows => "3", :style => "width: 100%"} #{@log_type['description']}
+    .form-group.select.optional.log_type_enabled
+      %label.control-label.select.optional{:for => "log_type_enabled"} Enabled
+      %select#log_type_enabled.form-control.select.optional{:name => "log_type[enabled]"}
+        -if @log_type['enabled'] == 1
+          %option{:value => ""}
+          %option{:selected => "selected", :value => "true"} Yes
+          %option{:value => "false"} No
+        -else
+          %option{:value => ""}
+          %option{:value => "true"} Yes
+          %option{:selected => "selected", :value => "false"} No
+    .form-group.select.optional.log_type_visible_client
+      %label.control-label.select.optional{:for => "log_type_visible_client"} Visible client
+      %select#log_type_visible_client.form-control.select.optional{:name => "log_type[visible_client]"}
+        -if @log_type['visible_client'] == 1
+          %option{:value => ""}
+          %option{:selected => "selected", :value => "true"} Yes
+          %option{:value => "false"} No
+        -else
+          %option{:value => ""}
+          %option{:value => "true"} Yes
+          %option{:selected => "selected", :value => "false"} No
+    .form-group.select.optional.log_type_need_notify
+      %label.control-label.select.optional{:for => "log_type_need_notify"} Need notify
+      %select#log_type_need_notify.form-control.select.optional{:name => "log_type[need_notify]"}
+        -if @log_type['need_notify'] == 1
+          %option{:value => ""}
+          %option{:selected => "selected", :value => "true"} Yes
+          %option{:value => "false"} No
+        -else
+          %option{:value => ""}
+          %option{:value => "true"} Yes
+          %option{:selected => "selected", :value => "false"} No
+    %input.btn.btn-default{"data-disable-with" => "Update Log type", :name => "commit", :type => "submit", :value => "Update Log type"}/

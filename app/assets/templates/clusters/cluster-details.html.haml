@@ -1,0 +1,18 @@
+-#.app_wrap.border.marg_bott_md
+  .row
+    .padd_md.bord_bottg
+      %h2.no_marg.inl.gr
+        Cluster
+      %h2.no_marg.inl
+        {{cluster.name}}
+      .pull-right
+        %h3.gr.no_marg.padd_top
+
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text.gr.inl   Cluster
+    %h2.sb-text.sb-h1-text.inl   {{cluster.name}}
+    %p.sb-p-text.gr  Top apps and nodes for this cluster.
+
+%application-list-ext(data-cluster="{{clusterId}}")
+%node-list-ext(data-page="cluster")

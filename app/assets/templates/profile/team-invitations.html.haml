@@ -1,0 +1,62 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text Unresponded invitations
+    %p.sb-p-text.gr List of the unresponded invitations to your team.
+  .flex-wrap
+    %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new{"ng-click" => "create_new_btn_click()"} Create new
+
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+
+%div(ng-if="loaded")
+  .row
+    .col-md-offset-2.col-md-8.no_padd
+      .app_wrap.border.item{:style=>"border-bottom: 0px; margin: 30px 0px 30px 0px; box-shadow: 0 0 6px rgba(0,0,0,.16),0 6px 12px rgba(0,0,0,.32); "}(ng-show="create_active")
+        .row.bord_bott.padd_top_md.padd_bott_md{style:"bagckground-color: rgba(243, 242, 242, 0.5)"}
+          .padd_left_md.padd_ri_md
+            .flex-container-all
+              .flex-wrap{style:"flex-grow: 1;"}
+                %h5.no_marg.padd_bott_md
+                  Type an email to send invitation:
+              .flex-wrap.hand_cursor(ng-if="!spinner" ng-click ="close_popup()")
+                =image_tag "new/icons/off.svg", :style=>"width: 25px; opacity: 0.6; margin: -20px -10px 0px 0px "
+
+            %popup-message(data-text="errText" data-type=" 'error' ")
+
+            .flex-container-all.padd_top_md
+              .flex-wrap{style:"flex-grow: 1;"}
+                %form.simple-form{:novalidate => "", "ng-submit"=> "createInvitation(invitation.email)"}
+                  %input.new-input(ng-disabled="spinner" style="    width: 100%;"){"ng-model" => "invitation.email" }
+              .flex-wrap
+                .padd_left_md(ng-switch="spinner")
+                  %button.mdl-button.mdl-js-button.mdl-button--fab.mdl-js-ripple-effect.mdl-button--colored.gex_primary_bg.round_btn(ng-switch-when="false"){"ng-disabled"=>"submit_btn_disable", "ng-click" => "createInvitation(invitation.email)", :type => "submit"}
+                    =image_tag "new/icons/forward_white.svg", id:"create_inv_btn_icon"
+                  .div{style:"padding-top: 2.5px;"}
+                    %material-spinner.fade-element-in(ng-switch-when="true")
+
+  .app_wrap.border.marg_bott_md.invitations_list{:style=>"border-bottom: 0px", "ng-class" => "inv_half_opacity"}(ng-if="invitations_list.length > 0")
+    .row.bord_bott.padd_top_md.padd_bott_md.table-row{class:"repeated-item"}(class="item" ng-animate=" 'animate' " ng-repeat="item in invitations_list track by item.id")
+      .flex-container-all
+        .flex-wrap{style:"flex-grow: 1;"}
+          %p.no_marg.marg_left_md.bold
+            {{item.to_email}}
+        .flex-wrap.hide-hover
+          %h6.no_marg.marg_ri_md.gr.padd_top_sm
+            {{  item.created_at | dateTimeFormat:"MMM, d" }}
+        .flex-wrap
+          .row-buttons.hand_cursor
+            =image_tag "new/icons/delete_circle.svg", :style=>"width: 25px; opacity: 0.8;", :class=>"marg_ri_md", :id=>"{{item.uid+'del'}}", "ng-click" => "deleteInvitation(item.to_email, item.id)"
+
+          .mdl-tooltip.mdl-tooltip--large(for="{{item.uid+'del'}}")
+            Delete invitation
+
+
+  .fl-cont.padd_top_big(ng-if="(invitations_list.length == 0)" ng-class= "inv_half_opacity")
+    .fl-wrap.fl-grow
+    .fl-wrap
+      .text-center.marg_left_big.marg_ri_big
+        %h2.no_marg.bold.no-items-h No unresponded invitations
+    .fl-wrap.fl-grow

@@ -1,0 +1,114 @@
+%h1 Node "#{@item.name}"
+uid: #{@item.uid}<br>
+%b Status:
+= render "statuses", item: @item
+%br
+%b Cluster:
+=link_to @item.cluster.name, admin_cluster_path(@item.cluster)
+%br
+%b Host type:
+= @item.host_type.name
+%br
+%b Node number:
+= @item.node_number
+%br
+%b Options:
+%br
+%textarea{cols: 100}
+  = @item.options_hash
+%br
+IP: #{@item.ip}
+%br
+port: #{@item.agent_port}
+%br
+Agent token: #{@item.agent_token}
+%br
+%b System info:
+%br
+%textarea{cols: 100}
+  = @item.system_info
+%br
+
+%b Data in consul
+%br
+%textarea(style="width:800px;height:120px;")
+  =@info_consul
+%br
+%br
+
+%b Jobs state:
+%br
+%textarea{cols: 100}
+  = @item.jobs_state_hash
+
+%h2 Commands
+
+%ul.list-inline#commands.commands-list
+  %li=link_to 'Get info', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'node_command_info'
+  %li=link_to 'Check', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'node_command_check'
+  -#  %li=link_to 'Check', 'http://localhost:3040/checks/set?server_name=node_example&checkset_name=node&extra_opts_url='+("http://localhost:3000/admin/nodes/#{@item.id}/get_info_containers"), :class=>'btn btn-primary btn-sm', :target => '_blank'
+
+  %li
+    Commands:
+    =link_to 'Start', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'node_command', :"data-cmd"=>'start'
+    =link_to 'Stop', '#', :class=>'btn btn-danger btn-sm', :"data-name"=>'node_command', :"data-cmd"=>'stop'
+    =link_to 'Restart', '#', :class=>'btn btn-default btn-sm', :"data-name"=>'node_command', :"data-cmd"=>'restart'
+    =link_to 'Reconnect', '#', :class=>'btn btn-default btn-sm', :"data-name"=>'node_command', :"data-cmd"=>'reconnect'
+
+  %li
+    Operation:
+    =link_to 'Remove', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'node_command', :"data-cmd"=>'operation_remove'
+
+
+  %li
+    Provision:
+    =link_to 'remove_node', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'node_command', :"data-cmd"=>'provision_remove_node'
+
+
+Fix status:
+%ul.list-inline#commands_fix.commands-list
+  %li=link_to 'Start error', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'node_command', :"data-cmd"=>'set_start_error'
+  %li=link_to 'Stop error', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'node_command', :"data-cmd"=>'set_stop_error'
+  %li=link_to 'Restart error', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'node_command', :"data-cmd"=>'set_restart_error'
+
+
+
+#status_commands.bg-info.well
+
+%h2 Containers
+=link_to "All containers in node", admin_cluster_containers_path(filter_cmd: 'set', :node_id => @item.id)
+= render 'admin/cluster_containers/list', items: @containers
+
+%h2 Services
+=link_to "Services on node", admin_cluster_services_path(filter_cmd: 'set', :node_id => @item.id)
+
+
+:javascript
+  $( document ).ready(function() {
+    // commands
+    $( '.commands-list a[data-name="node_command"]' ).click(function() {
+      //$('#status_commands').html("Handler for .click() called." );
+      run_ajax_command("/admin/nodes/#{@item.id}/send_command", $(this).data('cmd'));
+
+      return false;
+    });
+
+    //
+    $( '#commands a[data-name="node_command_info"]' ).click(function() {
+      run_ajax_command("/admin/nodes/#{@item.id}/get_info_containers", "info");
+
+      return false;
+    });
+
+    $( '#commands a[data-name="node_command_check"]' ).click(function() {
+      open_checks(#{@item.cluster.team.primary_admin_user_id}, 'node_example', 'node', #{@item.id}, "#{Gexcore::Settings.domain}nodeInfoContainersAll");
+
+      return false;
+    });
+  });
+
+
+= render 'admin/shared/js_commands'
+
+
+= render 'admin/checks/js_checks_common'

@@ -1,0 +1,93 @@
+@import "colors";
+
+body { padding-top: 0px; }
+
+// navbar
+
+.navbar-default {
+  border-bottom:1px solid #eeeeee;
+
+  ul.navbar-nav {
+    li {
+      a {
+        //font-weight: bold;
+      }
+    }
+  }
+}
+
+.navbar{
+  margin-bottom: 0px;
+}
+
+// tabs - inverted
+.nav-tabs-inverted{
+  border-bottom-width: 1px;
+  border-bottom-color: $col-green;
+}
+
+.nav-tabs-inverted > li.active > a,
+.nav-tabs-inverted > li.active > a:hover,
+.nav-tabs-inverted > li.active > a:focus
+{
+  background-color: $col-green;
+  color:#ffffff;
+  border: 1px solid  $col-green;
+  border-bottom-width: 1px;
+  border-bottom-color: $col-green;
+}
+
+.nav-tabs-inverted > li > a{
+  background-color: #ffffff;
+  color: $col-gray;
+  //border: 1px solid $col-green;
+  border-bottom-width: 1px;
+  border-bottom-color: $col-green;
+  border-radius: 4px 4px 0 0;
+}
+
+.nav-tabs-inverted > li > a:hover,
+.nav-tabs-inverted > li > a:focus
+{
+  background-color: $col-green;
+  color: #ffffff;
+  border: 1px solid $col-green;
+  border-bottom-width: 1px;
+  border-bottom-color: $col-green;
+  border-radius: 4px 4px 0 0;
+
+}
+
+
+// tabs - bordered
+
+.nav-tabs-bordered{
+  border-bottom-width: 1px;
+  border-bottom-color: $col-green;
+}
+
+.nav-tabs-bordered > li.active > a,
+.nav-tabs-bordered > li.active > a:hover,
+.nav-tabs-bordered > li.active > a:focus
+{
+  background-color: $col-green;
+  color:#ffffff;
+  border: 1px solid  $col-green;
+  border-bottom-width: 1px;
+  border-bottom-color: $col-green;
+}
+
+.nav-tabs-bordered > li > a,
+.nav-tabs-bordered > li > a:hover,
+.nav-tabs-bordered > li > a:focus
+{
+  background-color: #ffffff;
+  color: $col-gray;
+  border: 1px solid $col-green;
+  border-bottom-width: 1px;
+  border-bottom-color: $col-green;
+  border-radius: 4px 4px 0 0;
+}
+
+
+

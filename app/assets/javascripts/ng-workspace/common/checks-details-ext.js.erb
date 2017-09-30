@@ -1,0 +1,72 @@
+'use strict';
+
+angular.module('components').component('checksDetailsExt', {
+    templateUrl: '<%= asset_path("common/checks-details-ext.html") %>',
+    bindings: {
+        containerId: '<containerId',
+        status: '<status',
+        itemType: '<itemType'
+    },
+    controller: ['$http', '$scope', '$interval', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            var self = this;
+
+            this.$onInit = function () {
+                fetchChecks(true);
+            };
+
+            function fetchChecks(firstTime) {
+
+                $http.get('/checks/'+self.itemType+'/'+ self.containerId, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+
+                    $scope.checks = response.data;
+
+                    if(self.status != 'active' && self.status != 'joined'){
+                        $scope.checksOff = true;
+                    }else{
+                        $scope.checksOff = false;
+                    }
+
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load checks: ' + GexUtils.getErrMsgServ(response));
+                    } else {
+                        console.log('Error fetching checks: ' + GexUtils.getErrMsgServ(response));
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+
+            var fetchChecksInterval = $interval(function () {
+                fetchChecks();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchChecksInterval)) {
+                    $interval.cancel(fetchChecksInterval);
+                    fetchChecksInterval = undefined;
+                }
+            });
+
+
+            $scope.checkColor = function () {
+             //todo
+            }
+
+
+        }
+
+    ]
+});

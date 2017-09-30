@@ -1,0 +1,49 @@
+'use strict';
+
+angular.module('components').component('nodeStat', {
+    templateUrl: '<%= asset_path("nodes/node-stat.html") %>',
+    controller: ['$http', '$scope', '$routeParams', 'ROUTES', '$q',
+        function ($http, $scope, $routeParams, ROUTES, $q) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.nodeId = $routeParams.nodeId;
+
+            fetchNode();
+
+            function fetchNode() {
+                $http.get('/nodes/' + $scope.nodeId + '/info', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    return $q(function (resolve, reject) {
+                        GexUtils.getCurrentNodeId(function (nodeId, err) {
+                            if (err) {
+                                console.log(err.message);
+                            }
+                            resolve(nodeId);
+                        });
+                    }).then(function (locNodeId) {
+                        return $q(function (resolve, reject) {
+                            $scope.node = response.data.node;
+                            $scope.node.local = $scope.node.id == locNodeId;
+
+                            $scope.loaded = true;
+                            resolve();
+                        })
+                    }).catch(function (err) {
+                        console.log(err.message);
+                    });
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error fetching node: ' + response.statusText);
+                    $scope.loadedFails = true;
+                    $scope.loaded = true;
+                });
+            }
+        }
+    ]
+});

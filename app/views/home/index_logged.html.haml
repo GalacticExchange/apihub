@@ -1,0 +1,65 @@
+
+.contentg
+  .col-lg-2.col-md-3.col-sm-4.no_padd.install_left_col
+    =render "shared/workspace_column_left"
+
+
+  .col-lg-10.col-md-9.col-sm-6
+    .main_install
+      %h4.install_ri_text Some text some text some text some text some text some text some text
+
+  .clearfix
+
+
+
+
+
+-#wrap
+  .container
+    .row
+      .col-md-12
+        %h3.tour.text-center.no_padd_bott
+          What's now?
+        .row
+          .col-md-3
+            .demo-card-square.mdl-card.mdl-shadow--2dp
+              .mdl-card__title.mdl-card--expand.card-square_cluster.card-square_bg
+                %h2.mdl-card__title-text Manage clusters
+              .mdl-card__supporting-text
+                You can manage your own or shared clusters (if you have one).
+              .mdl-card__actions.mdl-card--border
+                = link_to all_clusters_path, :class=>"undec" do
+                  .mdl-button.mdl-button--colored.mdl-js-button.mdl-js-ripple-effect.material_white_btn
+                    Clusters
+          .col-md-3
+            .demo-card-square.mdl-card.mdl-shadow--2dp
+              .mdl-card__title.mdl-card--expand.card-square_team.card-square_bg
+                %h2.mdl-card__title-text Check the team
+              .mdl-card__supporting-text
+                Take a look on your team. See the members and invitation in team.
+              .mdl-card__actions.mdl-card--border
+                = link_to team_path(:name => current_user.team.name), :class=>"undec" do
+                  .mdl-button.mdl-button--colored.mdl-js-button.mdl-js-ripple-effect.material_white_btn
+                    Team
+          .col-md-3
+            .demo-card-square.mdl-card.mdl-shadow--2dp
+              .mdl-card__title.mdl-card--expand.card-square_search.card-square_bg
+                %h2.mdl-card__title-text Search
+              .mdl-card__supporting-text
+                Search and find users, teams and clusters on Galactic Exchange website.
+              .mdl-card__actions.mdl-card--border
+                = link_to search_path, :class=>"undec" do
+                  .mdl-button.mdl-button--colored.mdl-js-button.mdl-js-ripple-effect.material_white_btn
+                    Search
+          .col-md-3
+            .demo-card-square.mdl-card.mdl-shadow--2dp
+              .mdl-card__title.mdl-card--expand.card-square_message.card-square_bg
+                %h2.mdl-card__title-text Text to somebody
+              .mdl-card__supporting-text
+                You can find a person and send her a message. Also you can contact the team.
+              .mdl-card__actions.mdl-card--border
+                = link_to dialogs_path, :class=>"undec" do
+                  .mdl-button.mdl-button--colored.mdl-js-button.mdl-js-ripple-effect.material_white_btn
+                    Dialogs
+
+  =render 'home/tour'

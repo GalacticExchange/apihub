@@ -1,0 +1,216 @@
+'use strict';
+
+angular.module('components').component('nodeList', {
+    templateUrl: '<%= asset_path("nodes/node-list.html") %>',
+    controller: ['$http', '$scope', '$interval', 'ROUTES', '$q', 'HTTP_CONSTANTS', '$location',
+        function ($http, $scope, $interval, ROUTES, $q, HTTP_CONSTANTS, $location) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+
+
+            $scope.nodeCommand = function (command, nodeId) {
+                GexUtils.nodeCommand(command, nodeId, function () {
+                    $scope.fetchNodes();
+                });
+            };
+
+
+            $scope.installNodeText = $scope.utils.currentCluster.clusterType == "aws" ? "Add slave AWS nodes" : "Add slave nodes";
+
+
+            function afterFetchNodes(newNodes, firstTime) {
+                var notWaitDate = moment().subtract(1, 'days');
+
+                $scope.nodes = _.sortBy(newNodes, function (node) {
+                    if (node.local) {
+                        return 40;
+                    } else if (node.status == 'install_error' || node.status == 'uninstall_error') {
+                        return moment.unix(node.status_changed).isAfter(notWaitDate) ? 50 : 90;
+                    } else {
+                        return 50;
+                    }
+                });
+                fetchNodesChecks(firstTime);
+
+            }
+
+
+            $scope.fetchNodes = function (firstTime) {
+                $http.get('/nodes', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {mode: 'state', clusterID: GexUtils.currentClusterId}
+                }).then(function (response) {
+                    var newNodes = response.data.nodes;
+                    if (GexUtils.isDesktopClient) {
+                        fetchLocalNodeInfo(newNodes).then(function () {
+                            afterFetchNodes(newNodes, firstTime);
+                        });
+                    } else {
+                        afterFetchNodes(newNodes, firstTime);
+                    }
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load nodes: ' + response.statusText + " " + response.status);
+                        $scope.loaded = true;
+                    } else {
+                        console.log('Error fetching nodes: ' + response.statusText + " " + response.status);
+                    }
+                });
+            };
+
+
+            function fetchNodesChecks(firstTime) {
+
+                var nodes_ids = $scope.nodes.map(function(node) {return node.id;});
+
+                $http.get('/checks/nodes/', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        ids: nodes_ids.toString()
+                    }
+                }).then(function (response) {
+
+                    $scope.nodeChecks = response.data;
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load containers checks: ' + GexUtils.getErrMsgServ(response));
+                    } else {
+                        console.log('Error fetching containers checks: ' + GexUtils.getErrMsgServ(response));
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+
+            $scope.fetchNodes(true);
+            var fetchNodesInterval = $interval(function () {
+                $scope.fetchNodes();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+
+            function fetchLocalNodeInfo(currentNodes) {
+                return $q(function (resolve, reject) {
+                    if (GexUtils.currentCluster.clusterType == 'aws') {
+                        resolve({});
+                    } else {
+                        GexUtils.getLocalNodeInfo(function (locNodeInfo, err) {
+                            if (err) {
+                                reject(err);
+                                return;
+                            }
+                            resolve(locNodeInfo);
+                        });
+                    }
+                }).then(function (locNodeInfo) {
+                    return $q(function (resolve, reject) {
+                        var localNodeId = locNodeInfo.id;
+                        var nodeInstStatus = locNodeInfo.installStatus;
+                        var localNode;
+                        if (localNodeId) {
+                            localNode = currentNodes.find(function (node) {
+                                return node.id == localNodeId;
+                            });
+                            if (localNode) {
+                                localNode.local = true;
+                                localNode.instStatus = nodeInstStatus;
+                                $scope.isLocalNodeInCurCluster = true;
+                                resolve();
+                            } else {
+                                $http.get('/nodes/' + localNodeId + '/info', {
+                                    headers: {Accept: 'application/json'},
+                                    responseType: 'json',
+                                    params: {
+                                      with_removed: true
+                                    }
+                                }).then(function (response) {
+                                    var node = response.data.node;
+                                    if (node.status == 'removed') {
+                                        node.local = true;
+                                        currentNodes.unshift(node);
+                                        $scope.isLocalNodeInCurCluster = true;
+                                    } else {
+                                        // if you in shared cluster
+                                        $scope.isLocalNodeInCurCluster = false;
+                                    }
+                                    resolve();
+                                }, function errorCallback(response) {
+                                    if (GexUtils.isResponseCanceled(response)) {
+                                        reject(new Error('Error checking local node info.'));
+                                        return;
+                                    }
+
+                                    if (response.status == 403) { //another user's node
+                                        $scope.isLocalNodeInCurCluster = false;
+                                        resolve();
+                                    } else {
+                                        reject(new Error('Error checking local node info. Status: ' + response.statusText
+                                            + ' ' + response.status));
+                                    }
+                                });
+                            }
+                        } else {
+                            $scope.isLocalNodeInCurCluster = false;
+                            resolve();
+                        }
+                    })
+                }).catch(function (err) {
+                    return $q(function (resolve) {
+                        $scope.isLocalNodeInCurCluster = false;
+                        console.log(err.message);
+                        resolve();
+                    });
+                });
+            }
+
+
+            $scope.linkToNode = function (node) {
+                if (node.id == 0) {
+                    return '';
+                } else if (node.status == 'removed') {
+                    return ROUTES.getAddr('NODES_SETTINGS', GexUtils.currentCluster.id, node.id)
+                } else {
+                    return ROUTES.getAddr('NODES_INFO', GexUtils.currentCluster.id, node.id);
+                }
+            };
+
+
+            $scope.installNode = function () {
+                installNode();
+            };
+
+
+            function installNode() {
+                if (GexUtils.checkInstallNode(GexUtils.currentCluster)) {
+                    if (GexUtils.currentCluster.clusterType == 'aws') {
+                        var path = ROUTES.getNgAddr('NODES_INST_APP_ONLY', GexUtils.currentCluster.id);
+                        $location.path(path).search({nodeType: 'aws'});
+                    } else {
+                        $location.url(ROUTES.getNgAddr('NODES_INST_CHOOSE_TYPE', GexUtils.currentCluster.id));
+                    }
+                }
+            }
+
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchNodesInterval)) {
+                    $interval.cancel(fetchNodesInterval);
+                    fetchNodesInterval = undefined;
+                }
+            });
+        }
+    ]
+});

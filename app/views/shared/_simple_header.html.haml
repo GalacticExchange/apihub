@@ -1,0 +1,348 @@
+.gx-simple-header.gx-fl-center(data-block="header")
+  .web-logo.fl-wrap.padd_left_md
+    = link_to root_path, :class=>"undec" do
+      .hidden-sm.hidden-xs
+        = image_tag 'new/logo/logo.png',:style=>" height: 30px"
+      .visible-sm
+        = image_tag 'new/logo/logo_short.png', :style=>"margin: 24px 0px 0px 14px; height: 30px"
+  -#.fl-wrap.padd_ri_md
+  .fl-wrap.fl-grow
+  #clusters_btn.header_menu.fl-wrap.hand_cursor.text-center.padd_ri_md
+    = link_to NgRoutes::CLUSTERS, :class=>"undec" do
+      = inline_svg "new/icons/clusters_color.svg", class: "header-icon"
+      %h6.no_marg Clusters
+  #dashboard_btn.header_menu.fl-wrap.hand_cursor.text-center.padd_ri_md
+    = link_to NgRoutes::CLUSTERS, :class=>"undec" do
+      = inline_svg "new/icons/dashboard.svg", class: "header-icon"
+      %h6.no_marg Dashboard
+
+
+  //help
+  #help_btn.fl-wrap.header_menu.hand_cursor.text-center.padd_ri_big.marg_ri_md
+    = inline_svg "new/icons/help.svg", class: "header-icon"
+    %h6.no_marg Help
+  %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect.border.no_padd{:for => "help_btn", style:"min-width: 220px;"}
+    .element.side_menu_element.bord_bott{style:"padding: 15px 15px 15px 20px", :onclick => "GexUtils.openDocSite()"}
+      %h5.no_marg.inl.link{style:"font-size: 15px;"} Docs
+
+    #trsh.element.side_menu_elementt.bord_bott{style:"padding: 15px 15px 15px 20px"}
+      -#=link_to "docs.galacticexchange.io", class:"undec" do
+      %h5.no_marg.inl.gr{style:"font-size: 15px;"} Troubleshooting
+    -#.mdl-tooltip{:for => "trsh", class:"head_tooltip"} Troubleshooting page will be available soon.
+
+    #support.element.side_menu_elementt{style:"padding: 15px 15px 15px 20px"}
+      -#=link_to "docs.galacticexchange.io", class:"undec" do
+      %h5.no_marg.inl.gr{style:"font-size: 15px;"} Support
+    -#.mdl-tooltip{:for => "support", class:"head_tooltip"} Support page will be available soon.
+
+    -if @isClient
+      .element{style:"padding: 15px 15px 15px 20px; border-top: solid 1px rgba(212, 212, 212, 0.6);"}
+        %h5.no_marg.inl{style:"font-size: 15px; "}
+          ClusterGX version:
+        %h5#version_div.no_marg.inl.marg_left_sm{style:"font-size: 15px; "}
+
+
+  .fl-wrap.avatar_drop.header_dropdown.padd_ri_md
+    #avatar_drop.hand_cursor{:style=>"width: 30px; height: 30px; border-radius: 50% !important;"}
+      = image_tag avatar_url(current_user, :thumb), :style=>"width: 30px", :class=>"img-circle", alt:""
+
+    .mdl-tooltip{:for => "avatar_btn", style:"font-size: 12px"}
+      @#{current_user.username}
+
+    %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect.border.marg_top_smh.no_padd{"data-div"=>"avatar-drop", :for => "avatar_drop", style:"min-width: 280px;"}
+      #avatar_drop_inside
+        .flex-container-all.bord_botth
+          .flex-wrap.padd_md
+            = image_tag avatar_url(current_user, :thumb), :style=>"width: 68pt", :class=>"img-circle", alt:""
+          .flex-wrap.padd_ri_md{style:"padding-top: 17px;"}
+            %h5.no_marg.inl{style:"font-size: 16px; color: #212121;"}=current_user.firstname
+            %h5.no_marg.inl{style:"font-size: 16px; color: #212121;"}=current_user.lastname
+            %h5.no_marg.gr{style:"font-size: 16px; "}@#{current_user.username}
+            .padd{style:"padding-top: 15px; padding-bottom: 20px;"}
+              %h6.no_marg{style:" font-size: 14px; margin-bottom: 5px !important;"}
+                = link_to user_path(:name => current_user.username), :class=>"undec" do
+                  Public profile
+              %h6.no_marg{style:" font-size: 14px; margin-bottomf: 15px !important;"}
+                = link_to team_path(:name => current_user.team.name), :class=>"undec" do
+                  Public team page
+              -#%h6.no_marg{style:" font-size: 14px;"}
+                = link_to profileedit_path,  :style=>"text-decoration: none;" do
+                  Settings
+
+
+        .flex-container-all.lite_bg{style:"padding: 10px;"}
+          .flex-wrap.flex-grow{style:"display: flex; padding-left: 10px;"}
+            -#= link_to NgRoutes::PROFILE_EDIT.gsub('{username}', current_user.username),  :style=>"text-decoration: none; display: flex; " do
+              =image_tag "new/icons/settings_black.svg", style:"opacity: 0.7; padding-top: 3px; width: 24px; height: 36px;", class:"icon-hover"
+          .flex-wrap
+            .pull-right
+              = link_to destroy_user_session_path, :method => :delete,  :class=>"undec" do
+                %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_grey_btn.gex_btn_cmn.inl(data-btn='sign-out')
+                  Sign out
+
+
+
+-#.head(data-block="header"){:style=>"display: flex;"}
+  // logo part
+  -if @isClient
+    .app-logo.flex-wrap.flex-center
+      .flex-container-all.flex-center
+        .flex-wrap.padd_top_sm.padd_left_md
+          %button.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--colored.gex-btn-icon(data-btn="back-btn" onclick="window.history.back()")
+            = image_tag 'new/icons/back_black.svg', class:" active-back-btn", id:"back_btn", style:"opacity: 0.3;"
+        .flex-wrap.padd_left_10(data-div="logo")
+          = link_to root_path, :class=>"undec" do
+            .hidden-sm.hidden-xs{:style=>"width: 176pt;"}
+              = image_tag 'new/logo/logo.png',:style=>"width: 131pt"
+            .visible-sm{:style=>"width: 80pt"}
+              = image_tag 'new/logo/logo_short.png', :style=>"width: 60pt"
+  -else
+    .web-logo.flex-wrap
+      = link_to root_path, :class=>"undec" do
+        .hidden-sm.hidden-xs{:style=>" width: 190pt"}
+          = image_tag 'new/logo/logo.png',:style=>"margin: 20px 0px 0px 20px; width: 150pt"
+        .visible-sm{:style=>"width: 80pt"}
+          = image_tag 'new/logo/logo_short.png', :style=>"margin: 24px 0px 0px 14px; width: 60pt"
+
+  .head_right_part{:style=>"display: inline-flex; flex-grow: 1;"}
+    -if !@page_with_def_search
+      #searchbox.header_search_wrap.hidden-xs(style="margin-top: 17px;")
+        %input(type="text" name="q" placeholder="Search users, teams and clusters on Galactic Exchange" class="custom-input dform-control" onfocus="$('#searchbox').addClass('search_box_focus')" onblur="$('#searchbox').removeClass('search_box_focus')" onkeydown = "if (event.keyCode == 13) GexUtils.redirectToSearch($('#searchbox').find('input[name=q]').val())")
+        .header_search_icon_wrap.inl.hand_cursor(onclick="GexUtils.redirectToSearch($('#searchbox').find('input[name=q]').val())")
+          =image_tag "new/icons/search_black.svg", class:"search_input_icon", style:"width: 24px;"
+    // for logged user
+    -if current_user
+      // current cluster
+      .flex-container-all.padd_md{:style=>"margin-top: 2px; margin-left: auto; padding: 20px 25px !important;"}
+        //search
+        .visible-xs.flex-wrap{:style=>"display: none !important;"}
+          .header_icon.header_search.inl
+            = link_to NgRoutes::SEARCH, :class=>"undec hidden-lg hidden-md hidden-sm" do
+              =image_tag "new/icons/search_header.svg", :width=>25
+
+        //menu
+        #menu_drop.header_menu.flex-wrap.padd_top_sm.hand_cursor
+          -#=image_tag "new/icons/home.svg", style:"opacity: 0.7; padding-top: 3px;", class:"icon-hover"
+          -#= inline_svg "new/icons/cluster_info_.svg", class: "header-icon icon-hover"
+          = inline_svg "new/icons/explore.svg", class: "header-icon"
+        .mdl-tooltip{:for => "menu_drop", class:"head_tooltip"} Control Center
+
+        %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect.border.no_padd{:for => "menu_drop"}
+          #menu_drop_inside.q{style:"min-width: 300px; padding: 10px 0px;"}
+            = link_to NgRoutes::CLUSTERS, :class=>"undec" do
+              .flex-container-all.padd_15.padd_left_md.bord_bottf.hover-el{style:"align-items: center;"}
+                .flex-wrap.padd_ri_15
+                  = inline_svg "new/icons/tool.svg", class: "colored-icon"
+                  -#=image_tag "new/icons/clusters_color.svg", :width=>24, class:"color_icon_hover", style:"opacity: 0.9"
+                .flex-wrap
+                  %p.no_marg Admin area
+
+
+            -#= link_to NgRoutes::CLUSTERS, :class=>"undec" do
+              .flex-container-all.padd_15.padd_left_md.bord_bottf.hover-el{style:"align-items: center;"}
+                .flex-wrap.padd_ri_15
+                  =image_tag "new/icons/clusters_color.svg", :width=>24, class:"color_icon_hover", style:"opacity: 0.9"
+                .flex-wrap
+                  %p.no_marg All Clusters
+
+            -if @current_cluster
+              = link_to root_path, :class=>"undec" do
+                .flex-container-all.padd_15.padd_left_md.bord_bottf.hover-el{style:"align-items: center;"}
+                  .flex-wrap.padd_ri_15
+                    =image_tag "new/icons/dashboard_color.svg", :width=>24, class:"color_icon_hover", style:"opacity: 0.9"
+                  .flex-wrap
+                    %p.no_marg Cluster Workflow
+
+            = link_to NgRoutes::PROFILE_EDIT.gsub('{username}', current_user.username),  :style=>"text-decoration: none;" do
+              .flex-container-all.padd_15.padd_left_md.bord_bottf.hover-el{style:"align-items: center;"}
+                .flex-wrap.padd_ri_15
+                  =image_tag "new/icons/person_blue.svg", :width=>24, class:"color_icon_hover", style:"opacity: 0.9"
+                .flex-wrap
+                  %p.no_marg Account Settings
+
+            -#= link_to NgRoutes::TEAM_EDIT,  :style=>"text-decoration: none;" do
+              .flex-container-all.padd_15.padd_left_md.bord_bottf.hover-el{style:"align-items: center;"}
+                .flex-wrap.padd_ri_15
+                  =image_tag "new/icons/team_blue.svg", :width=>24, class:"color_icon_hover", style:"opacity: 0.9"
+                .flex-wrap
+                  %p.no_marg Team Control
+            = link_to dialogs_path,  :style=>"text-decoration: none;" do
+              .flex-container-all.padd_15.padd_left_md.hover-el{style:"align-items: center;"}
+                .flex-wrap.padd_ri_15
+                  =image_tag "new/icons/messages_blue.svg", :width=>24, class:"color_icon_hover", style:"opacity: 0.9"
+                .flex-wrap
+                  %p.no_marg Messages
+
+
+        -#notif_btn.header_menu.flex-wrap.padd_top_sm.hand_cursor{style:"margin-left: 25px; min-width: 30px;"}
+          =image_tag "new/icons/notifications.svg", style:"opacity: 0.7; padding-top: 3px;", class:"icon-hover"
+          -if !@unread_count.nil? && @unread_count>0
+            =image_tag "new/icons/red_dot.svg", style:"width: 12px; margin-top: -18px; margin-left: -11px;"
+
+        -#.mdl-tooltip{:for => "notif_btn", class:"head_tooltip"}
+          Notifications
+
+        #notif_drop
+        %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect.border.no_padd{:for => "notif_drop", style:"min-width: 400px; min-hegight: 400px;"}
+          #notif_drop_inside
+            .padd_sm.lite_bg{style:"padding: 15px"}
+              %h6.no_marg.text-center{style:"font-size: 16px;"} Notifications
+
+            -if !@unread_count.nil? && @unread_count>0
+              = link_to dialogs_path, :class=>"undec" do
+                .flex-container-all.bord_bottt.table-row.hand_cursor{style:"padding: 15px;"}
+                  .flex-wrap
+                    =image_tag "new/icons/messagesss.svg", :width=>23, class:"marg_left_sm"
+                  .flex-wrap.padd_left_md.flex-grow
+                    %h5.no_marg{style:"font-size: 16px;"} #{pluralize(@unread_count, 'unread message')}.
+                    %h6.no_marg.gr{style:"font-size: 12px; margin-top: 3px !important;"} Click to jump into dialogs
+                  -#.flex-wrap.flex-center
+                    =image_tag "new/icons/off.svg", :style=>"width: 18px; opacity: 0.6;", :id=> "closeMessageDialogModfal", :class=>"close-messageDialog close-btn"
+            -else
+              .padd_md.text-center
+                .padd_md
+                  =image_tag "new/icons/hair_face.svg", style:"opacity: 0.4"
+                %h5.no_marg.gr No new notifications.
+                .padd_top_md
+
+            -#.flex-container-all.j{style:"padding: 15px;"}
+              .flex-wrap
+                =image_tag "new/icons/shares_color.svg", :width=>23, class:"marg_left_sm"
+              .flex-wrap.padd_left_md.flex-grow
+                %h5.no_marg{style:"font-size: 16px;"}
+                  Cluster
+                  =link_to "#" do
+                    canis-minor
+                  was shared with you
+                %h6.no_marg.gr{style:"font-size: 12px; margin-top: 3px !important;"} You can switch current cluster in top left corner
+              .flex-wrap.flex-center
+                =image_tag "new/icons/off.svg", :style=>"width: 18px; opacity: 0.6;", :id=> "closeMessageDialogModfal", :class=>"close-messageDialog close-btn"
+
+        #clusters_btn.header_menu.flex-wrap.padd_top_sm.hand_cursor{style:"margin-left: 20px;"}
+          -#=image_tag "new/icons/help_outline.svg", style:"opacity: 0.7; padding-top: 3px;", class:"icon-hover"
+          = link_to NgRoutes::CLUSTERS, :class=>"undec" do
+            = inline_svg "new/icons/clusters_color.svg", class: "header-icon"
+          -#=image_tag "new/icons/help_outline.svg", style:"opacity: 0.7; padding-top: 3px;", class:"icon-hover"
+        .mdl-tooltip{:for => "clusters_btn", class:"head_tooltip"} Clusters
+
+
+        //help
+        #help_btn.header_menu.flex-wrap.padd_top_sm.hand_cursor{style:"margin-left: 20px;"}
+          = inline_svg "new/icons/help.svg", class: "header-icon help-icon"
+          -#=image_tag "new/icons/help_outline.svg", style:"opacity: 0.7; padding-top: 3px;", class:"icon-hover"
+        .mdl-tooltip{:for => "help_btn", class:"head_tooltip"} Help
+
+        %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect.border.no_padd{:for => "help_btn", style:"min-width: 220px;"}
+          .element.side_menu_element.bord_bott{style:"padding: 15px 15px 15px 20px", :onclick => "GexUtils.openDocSite()"}
+            %h5.no_marg.inl.link{style:"font-size: 15px;"} Docs
+
+          #trsh.element.side_menu_elementt.bord_bott{style:"padding: 15px 15px 15px 20px"}
+            -#=link_to "docs.galacticexchange.io", class:"undec" do
+            %h5.no_marg.inl.gr{style:"font-size: 15px;"} Troubleshooting
+          -#.mdl-tooltip{:for => "trsh", class:"head_tooltip"} Troubleshooting page will be available soon.
+
+          #support.element.side_menu_elementt{style:"padding: 15px 15px 15px 20px"}
+            -#=link_to "docs.galacticexchange.io", class:"undec" do
+            %h5.no_marg.inl.gr{style:"font-size: 15px;"} Support
+          -#.mdl-tooltip{:for => "support", class:"head_tooltip"} Support page will be available soon.
+
+          -if @isClient
+            .element{style:"padding: 15px 15px 15px 20px; border-top: solid 1px rgba(212, 212, 212, 0.6);"}
+              %h5.no_marg.inl{style:"font-size: 15px; "}
+                ClusterGX version:
+              %h5#version_div.no_marg.inl.marg_left_sm{style:"font-size: 15px; "}
+
+
+        //dropdown menuvk
+        .header_icon.avatar_drop.header_dropdown.flex-wrap{:style=>"padding-top: 3px; padding-left: 25px !important;"}
+          #avatar_drop.hand_cursor{:style=>"width: 25pt; height: 25pt; border-radius: 50% !important;"}
+            = image_tag avatar_url(current_user, :thumb), :style=>"width: 25pt", :class=>"img-circle", alt:""
+
+          .mdl-tooltip{:for => "avatar_btn", style:"font-size: 12px"}
+            @#{current_user.username}
+
+          %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect.border.marg_top_smh.no_padd{"data-div"=>"avatar-drop", :for => "avatar_drop", style:"min-width: 280px;"}
+            #avatar_drop_inside
+              .flex-container-all.bord_botth
+                .flex-wrap.padd_md
+                  = image_tag avatar_url(current_user, :thumb), :style=>"width: 68pt", :class=>"img-circle", alt:""
+                .flex-wrap.padd_ri_md{style:"padding-top: 17px;"}
+                  %h5.no_marg.inl{style:"font-size: 16px; color: #212121;"}=current_user.firstname
+                  %h5.no_marg.inl{style:"font-size: 16px; color: #212121;"}=current_user.lastname
+                  %h5.no_marg.gr{style:"font-size: 16px; "}@#{current_user.username}
+                  .padd{style:"padding-top: 15px; padding-bottom: 20px;"}
+                    %h6.no_marg{style:" font-size: 14px; margin-bottom: 5px !important;"}
+                      = link_to user_path(:name => current_user.username), :class=>"undec" do
+                        Public profile
+                    %h6.no_marg{style:" font-size: 14px; margin-bottomf: 15px !important;"}
+                      = link_to team_path(:name => current_user.team.name), :class=>"undec" do
+                        Public team page
+                    -#%h6.no_marg{style:" font-size: 14px;"}
+                      = link_to profileedit_path,  :style=>"text-decoration: none;" do
+                        Settings
+
+
+              .flex-container-all.lite_bg{style:"padding: 10px;"}
+                .flex-wrap.flex-grow{style:"display: flex; padding-left: 10px;"}
+                  -#= link_to NgRoutes::PROFILE_EDIT.gsub('{username}', current_user.username),  :style=>"text-decoration: none; display: flex; " do
+                    =image_tag "new/icons/settings_black.svg", style:"opacity: 0.7; padding-top: 3px; width: 24px; height: 36px;", class:"icon-hover"
+                .flex-wrap
+                  .pull-right
+                    = link_to destroy_user_session_path, :method => :delete,  :class=>"undec" do
+                      %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_grey_btn.gex_btn_cmn.inl(data-btn='sign-out')
+                        Sign out
+
+    -else
+      .pull-right.padd_md{:style=>"padding-top: 17px !important; margin-left: auto; "}
+
+
+        .hidden-xs{:style=>"padding-top: 7px;"}
+          -#= link_to new_user_session_path, :style=>"text-decoration: none;" do
+                %button.mdl-button.mdl-js-button.mdl-js-ripple-effect{:style=>"font-weight: 400 !important; border-radius: 6px; color: #434343"}
+                  Search
+          = link_to Gexcore::Settings.doc_url, :style=>"text-decoration: none;" do
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_md
+              Docs
+
+          -#&nbsp;
+          = link_to new_user_session_path, :style=>"text-decoration: none;" do
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_md(data-btn='sign-in')
+              Sign In
+
+        .visible-xs{:style=>"padding-top: 10px"}
+          .header_icon.header_search.inl
+          = link_to NgRoutes::SEARCH, :class=>"undec" do
+            =image_tag "new/icons/search_header.svg", :width=>25
+
+
+          //dropdown menu
+          .header_icon.header_dropdown.inl
+            %button#demo-menu-lower-right.mdl-button.mdl-js-button.mdl-button--icon
+              =image_tag "new/icons/hamb.svg", :width=>25, :style=>"margin-top: -2px"
+            %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect{:for => "demo-menu-lower-right"}
+              -#= link_to NgRoutes::SEARCH, :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Search
+              = link_to website_page('download'), :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Download
+              = link_to new_user_session_path, :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Sign In
+
+
+:javascript
+
+  $(document).ready(function() {
+
+    $('#version_div').text(GexUtils.clientVersion);
+
+    if (GexUtils.isDesktopClient) {
+      setTimeout(function() { //if it crashes, don't crash all js in application
+        if(GexUtils.currentWebContents.canGoBack()){ //todo how it should work with angular
+          $("#back_btn").addClass('active-back-btn');
+        }
+        else{
+          $("#back_btn").removeClass('active-back-btn');
+        }
+      }, 0);
+    }
+
+  });

@@ -1,0 +1,46 @@
+= stylesheet_link_tag "ours/tpl_admin", media: "all"
+
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Log Types
+        %small
+          <i class="ace-icon fa fa-angle-double-right"></i>
+          manage log types
+    .col-md-5
+      = link_to "new", new_admin_log_type_path, :class => "btn btn-sm btn-primary"
+
+.filter
+  = inline_filter_form_for(@filter)
+
+%br
+Found <b>#{@total}</b> records.
+
+.center-block
+  = paginate @kaminary_arr
+
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th _id
+    %th Enabled
+    %th Visible client
+    %th Need notify
+    %th= link_to_sortable_column :name, 'Name'
+    %th= link_to_sortable_column :title, 'Title'
+    %th Commands
+
+  - @records.each do |item|
+    %tr
+      %td
+        .small
+          = item['_id']
+      %td= render "admin/shared/label_yesno_when_0_or_1", v: item['enabled']
+      %td= render "admin/shared/label_yesno_when_0_or_1", v: item['visible_client']
+      %td= render "admin/shared/label_yesno_when_0_or_1", v: item['need_notify']
+      %td= item['name']
+      %td= item['title']
+      %td
+        = link_to "edit", edit_admin_log_type_path(:id => item['_id'])
+
+= paginate @kaminary_arr

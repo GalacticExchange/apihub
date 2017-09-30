@@ -1,0 +1,10 @@
+%h1 Email verification
+
+- if @res.error?
+  Error verifiying email.
+  %br
+  - @res.errors.each do |err|
+    = err[:message]
+    %br
+- else
+  Your email has been verified.

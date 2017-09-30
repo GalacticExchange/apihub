@@ -1,0 +1,44 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Invitations
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Status
+    %th From user
+    %th Team
+    %th Cluster
+    %th Type
+    %th To email
+    %th Created
+    %th UID
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td
+        = render "statuses", item: item
+      %td
+        = link_to item.user.username, admin_user_path(item.from_user_id)
+      %td
+        = link_to item.team.name, admin_team_path(item.team_id) if item.team
+      %td
+        = link_to item.cluster.name, admin_cluster_path(item.cluster_id) if item.cluster
+      %td
+        = render "invitation_type", item: item
+      %td= item.to_email
+      %td= item.created_at
+      %td
+        %span.text-sm
+          = item.uid
+
+= paginate @items

@@ -1,0 +1,55 @@
+'use strict';
+
+angular.module('components').component('nodeUninstLocal', {
+    templateUrl: '<%= asset_path("nodes_install/node-uninst-local.html") %>',
+    controller: ['$scope', 'ROUTES', '$location', '$q',
+        function ($scope, ROUTES, $location, $q) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+
+            $scope.waitHeader = 'Uninstalling a local node';
+            $scope.waitDescription = 'Please wait, uninstalling a local node ...';
+
+            $q(function (resolve, reject) {
+                if ($location.search().force) {
+                    GexUtils.gexdDelRequest({
+                        path: '/nodes/force',
+                        headers: {'token': GexUtils.getToken()}
+                    }, function (err) {
+                        if (err) {
+                            reject(new Error(err.message));
+                            return;
+                        }
+                        resolve();
+                    });
+                } else {
+                    GexUtils.gexdDelRequest({
+                        path: '/nodes',
+                        headers: {'token': GexUtils.getToken()}
+                    }, function (err) {
+                        if (err) {
+                            reject(new Error(err.message));
+                            return;
+                        }
+                        resolve();
+                    });
+                }
+            }).then(function () {
+                return $q(function (resolve, reject) {
+                    if ($location.search().reinstall) {
+                        var nodeName = $location.search().nodeName;
+                        $location.path(ROUTES.getNgAddr('NODES_INST_LOCAL', GexUtils.currentCluster.id)).search('nodeName', nodeName);
+                    } else {
+                        $location.url(ROUTES.getNgAddr('NODES', GexUtils.currentCluster.id));
+                    }
+                });
+            }).catch(function (err) {
+                if (err) {
+                    GexUtils.showMessageDialog('Error', 'Failed to uninstall local node: ' + err.message, function () {
+                        window.history.back();
+                    });
+                }
+            });
+        }
+    ]
+});

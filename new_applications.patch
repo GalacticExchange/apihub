@@ -1,0 +1,661 @@
+diff --git a/app/assets/templates/library_apps/library_app-inst.html.haml b/app/assets/templates/library_apps/library_app-inst.html.haml
+index 85e0629..057d25c 100644
+--- a/app/assets/templates/library_apps/library_app-inst.html.haml
++++ b/app/assets/templates/library_apps/library_app-inst.html.haml
+@@ -32,45 +32,50 @@
+               %div(ng-bind-html="getNodeNameWithLocal(node) | highlight: $select.search")
+ 
+ 
+-  .app_wrap.border.marg_bott_md(ng-if="selectNodeWrapper.selectedNode" style="box-shadow: none" ng-repeat="(categoryName, category) in appProps")
+-    .flex-container-all.grey_bg.padd_10.padd_left_md{style:"align-items: center;"}
+-      .flex-wrap
+-        %p.card-h.bold(style="text-transform: capitalize;") {{categoryName}}
++  .marg_bott_md(ng-if="selectNodeWrapper.selectedNode" style="box-shadow: none" ng-repeat="(contName, contProps) in appProps")
+ 
+-    .row.border_bott
+-      .padd_sm.bord_bott.w-g_bg.padd_left_md.hidden-xs.hidden-sm
+-        .row
+-          .col-md-3.no_padd_left
+-            %h5.no_marg Field
+-          .col-md-4.no_padd_left
+-            %h5.no_marg Value
+-          .col-md-4{:style=>"margin-left: -5px"}
+-            %h5.no_marg Description
+-      .row.bord_bott.padd_left_sm(ng-repeat="(subCatName, subCat) in category")
+-        %div(ng-if="subCat.visible == 1")
+-          .col-md-3
+-            %h5.padd_top_sm.marg_bott_sm {{subCatName}}
+-            %h6.gr.no_marg_top{:style=>"font-size: 12pt"}
+-              {{categoryName + '.' + subCatName}}
+-          .col-md-4.no_padd
+-            .install_config_field1{:style=>"padding: 10px"}
+-              %input(type="text" name="{{categoryName + '.' + subCatName}}" ng-model="updAppProps[categoryName + '.' + subCatName]" ng-init="updAppProps[categoryName + '.' + subCatName]=subCat.default_value" ng-readonly="subCat.editable == 0")
+-          .col-md-5
+-            %h6.gr.padd_top_sm
+-              {{subCat.editable == 0 ? subCat.description + ' (read-only field)' : subCat.description}}
++    .padd_bott_md.padd_top_md
++      %h3.bold.inl.gr Container
++      %h3.bold.inl {{contName}}
++    .app_wrap.border.marg_bott_md(ng-if="selectNodeWrapper.selectedNode" style="box-shadow: none" ng-repeat="(categoryName, category) in contProps")
++      .flex-container-all.grey_bg.padd_10.padd_left_md{style:"align-items: center;"}
++        .flex-wrap
++          %p.card-h.bold(style="text-transform: capitalize;") {{categoryName}}
+ 
+-        %div(ng-if="!subCat.default_value" ng-repeat="(subSubCatName, subSubCat) in subCat")
+-          .row.bord_bott(ng-if="subSubCat.visible == 1")
++      .row.border_bott
++        .padd_sm.bord_bott.w-g_bg.padd_left_md.hidden-xs.hidden-sm
++          .row
++            .col-md-3.no_padd_left
++              %h5.no_marg Field
++            .col-md-4.no_padd_left
++              %h5.no_marg Value
++            .col-md-4{:style=>"margin-left: -5px"}
++              %h5.no_marg Description
++        .row.bord_bott.padd_left_sm(ng-repeat="(subCatName, subCat) in category")
++          %div(ng-if="subCat.visible == 1")
+             .col-md-3
+-              %h5.padd_top_sm {{subCatName + ': ' + subSubCatName}}
++              %h5.padd_top_sm.marg_bott_sm {{subCatName}}
+               %h6.gr.no_marg_top{:style=>"font-size: 12pt"}
+-                {{categoryName + '.' + subCatName + '.' + subSubCatName}}
++                {{categoryName + '.' + subCatName}}
+             .col-md-4.no_padd
+               .install_config_field1{:style=>"padding: 10px"}
+-                %input(type="text" name="{{categoryName + '.' + subCatName + '.' + subSubCatName}}" ng-model="updAppProps[categoryName + '.' + subCatName + '.' + subSubCatName]" ng-init="updAppProps[categoryName + '.' + subCatName + '.' + subSubCatName]=subSubCat.default_value" ng-readonly="subSubCat.editable == 0")
++                %input(type="text" name="{{categoryName + '.' + subCatName}}" ng-model="updAppProps[contName][categoryName + '.' + subCatName]" ng-init="updAppProps[contName][categoryName + '.' + subCatName]=subCat.default_value" ng-readonly="subCat.editable == 0")
+             .col-md-5
+               %h6.gr.padd_top_sm
+-                {{subSubCat.editable == 0 ? subSubCat.description + ' (read-only field)' : subSubCat.description}}
++                {{subCat.editable == 0 ? subCat.description + ' (read-only field)' : subCat.description}}
++
++          %div(ng-if="!subCat.default_value" ng-repeat="(subSubCatName, subSubCat) in subCat")
++            .row.bord_bott(ng-if="subSubCat.visible == 1")
++              .col-md-3
++                %h5.padd_top_sm {{subCatName + ': ' + subSubCatName}}
++                %h6.gr.no_marg_top{:style=>"font-size: 12pt"}
++                  {{categoryName + '.' + subCatName + '.' + subSubCatName}}
++              .col-md-4.no_padd
++                .install_config_field1{:style=>"padding: 10px"}
++                  %input(type="text" name="{{categoryName + '.' + subCatName + '.' + subSubCatName}}" ng-model="updAppProps[contName][categoryName + '.' + subCatName + '.' + subSubCatName]" ng-init="updAppProps[contName][categoryName + '.' + subCatName + '.' + subSubCatName]=subSubCat.default_value" ng-readonly="subSubCat.editable == 0")
++              .col-md-5
++                %h6.gr.padd_top_sm
++                  {{subSubCat.editable == 0 ? subSubCat.description + ' (read-only field)' : subSubCat.description}}
+ 
+   .padd_bott_md(ng-if="nodes && nodes.length > 0")
+     %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(ng-click="submit()" data-btn="continue") Continue
+diff --git a/app/controllers/cluster_applications_controller.rb b/app/controllers/cluster_applications_controller.rb
+index 7691b9e..0b1b0fa 100755
+--- a/app/controllers/cluster_applications_controller.rb
++++ b/app/controllers/cluster_applications_controller.rb
+@@ -1,3 +1,25 @@
++# tmp here
++class Hash
++  def to_hash_recursive
++    result = self.to_hash
++
++    result.each do |key, value|
++      case value
++        when Hash
++          result[key] = value.to_hash_recursive
++        when Array
++          result[key] = value.to_hash_recursive
++        when ActionController::Parameters
++          result[key] = value.to_hash_recursive
++      end
++    end
++
++    result
++  end
++end
++
++
++
+ class ClusterApplicationsController < AccountBaseController
+   layout "sidebar_view"
+ 
+@@ -57,7 +79,8 @@ class ClusterApplicationsController < AccountBaseController
+     external = params_app[:external]? params_app[:external] : false
+ 
+     # create app
+-    @res = Gexcore::Applications::Service.install_application_by_user(current_user, name_or_id, node_uid, p_settings, external, app_type)
++    settings = p_settings.to_hash_recursive.deep_symbolize_keys
++    @res = Gexcore::Applications::Service.install_application_by_user_new(current_user, name_or_id, node_uid, settings, external, app_type)
+ 
+ 
+     # log
+@@ -289,8 +312,16 @@ class ClusterApplicationsController < AccountBaseController
+ 
+       #@config = Gexcore::Applications::Service.build_install_config(@item, @env)
+       # app settings
+-      @app_metadata = Gexcore::Applications::Metadata.new(@app_name)
+-      @app_metadata.load
++
++      app_identifier = Gexcore::Applications::Identifier.new(false, @app_name)
++      @app_metadata = Gexcore::Applications::Metadata.new(app_identifier)
++      #@app_metadata.load_new
++      @app_metadata.load_new
++
++
++      # todo -> calc free space on node and compare to app metrics
++      new_app_metrics = Gexcore::Applications::InstallChecks.check_for_app(@node, @app_metadata.get_app_info[:metrics])
++
+ 
+       #
+       @config = Gexcore::Applications::InstallConfig.new(@app_name)
+@@ -306,17 +337,27 @@ class ClusterApplicationsController < AccountBaseController
+       @item.settings = @config.properties
+       @fields_metadata = @config.props_metadata
+ 
+-      @item.settings.each do |i|
+-        @fields_metadata[i[0]][:default_value] = i[1]
++
++      @item.settings.each do |cont_name, props|
++        props.each do |name, val|
++          @fields_metadata[cont_name][name][:default_value] = val
++        end
+       end
+ 
++
+       props_metadata = @app_metadata.get_config_params
+-      @fields_metadata.each do |i|
+-        p = props_metadata[i[0]]
+-        i[1][:visible] = p[:visible].nil? ? 1 : 0
++
++
++      @fields_metadata.each do |cont_name, props|
++
++        props.each do |name,val|
++          p = props_metadata[cont_name][name]
++          props[name][:visible] = p[:visible].nil? ? 1 : 0
++        end
+       end
+ 
+-      @tree_metadata = Gexcore::Applications::InstallConfig.build_tree_from_plain(@fields_metadata)
++      tmp_plain_metadata = Gexcore::Applications::InstallConfig.build_array_from_hash('', @fields_metadata)
++      @tree_metadata = Gexcore::Applications::InstallConfig.build_tree_from_plain(tmp_plain_metadata)
+ 
+     end
+ 
+diff --git a/config/gex/gex_config.development.yml b/config/gex/gex_config.development.yml
+index 2f1c5d4..52a7654 100755
+--- a/config/gex/gex_config.development.yml
++++ b/config/gex/gex_config.development.yml
+@@ -80,7 +80,8 @@ provisioner_pwd: 'PH_GEX_PASSWD1'
+ 
+ 
+ provision_env: 'main'
+-dir_clusters_data: "/mount/ansibledata/"
++#dir_clusters_data: "/mount/ansibledata/"
++dir_clusters_data: "/home/dmitry/mount/ansibledata/" # todo: tmp debug
+ provision_scripts_dir: '/mount/ansible/'
+ chef_dir: '/mount/chef-repo/'
+ server_app_repo: 'http://gex1.devgex.net:8090/applications'
+diff --git a/lib/gexcore/applications/config_service.rb b/lib/gexcore/applications/config_service.rb
+index edd2b8f..fc44339 100755
+--- a/lib/gexcore/applications/config_service.rb
++++ b/lib/gexcore/applications/config_service.rb
+@@ -26,11 +26,12 @@ module Gexcore::Applications
+     ### properties
+ 
+     def self.init_property_values(config, env)
+-
+-      config.properties.each do |name, v|
+-        if v =~ /^\{\{(.*)\}\}$/
+-          prop_name = $1
+-          config.set_property_value(name, get_property_value(prop_name, env))
++      config.properties.each do |cont_name, conf|
++        conf.each do |name, v|
++          if v =~ /^\{\{(.*)\}\}$/
++            prop_name = $1
++            config.set_property_value(cont_name, name, get_property_value(prop_name, env))
++          end
+         end
+       end
+     end
+diff --git a/lib/gexcore/applications/identifier.rb b/lib/gexcore/applications/identifier.rb
+index e69de29..36080cb 100644
+--- a/lib/gexcore/applications/identifier.rb
++++ b/lib/gexcore/applications/identifier.rb
+@@ -0,0 +1,22 @@
++module Gexcore::Applications
++
++  class Identifier
++    attr_accessor :external
++    attr_accessor :cred
++
++    def initialize(external, cred1, cred2=nil)
++      @external = external
++      @cred = external ? cred1 + ':' + cred2 : cred1
++    end
++
++    def get_raw_cred
++      if @external
++        @cred.split(':')
++      else
++        @cred
++      end
++    end
++
++  end
++
++end
+\ No newline at end of file
+diff --git a/lib/gexcore/applications/install_checks.rb b/lib/gexcore/applications/install_checks.rb
+index eafc66c..3b891d0 100644
+--- a/lib/gexcore/applications/install_checks.rb
++++ b/lib/gexcore/applications/install_checks.rb
+@@ -10,7 +10,29 @@ module Gexcore::Applications
+     end
+ 
+ 
++    def self.check_for_app(node, metrics)
++      total_metrics = { }
++      metrics.each do |cont_name, cont_metrics|
++        cont_metrics.each do |name, val|
++          total_metrics[name] += val
++        end
++      end
++
++      # now we have total_metrics
++      # check every metric for node
++
++      total_metrics.each do |metric|
++        if self.try(metric.to_sym).present?
++          send("get_#{metric}_in_node")
++        end
++      end
++
++      total_metrics
++    end
++
++
+     def self.get_free_ram_in_node(node)
++
+       containers = node.containers
+ 
+       containers.each do |cont|
+diff --git a/lib/gexcore/applications/install_config.rb b/lib/gexcore/applications/install_config.rb
+index 1df28ad..f4c29b3 100755
+--- a/lib/gexcore/applications/install_config.rb
++++ b/lib/gexcore/applications/install_config.rb
+@@ -40,16 +40,22 @@ module Gexcore::Applications
+       @props
+     end
+ 
+-    def set_property_value(name, v)
+-      @props[name] = v
+-
++    def set_property_value(cont, name, v)
++      @props[cont][name] = v
+     end
+ 
+     def props_init_default_values
+-      props_metadata.each do |name, prop_metadata|
+-        v = prop_metadata['default_value'] || prop_metadata[:default_value]
+-        @props[name.to_sym] = v
++      props_metadata.each do |cont_name, props| @props[cont_name] = { }
++        props.each do |name, prop_metadata|
++          v = prop_metadata['default_value'] || prop_metadata[:default_value]
++          @props[cont_name][name.to_sym] = v
++        end
+       end
++
++      #props_metadata.each do |name, prop_metadata|
++      #  v = prop_metadata['default_value'] || prop_metadata[:default_value]
++      #  @props[name.to_sym] = v
++      #end
+     end
+ 
+ 
+@@ -71,14 +77,12 @@ module Gexcore::Applications
+       @props = {}
+       props_init_default_values
+       Gexcore::Applications::ConfigService.init_property_values(self, env)
+-
+     end
+ 
+     def build_properties_new(env)
+       @props = {}
+       props_init_default_values_new
+       Gexcore::Applications::ConfigService.init_property_values(self, env)
+-
+     end
+ 
+ 
+diff --git a/lib/gexcore/applications/metadata.rb b/lib/gexcore/applications/metadata.rb
+index 6e736d6..c1bcd2a 100755
+--- a/lib/gexcore/applications/metadata.rb
++++ b/lib/gexcore/applications/metadata.rb
+@@ -2,19 +2,19 @@ module Gexcore::Applications
+ 
+   class Metadata
+ 
++    attr_accessor :identifier
++
+     def gex_config
+       Gexcore::Settings.config
+     end
+ 
+-    def initialize(_app_name)
+-      #@app = _app
+-      @app_name = _app_name
++    def initialize(identifier)
++      @identifier = identifier
+     end
+ 
+-    #todo tmp name
+-    def initialize_new(cred, external)
+-      @cred = cred
+-      @external = external
++    #todo tmp name -> initialize
++    def initialize_new(identifier)
++      @identifier = identifier
+     end
+ 
+     def get_binding
+@@ -194,8 +194,9 @@ module Gexcore::Applications
+ =end
+ 
+     def url_metadata
+-      version = Gexcore::Applications::Service.app_current_version(@app_name)
+-      gex_config.server_app_repo+"/gex-#{@app_name}-#{version}.metadata.rb"
++      app_name = @identifier.cred
++      version = Gexcore::Applications::Service.app_current_version(app_name)
++      gex_config.server_app_repo+"/gex-#{app_name}-#{version}.metadata.rb"
+     end
+ 
+     def file_text_metadata
+@@ -204,17 +205,23 @@ module Gexcore::Applications
+ 
+       # file from remote url
+       require 'open-uri'
+-      text = open(url_metadata) { |f| f.read }
++      text = nil
++      begin
++        text = open(url_metadata, :read_timeout => 10) { |f| f.read }
++      rescue Timeout::Error => e
++        Gexcore::GexLogger.warning("app_metadata", "app metadata read timeout", {})
++      end
++
+       text
+     end
+ 
+ 
+     def metadata_text
+-      metafile_url = @external ? Gexcore::Apphub::Service.get_metadata_url(@cred) : get_app_meta_url
++      #metafile_url = @external ? Gexcore::Apphub::Service.get_metadata_url(@cred) : get_app_meta_url
+       #todo cred[:github_user], cred[:url_path]
+ 
+       # debug
+-      #metafile_url = @external ? "http://localhost:3000/apps_meta/metadata.rb" : "http://localhost:3000/apps_meta/#{@cred}/#{@cred}.rb"
++      metafile_url = @external ? "http://localhost:3000/apps_meta/metadata.rb" : "http://localhost:3000/apps_meta/zoomdata_meta.rb"
+ 
+       require 'open-uri'
+       text = open(metafile_url) { |f| f.read }
+diff --git a/lib/gexcore/applications/service.rb b/lib/gexcore/applications/service.rb
+index c2dfd84..33e2bd2 100755
+--- a/lib/gexcore/applications/service.rb
++++ b/lib/gexcore/applications/service.rb
+@@ -1,24 +1,3 @@
+-# tmp here
+-class Hash
+-  def to_hash_recursive
+-    result = self.to_hash
+-
+-    result.each do |key, value|
+-      case value
+-        when Hash
+-          result[key] = value.to_hash_recursive
+-        when Array
+-          result[key] = value.to_hash_recursive
+-        when ActionController::Parameters
+-          result[key] = value.to_hash_recursive
+-      end
+-    end
+-
+-    result
+-  end
+-end
+-
+-
+ module Gexcore::Applications
+   class Service < Gexcore::BaseService
+ 
+@@ -29,6 +8,40 @@ module Gexcore::Applications
+     end
+ 
+ 
++    ### install new
++    def self.install_application_by_user_new(user, appname, node_uid, settings, external=false, app_type='gex')
++      res = Response.new
++      res.sysdata[:user_id] = user.id
++
++      # user
++      if user.is_a? Integer
++        user = User.find(user)
++      end
++      return res.set_error('', 'User not found') if user.nil?
++
++      # node
++      node = Node.get_by_uid(node_uid)
++      return res.set_error_forbidden('', 'Select a node first', '') if node.nil?
++
++      cluster = node.cluster
++
++      # check permissions
++      unless user.can? :manage, cluster
++        return res.set_error_forbidden('', 'You have no permissions to add application to this cluster.', '')
++      end
++
++      #
++      env = Gexcore::Applications::ConfigService.build_env(nil, user, node.cluster, node)
++
++
++      app_identifier = Gexcore::Applications::Identifier.new(external, appname)
++
++
++      install_application_new(res, app_identifier, env, settings)
++    end
++
++
++
+     ### install
+ 
+     def self.install_application_by_user(user, appname, node_uid, settings, external=false, app_type='gex')
+@@ -61,7 +74,7 @@ module Gexcore::Applications
+       # todo: rewrite this (remove install application)
+       #send("install_#{app_type}_application")
+       if app_type=='compose_app'
+-        return install_application_new(res, appname, env, settings, external)
++        return install_application_new(res, appname, env, settings)
+       else
+         return install_application(res, appname, env, settings,external)
+       end
+@@ -69,31 +82,27 @@ module Gexcore::Applications
+     end
+ 
+ 
+-    def self.install_application_new(res, app_id, env, settings, external)
++    def self.install_application_new(res, app_identifier, env, settings)
+       res ||= Response.new
+       node = env[:node]
+       settings ||= {}
+ 
+-      #todo: move this to controller
+-      settings = settings.to_hash_recursive.deep_symbolize_keys
+-
+-      #app_meta = app_meta(settings[:cred], external)
++      app_metadata = Gexcore::Applications::Metadata.new(app_identifier)
++      app_metadata.load_new rescue nil
+ 
+-      app_metadata = Gexcore::Applications::Metadata.new('')
+-      app_metadata.initialize_new(settings[:cred], external)
+-      app_metadata.load_new
++      return res.set_error_forbidden('', 'Unknown application', '') if app_metadata.nil?
+ 
+-
+-      return res.set_error_forbidden('', 'Unknown application', '') if app_meta.nil?
+       app_settings = app_meta_to_config(app_metadata, settings, env)
+ 
+-      app = ClusterApplication.new(cluster: node.cluster, library_application_id: app_metadata.get_app_short_cred)
+-      app_name = generate_app_name(app_meta.get_app_info[:name], node.cluster)
++      app = ClusterApplication.new(cluster: node.cluster, library_application_id: app_identifier.cred)
++      app_name = generate_app_name(app_identifier.cred, node.cluster)
+ 
+       app.name,app.title = app_name
+-      app.external = external
++      app.external = app_identifier.external
+       app.uid = Gexcore::TokenGenerator.generate_application_uid
+-      app.settings = app_settings
++
++      app_settings_plain = Gexcore::Applications::InstallConfig.build_array_from_hash('', app_settings)
++      app.settings = app_settings_plain
+ 
+       res_db_app = app.save
+       return res.set_error("", "Cannot add new application", "Cannot save to db applications") unless res_db_app
+@@ -103,7 +112,7 @@ module Gexcore::Applications
+       res.sysdata[:application_id] = app.id
+ 
+       #
+-      res = create_containers_for_app(app, app_meta, node, res)
++      res = create_containers_for_app(app, app_metadata, node, res)
+ 
+       # save data to consul
+       app_data = Gexcore::Applications::Provision.build_params_app_data(app, 'hash')
+@@ -157,11 +166,11 @@ module Gexcore::Applications
+ 
+     # app_meta + settings = app_config
+     def self.app_meta_to_config(app_meta, settings, env)
+-      appname = app_meta.get_app_info[:name]
++      appname = app_meta.identifier.cred
+       default_config = Gexcore::Applications::InstallConfig.new(appname)
+ 
+       # from metadata
+-      default_config.init_from_metadata(app_meta)
++      default_config.init_from_metadata_old(app_meta)
+ 
+       # init values from env
+       default_config.build_properties(env)
+@@ -170,17 +179,17 @@ module Gexcore::Applications
+       # fix settings with default values or values from env
+       default_properties = default_config.properties
+ 
++      default_properties.each do |cont_name, props|
+ 
+-      # todo
+-      default_properties.each do |k, v|
+-        if !settings.has_key?(k) || settings[k]==''
+-          settings[k] = default_properties[k]
++        c_name = cont_name.to_sym
++
++        props.each do |k, v|
++          if !settings[c_name].has_key?(k) || settings[c_name][k]==''
++            settings[c_name][k] = default_properties[cont_name][k]
++          end
+         end
+       end
+ 
+-      # add app_info to settings
+-      settings[:app_info] = app_meta.get_app_info
+-
+       settings
+     end
+ 
+@@ -196,6 +205,7 @@ module Gexcore::Applications
+ 
+         container_name = cont_name.to_s+'-'+app.name+'-'+node.name
+         container_basename = cont_name.to_s #+'-'+app.name
++        #container_basename = cont_name.to_s+'-'+app.name
+ 
+         container_data = {hostname: container_calc_domain_by_name(container_name)}
+         container_id = Gexcore::Containers::Container.create_container_on_node(container_basename, container_name, app, node, container_data)
+@@ -218,9 +228,9 @@ module Gexcore::Applications
+ 
+ 
+     def self.add_services_to_container(app, container, services, res)
+-      services.each do |service_name, service_info|
++      services.each do |service_info|
+         # add to db
+-        name = service_name
++        name = service_info[:name]
+         service_id = Gexcore::ClusterServices::Service.create_service(name, app, container, {})
+         return res.set_error("", "Cannot add new service", "Cannot save to db services") if service_id.nil?
+ 
+diff --git a/public/apps_meta/zoomdata_meta.rb b/public/apps_meta/zoomdata_meta.rb
+index d5c5b81..c7dde83 100755
+--- a/public/apps_meta/zoomdata_meta.rb
++++ b/public/apps_meta/zoomdata_meta.rb
+@@ -1,31 +1,48 @@
+-
+ data = {
+-    "ui.port" => { description: "Port", default_value: "8080", mandatory: 1, basic: 1, editable: 1},
+-
+-    # network
+-    "network.network_with_mask" => { description: "Network mask", default_value: "51.0.0.1/8", mandatory: 1, basic: 0, editable: 1},
+-
+-    #
+-    "master.host" => { description: "Host of hadoop master node", default_value: "{{master.host}}", mandatory: 1, basic: 1, editable: 0,},
+-    "master.ip" => { description: "IP of Hadoop master node", default_value: "{{master.ip}}", mandatory: 1, basic: 1, editable: 0,},
+-    "master.ssh.user" => { description: "ssh user", default_value: "{{master.ssh.user}}", mandatory: 1, basic: 1, editable: 0, visible: 0},
+-    "master.ssh.password" => { description: "ssh password", default_value: "{{master.ssh.password}}", mandatory: 1, editable: 0, visible: 0},
+-
+-    # zookeeper
+-    "zookeeper.url" => { description: "Zookeeper URL", default_value: "{{zookeeper.url}}", mandatory: 1, editable: 0,},
+-    "zookeeper.host" => { description: "Zookeeper host", default_value: "{{zookeeper.host}}", mandatory: 1, editable: 0,},
+-    "zookeeper.port" => { description: "Zookeeper port", default_value: "{{zookeeper.port}}", mandatory: 1, editable: 0,},
+-
+-    # hdfs
+-    "hdfs.url" => { description: "HDFS URL", default_value: "{{hdfs.url}}", mandatory: 1, editable: 0,},
+-    "hdfs.host" => { description: "HDFS host", default_value: "{{hdfs.host}}", mandatory: 1, editable: 0,},
+-    "hdfs.port" => { description: "HDFS port", default_value: "{{hdfs.port}}", mandatory: 1, editable: 0,},
++    'app' => {
++        "ui.port" => {description: "Port", default_value: "8080", mandatory: 1, basic: 1, editable: 1},
++
++        # network
++        "network.network_with_mask" => {description: "Network mask", default_value: "51.0.0.1/8", mandatory: 1, basic: 0, editable: 1},
++
++        #
++        "master.host" => {description: "Host of hadoop master node", default_value: "{{master.host}}", mandatory: 1, basic: 1, editable: 0, },
++        "master.ip" => {description: "IP of Hadoop master node", default_value: "{{master.ip}}", mandatory: 1, basic: 1, editable: 0, },
++        "master.ssh.user" => {description: "ssh user", default_value: "{{master.ssh.user}}", mandatory: 1, basic: 1, editable: 0, visible: 0},
++        "master.ssh.password" => {description: "ssh password", default_value: "{{master.ssh.password}}", mandatory: 1, editable: 0, visible: 0},
++
++        # zookeeper
++        "zookeeper.url" => {description: "Zookeeper URL", default_value: "{{zookeeper.url}}", mandatory: 1, editable: 0, },
++        "zookeeper.host" => {description: "Zookeeper host", default_value: "{{zookeeper.host}}", mandatory: 1, editable: 0, },
++        "zookeeper.port" => {description: "Zookeeper port", default_value: "{{zookeeper.port}}", mandatory: 1, editable: 0, },
++
++        # hdfs
++        "hdfs.url" => {description: "HDFS URL", default_value: "{{hdfs.url}}", mandatory: 1, editable: 0, },
++        "hdfs.host" => {description: "HDFS host", default_value: "{{hdfs.host}}", mandatory: 1, editable: 0, },
++        "hdfs.port" => {description: "HDFS port", default_value: "{{hdfs.port}}", mandatory: 1, editable: 0, },
++    }
+ }
+ 
+ config_params(data)
+ 
+ 
+ ### services
+-services({
+-             'webui' => {name: 'webui', protocol: 'http', port: 8080},
+-         })
++services(
++    app: [ {name: 'webui', protocol: 'http', port: 8080} ]
++)
++
++
++
++app_info = {
++    metrics: {
++        app: {
++            ram: 2000.00,
++            disk: 5000.00
++        }
++    }
++}
++
++app_info(app_info)
++
++
++

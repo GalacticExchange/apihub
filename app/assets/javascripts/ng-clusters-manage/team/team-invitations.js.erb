@@ -1,0 +1,142 @@
+'use strict';
+
+angular.module('components').component('teamInvitations', {
+    templateUrl: '<%= asset_path("profile/team-invitations.html") %>',
+    controller: ['$http', '$scope', '$interval', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+
+            $scope.invitation = {};
+            $scope.spinner = false;
+
+            function fetchInvitations(firstTime) {
+                $http.get('/profile/team/invitations', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.invitations_list = response.data;
+
+                    if (firstTime) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error fetching invitations : ' + response.statusText);
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            $scope.deleteInvitationRequest = function (invId) {
+                $http.delete('/invitations', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {id: invId}
+                }).then(function (response) {
+                    fetchInvitations();
+                    $scope.utils.showSnackbarMessage("Invitation deleted");
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+
+                    GexUtils.showMessageDialog('Error', 'Error deleting invitation: ' + GexUtils.getErrMsgServ(response));
+                });
+            };
+
+            $scope.$watch('invitation.email', function (newVal) {
+                hidePopupError();
+            });
+
+
+            function validateEmail(email) {
+                var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                return re.test(email);
+            }
+
+            $scope.createInvitation = function (email) {
+                if (email == '' || email == undefined) {
+                    showPopupError('Email is empty');
+                } else {
+                    if (validateEmail(email)) {
+                        $scope.spinner = true;
+                        createInvitationRequest(email);
+                    } else {
+                        showPopupError('Email not valid');
+                    }
+                }
+            };
+
+            function createInvitationRequest(email) {
+                var data = {email: email};
+                $http.post('/userInvitations', data, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.invitation.email = '';
+
+                    fetchInvitations();
+                    $scope.utils.showSnackbarMessage("Invitation created");
+                    $scope.close_popup();
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    showPopupError('Error creating invitation: ' + response.statusText);
+                    console.log('Error creating invitation: ' + response.statusText);
+                }).then(function () {
+                    $scope.spinner = false;
+                });
+            }
+
+            $scope.create_new_btn_click = function () {
+                $scope.create_active = true;
+                $scope.inv_half_opacity = 'half_opacity';
+            };
+
+            if (sessionStorage.getItem('memberAddFlag') === 'true') {
+                sessionStorage.removeItem('memberAddFlag');
+                $scope.create_new_btn_click();
+            }
+
+            $scope.close_popup = function () {
+                $scope.create_active = false;
+                $scope.inv_half_opacity = '';
+                hidePopupError();
+            };
+
+
+            $scope.deleteInvitation = function (email, id) {
+                GexUtils.showConfirmDialog('Delete invitation', 'Do you really want to delete invitation for  ' + email + '?', function () {
+                    $scope.$apply(function () {
+                        $scope.deleteInvitationRequest(id)
+                    });
+                });
+            };
+
+
+            function showPopupError(errText) {
+                $scope.errText = errText;
+            }
+
+            function hidePopupError() {
+                $scope.errText = undefined;
+            }
+
+            fetchInvitations(true);
+
+            var fetchInvInterval = $interval(function () {
+                fetchInvitations();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchInvInterval)) {
+                    $interval.cancel(fetchInvInterval);
+                    fetchInvInterval = undefined;
+                }
+            });
+        }
+    ]
+});

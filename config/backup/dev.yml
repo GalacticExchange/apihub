@@ -1,0 +1,16 @@
+dir_backups_base: "/disk3/backups/api-main/"
+
+s3:
+  access_key_id: "PH_GEX_KEY_ID"
+  secret_access_key: "PH_GEX_ACESS_KEY"
+  region: "us-west-2"
+  bucket: "gex-backups"
+  #path: "/api-main"
+
+
+storages:
+  -
+    type: "local"
+    path: "/disk3/backups/api-main"
+    #path: "/var/www/backups/api-main"
+

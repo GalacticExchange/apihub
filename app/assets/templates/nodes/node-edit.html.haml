@@ -1,0 +1,75 @@
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+.no_marg(ng-if="loaded")
+  .sidebar-header(data-div="page-title")
+    .flex-wrap.flex-grow
+      %h2.sb-text.sb-h1-text.inl.gr Settings
+      %h2.sb-text.sb-h1-text.inl {{node.name}}
+      %h2.sb-text.sb-h1-text.inl(ng-if="node.local") (it's your local node)
+      %p.sb-p-text.gr
+        Use this window to edit {{node.name}} node.
+
+  .app_wrap.border.marg_bott_md.invitations_list
+    .bord_bott.padd_15.lite_bg
+      %h4.no_marg Danger zone
+
+    .row
+      .padd_md
+
+        %div(ng-if="utils.isDesktopClient && node.local && node.status != 'removed'")
+          %div{style:"padding-bottom: 35px;"}
+            %h4.no_marg.padd_bott_10.font_16 Reinstall node
+
+            .fl-cont
+              .fl-wrap
+                %button(data-btn="reinstall-node" ng-disabled="spinner==true"){:class=>'mdl-button mdl-js-button mdl-js-ripple-effect gex_red_btn gex_btn_cmn',style:"background-color: #565656 !important; min-width: 170px;", "ng-click" => "reinstallNode()"}
+                  Reinstall
+              .fl-wrap.padd_left_md
+                %material-spinner.fade-element-in(spinner-radius="18" ng-if="reinstallSpinner")
+
+
+
+        %div{style:"padding-bottom: 35px"}(ng-if="showInstallNodeBtn(node)")
+          %h4.no_marg.padd_bott_10.font_16 Uninstall node
+
+          .fl-cont
+            .fl-wrap
+              %button(data-btn="uninstall-node" ng-disabled="spinner==true"){:class=>'mdl-button mdl-js-button mdl-js-ripple-effect gex_red_btn gex_btn_cmn',style:"min-width: 170px;", "ng-click" => "uninstallNode()"}
+                Uninstall
+            .fl-wrap.padd_left_md
+              %material-spinner.fade-element-in(spinner-radius="18" ng-if="uninstallSpinner")
+
+
+
+        %div.padd_top_m{style:"padding-bottom: 35px;"}(ng-if="utils.isDesktopClient && node.local && node.status == 'removed'")
+          %h4.no_marg.padd_bott_10.font_16 Force uninstall node
+
+          .fl-cont
+            .fl-wrap
+              %button(data-btn="force-uninstall-node" ng-disabled="spinner==true"){:class=>'mdl-button mdl-js-button mdl-js-ripple-effect gex_red_btn gex_btn_cmn', style:"min-width: 170px;", "ng-click" => "uninstallNodeForce()"}
+                Force uninstall
+            .fl-wrap.padd_left_md
+              %material-spinner.fade-element-in(spinner-radius="18" ng-if="forceUninstallSpinner")
+
+
+
+        %div(ng-if="node.status != 'removed' && !isAwsNode(node)")
+          %h4.no_marg.padd_bott_10.font_16 Remove node
+
+          .flex-container-all
+            .flex-wrap
+              =image_tag "new/icons/info_black.svg", style:"opacity: 0.4; margin-top: 4px"
+            .flex-wrap.padd_left_10
+              %h5.no_marg.gr.padd_bott_10{style:"line-height: 1.5 !important;"}
+                Removing the node will only delete information about the node from our servers.
+                %br
+                The files on node machine will not be deleted.
+
+          .fl-cont
+            .fl-wrap
+              %button(data-btn="remove-node" ng-disabled="spinner==true" ng-click="removeNode()" class="mdl-button mdl-js-button mdl-js-ripple-effect gex_red_btn gex_btn_cmn" style="min-width: 170px;")
+                Remove
+            .fl-wrap.padd_left_md
+              %material-spinner.fade-element-in(spinner-radius="18" ng-if="removeSpinner")

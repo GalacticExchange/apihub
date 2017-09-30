@@ -1,0 +1,18 @@
+:javascript
+  GexUtils.currentClusterId = '#{@current_cluster.uid rescue nil}';
+  GexUtils.userPermissions= #{@permissions.to_json};
+  GexUtils.currentCluster = #{@current_cluster.to_hash.to_json rescue nil};
+  GexUtils.currentTeam = #{@current_user.team.to_hash.to_json rescue nil};
+  GexUtils.hadoopApp = #{@current_cluster.hadoop_app.to_hash.to_json rescue nil};
+  GexUtils.currentUser = #{@current_user.to_hash.to_json rescue nil};
+
+.flex-container(ng-app="clustergxApp")
+  %cluster-choose-menu
+  .inline-flex(data-block="main_menu")
+    .col-xs-12.no_padd.install_left_col.main_div_size.flex_col_sm
+      %workspace-menu.row{:style=>"width: 100%; overflow-x: hidden;"}
+
+  .inline-flex{:style=>"flex-grow: 1;"}
+    .col-xs-12.main.main_div_size(data-block="main_content")
+      %ng-view.fade-pg
+        Loading...

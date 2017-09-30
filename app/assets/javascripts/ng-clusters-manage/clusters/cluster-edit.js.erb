@@ -1,0 +1,147 @@
+'use strict';
+
+angular.module('components').component('clusterEdit', {
+    templateUrl: '<%= asset_path("clusters/cluster-edit.html") %>',
+    controller: ['$location', '$http', '$scope', '$interval', '$routeParams', 'ROUTES', 'HTTP_CONSTANTS',
+        function ($location, $http, $scope, $interval, $routeParams, ROUTES, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+
+            fetchCluster(true);
+            fetchClusterComponents(true);
+
+            function fetchCluster(firstTime) {
+                $http.get('/clusters/'+$scope.clusterId+'/info', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {clusterID: $scope.clusterId}
+                }).then(function (response) {
+                    $scope.cluster = response.data.cluster;
+
+                    if (firstTime) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    console.log('Error fetching cluster: ' + response.statusText);
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+
+            function fetchClusterComponents(firstTime) {
+                $http.get('/clusters/'+$scope.clusterId+'/components', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {clusterID: $scope.clusterId}
+                }).then(function (response) {
+                    $scope.clusterComponents = response.data.components;
+                    if (firstTime) $scope.componentsLoaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    console.log('Error fetching cluster components: ' + response.statusText);
+                    if (firstTime) $scope.componentsLoaded = true;
+                });
+            }
+
+
+
+            $scope.switchCluster = function (cluster) {
+                GexUtils.goToCluster(cluster);
+            };
+
+            $scope.removeClusterWrap = function (id) {
+                if ($scope.cluster.numberOfNodes > 0) {
+                  GexUtils.showMessageDialog('Warning', 'Before uninstalling the cluster you must uninstall all nodes in the cluster.');
+                } else {
+                    GexUtils.showConfirmDialog('Uninstall cluster', 'Do you really want to uninstall this cluster?',
+                        function () {
+                            removeCluster(id);
+                        });
+                }
+            };
+
+
+            $scope.removeClusterAllWrap = function (id) {
+                GexUtils.showConfirmDialog('Uninstall cluster', 'Do you really want to uninstall this cluster? <br> All nodes and applications in this cluster will be uninstalled.',
+                    function () {
+                        removeClusterAll(id);
+                    });
+            };
+
+
+            function removeClusterAll(id) {
+                $http.delete('/clusters_full', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {clusterId: id}
+                }).then(function (response) {
+                    $scope.utils.showSnackbarMessage("Please wait, the cluster is uninstalling...");
+                    $location.url(ROUTES.CLUSTERS);
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error: ' + response.statusText + " " + response.status);
+                });
+            }
+
+
+
+
+
+            function removeCluster(id) {
+                $http.delete('/clusters', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {clusterId: id}
+                }).then(function (response) {
+                    $scope.utils.showSnackbarMessage("Please wait, the cluster is uninstalling...");
+                    $location.url(ROUTES.CLUSTERS);
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error: ' + response.statusText + " " + response.status);
+                });
+            }
+
+
+            var fetchClusterInterval = $interval(function () {
+                fetchCluster();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchClusterInterval)) {
+                    $interval.cancel(fetchClusterInterval);
+                    fetchClusterInterval = undefined;
+                }
+            });
+
+
+
+            $scope.componentBg = function (component) {
+                return component.enabled ? 'lite-blue-bg' : '';
+            }
+
+
+            $scope.componentFontColor = function (component) {
+                return component.enabled ? 'accent-color' : 'd_gr';
+            }
+
+
+        }
+    ]
+});

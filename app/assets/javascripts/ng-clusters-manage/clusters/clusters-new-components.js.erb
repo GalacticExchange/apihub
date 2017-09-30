@@ -1,0 +1,81 @@
+'use strict';
+
+angular.module('components').component('clustersNewComponents', {
+    templateUrl: '<%= asset_path("clusters/clusters-new-components.html") %>',
+    controller: ['$location', '$http', '$scope', '$interval', '$routeParams', 'ROUTES', 'paramsData',
+        function ($location, $http, $scope, $interval, $routeParams, ROUTES, paramsData) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+
+
+            $scope.columnBreak = 3; //Max number of colunms
+            $scope.startNewRow = function (index, count) {
+                return ((index) % count) === 0;
+            };
+
+            $scope.selectedElement = function (component) {
+                var selectedClass = component.default ? 'selected' : '';
+                return selectedClass;
+            }
+
+
+
+
+
+            var urlParams = $location.search();
+            $scope.clusterType = urlParams.clusterType;
+
+            var path = '';
+            switch ($scope.clusterType) {
+                case 'aws':
+                    path = ROUTES.getNgAddr('CLUSTERS_NEW_AWS');
+                    break;
+                case 'onprem':
+                    path = ROUTES.getNgAddr('CLUSTERS_NEW_ONPREM');
+                    break;
+            }
+
+            $scope.submitComponents = function () {
+                var selectedComponents = $scope.components.filter(function (comp) {
+                    if (comp.default) {
+                        return true;
+                    }
+                });
+
+                var components = selectedComponents.map(function (comp) {
+                    return comp.name;
+                });
+
+                paramsData.setData({components: components});
+                $location.path(path).search({clusterType: $scope.clusterType});
+            };
+
+
+            function getClusterComponents() {
+                $http.get('/clusters/components', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+
+                    $scope.components = response.data.components;
+
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    GexUtils.showMessageDialog('Error', 'Cannot load cluster components: ' + GexUtils.getErrMsgServ(response));
+                }).then(function () {
+                    $scope.loaded = true;
+                });
+            }
+
+
+            getClusterComponents();
+
+
+        }
+    ]
+});

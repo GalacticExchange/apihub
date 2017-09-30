@@ -1,0 +1,20 @@
+!!!
+%html
+  %head{:lang => "en"}
+    %meta{:charset => "UTF-8"}/
+    %title
+    = stylesheet_link_tag    "bootstrap", media: "all"
+    = stylesheet_link_tag    "ours/tpl", media: "all"
+    = javascript_include_tag :application
+
+
+  %body
+
+    <svg id="g0" width="100" height="100" ></svg>
+    <br>
+    <svg id="g1" width="100" height="100" ></svg>
+
+    #log1
+    = render 'debug/js_gauge'
+    = render 'debug/js_main'
+

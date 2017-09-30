@@ -1,0 +1,63 @@
+#wrap
+  .container
+    .row
+      .col-md-1.no_padd
+      .col-md-10.no_padd
+        .padd_md.marg_top_md
+          .border.app_wrap.border_radius
+            .padd_md
+              .flex-container-all
+                .flex-wrap
+                  =image_tag avatar_url_team(@team, :medium)
+                  .padd_top_md
+                    -if !current_user.nil?
+                      -if current_user.can?(:change_team, @team)
+                        = link_to NgRoutes::TEAM_EDIT do
+                          %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_md{:style=>"width: 200px"}
+                            =t('buttons.team.edit')
+                      -elsif !@team.primary_admin.nil?
+                        = link_to dialog_path(:to => @team.primary_admin.username) do
+                          %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_md{:style=>"width: 200px"}
+                            =t('buttons.team.contact')
+                .flex-wrap.padd_left_md.marg_left_md.flex-grow
+                  %h2.no_marg.bold.inl
+                    =@team.name.capitalize
+                  %h5.gr.no_marg.marg_top_sm Team
+                  .padd_top_md.marg_top_md
+                    -if @team.about && @team.about.length != 0
+                      %h4.profile_inf{style:"font-size: 18px !important;"}
+                        About:
+                      %h4.profile_inf_user{style:"font-size: 18px !important;"}
+                        =@team.about
+
+                  .marg_top_sm.padd_top_sm
+                    %h4.profile_inf{style:"font-size: 18px !important;"}
+                      Clusters:
+                    %h4.profile_inf_user{style:"font-size: 18px !important;"}
+                      -@clusters.each do |t|
+                        .inl.padd_ri_sm
+                          = link_to t.name, cluster_path(:name => t.name)
+                  .marg_top_sm.padd_top_sm
+                    %h4.profile_inf{style:"font-size: 18px !important;"}
+                      Members:
+                    .padd_top_sm
+                    %h3.profile_inf_user.marg_top_md
+                      -@users.each do |user|
+                        -if !user.nil?
+                          .panel-body{style:"padding: 10px 0px;"}
+                            .flex-container-all
+                              .flex-wrap
+                                -if user.avatar_file_name.nil?
+                                  = image_tag avatar_url(user, :thumb), :width=>30, :class=>"img-circle avarars-satur inl", alt:""
+                                -else
+                                  = image_tag avatar_url(user, :thumb), :width=>30, :class=>"img-circle inl", alt:""
+                              .flex-wrap.marg_left_md.flex-grow
+                                .padd_top_s{style:"padding-top: 3px"}
+                                  %h4.no_marg_top.no_marg_bott.inl
+                                    = link_to "#{user.username}", user_path(:name => user.username)
+                                  %h4.no_marg_top.no_marg_bott.inl.gr.marg_left_sm
+                                    (#{user.firstname} #{user.lastname})
+                              .flex-wrap
+                                = link_to dialogs_path(:to => user.username) do
+                                  =image_tag "new/icons/message.png", :class=>"back_pic", :style=>"opacity: 0.7; width: 25px"
+                          %hr.no_marg

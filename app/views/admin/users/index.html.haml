@@ -1,0 +1,74 @@
+= stylesheet_link_tag "ours/tpl_admin", media: "all"
+
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Users
+        %small
+          <i class="ace-icon fa fa-angle-double-right"></i>
+          manage users
+    .col-md-5
+      = link_to "new user", new_admin_user_path, :class => "btn btn-sm btn-primary"
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Status
+    %th Username
+    %th Lastname
+    %th Firstname
+    %th Email
+    %th Phone
+    %th Country
+    %th Team
+    %th Admin notes
+    %th Registration IP
+    %th= link_to_sortable_column :created_at, 'Reg. Date'
+    %th= link_to_sortable_column :last_sign_in_at, 'Last login'
+    %th Commands
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td
+        = render "status", item: item
+      %td
+        = link_to admin_user_path(:id => item.id) do
+          = item.username
+      %td= item.lastname
+      %td= item.firstname
+      %td= item.email
+      %td= item.phone_number
+      %td
+        =image_tag "country-4x3/#{item.country.downcase}.svg", width: 32, alt: 'no flag', style:"box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" if item.country
+        (#{item.country})
+      %td
+        = link_to admin_team_path(:id => item.team.id) do
+          = item.team.name
+      %td
+        .big
+          = (nl2br item.admin_notes || "").html_safe
+      %td= item.registration_ip
+      %td
+        = item.created_at
+        .big
+          sms:
+          = item.sms_was_sent || ""
+      %td= item.last_sign_in_at
+      %td
+        = link_to admin_invitations_path(:from_user_id => item.id) do
+          invitations
+          %span
+            -if @invitations_count[item.id]
+              (#{@invitations_count[item.id]})
+            -else
+              (0)
+
+= paginate @items

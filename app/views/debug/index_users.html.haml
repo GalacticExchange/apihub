@@ -1,0 +1,9 @@
+- @items.each do |r|
+  = r.username
+  %br
+  %br
+
+
+= paginate @items
+%br
+= paginate @items, params: {page_name: "debug_index_users"}

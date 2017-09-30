@@ -1,0 +1,152 @@
+'use strict';
+
+angular.module('components', []);
+
+angular.module('components').component('workspaceMenu', {
+    templateUrl: '<%= asset_path("common/workspace-menu.html") %>',
+    controller: ['$http', '$scope', '$interval', 'ROUTES', '$route', 'HTTP_CONSTANTS', '$rootScope',
+        function ($http, $scope, $interval, ROUTES, $route, HTTP_CONSTANTS, $rootScope) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.hadoopApp = GexUtils.hadoopApp;
+            $scope.userPermissions = GexUtils.userPermissions;
+            $scope.currentCluster = GexUtils.currentCluster;
+            $scope.currentTeam = GexUtils.currentTeam;
+            selectMenuItem($route.current);
+
+            if (!GexUtils.currentCluster) {
+                GexUtils.showMessageDialog('Error', 'Current cluster not found. Maybe it was deleted.', function () {
+                    window.location.href = '<%=NgRoutes::CLUSTERS%>';
+                });
+                return;
+            } else if (!validateClusterIdRouteParam($route.current)) {
+                return;
+            }
+
+            $scope.$on('$routeChangeStart', function (event, next) {
+                if (!validateClusterIdRouteParam(next)) {
+                    return;
+                }
+
+                selectMenuItem(next);
+            });
+
+            function selectMenuItem(route) {
+                var routePath = route.$$route.originalPath;
+                if (routePath == ROUTES.NODES || routePath == ROUTES.NODES_INFO || routePath == ROUTES.NODES_SETTINGS
+                    || routePath == ROUTES.NODES_INST_CHOOSE_TYPE || routePath == ROUTES.NODES_INST_LOCAL
+                    || routePath == ROUTES.NODES_INST_AWS || routePath == ROUTES.NODES_UNINST_LOCAL
+                    || routePath == ROUTES.NODES_INST_REMOTE || routePath == ROUTES.NODES_UNINST_REMOTE
+                    || routePath == ROUTES.NODES_INST_APP_ONLY || routePath == ROUTES.NODES_INFO_TEST) {
+                    $scope.pageSelected = "nodes";
+                } else if (routePath == ROUTES.CLUSTER_STATISTICS || routePath == ROUTES.NODES_STATISTICS) {
+                    $scope.pageSelected = "stats";
+                } else if (routePath == ROUTES.SHARES) {
+                    $scope.pageSelected = "shares";
+                } else if (routePath == ROUTES.LOGS) {
+                    $scope.pageSelected = "logs";
+                } else if (routePath == ROUTES.CONTAINERS || routePath == ROUTES.CONTAINER_INFO || routePath == ROUTES.CONTAINER_SETTINGS) {
+                    $scope.pageSelected = "containers";
+                } else if (routePath == ROUTES.CLUSTER_INFO) {
+                    $scope.pageSelected = "clusters";
+                } else if (routePath == ROUTES.APPLICATIONS || routePath == ROUTES.APPLICATION_INFO || routePath == ROUTES.APPLICATION_SETTINGS) {
+                    $scope.pageSelected = "apps";
+                } else if (routePath == ROUTES.DEVELOPMENT_LIST || routePath == ROUTES.LIBRARY_APP_LIST || routePath == ROUTES.LIBRARY_APP_INFO || routePath == ROUTES.LIBRARY_APP_INST
+                    || routePath == ROUTES.APPHUB_LIST || routePath == ROUTES.APPHUB_APP || routePath == ROUTES.APPHUB_APP_COMPOSE) {
+                    $scope.pageSelected = "libApps";
+                } else if (routePath == ROUTES.HDP_APP_SERVICES_BROWSER || routePath == ROUTES.HDP_APP_SERVICES_CLIENT) {
+                    $scope.pageSelected = "hadoop";
+                } else if (routePath == ROUTES.APPLICATION_SERVICES_BROWSER || routePath == ROUTES.APPLICATION_SERVICES_CLIENT) {
+                    $scope.pageSelected = "app_" + route.params.applicationId;
+                } else if (routePath == ROUTES.APPLICATION_SERVICES_VIS_BROWSER) {
+                    $scope.pageSelected = 'visualize';
+                } else if (routePath == ROUTES.APPLICATION_SERVICES_TRANS_BROWSER) {
+                    $scope.pageSelected = 'transform';
+                } else {
+                    console.error('Error url for left menu: ' + routePath);
+                }
+            }
+
+            function validateClusterIdRouteParam(route) {
+                if (route.params.clusterId && route.params.clusterId != GexUtils.currentCluster.id) {
+                    GexUtils.showMessageDialog('Warning', 'Current cluster ' + GexUtils.currentCluster.name +
+                        ' doesn\'t  correspond with cluster id in URL. You will be redirected to clusters page.', function () {
+                        window.location.href = '<%=NgRoutes::CLUSTERS%>';
+                    });
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+
+            fetchInstalledApps(true);
+
+            function fetchInstalledApps(firstTime) {
+                $http.get('/clusters/' + $scope.currentCluster.id + '/applications/', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {type: "_with_library_application"}
+                }).then(function (response) {
+                    $scope.apps = _.filter(response.data.apps, function (o) {
+                        return o.status == 'active';
+                    });
+
+                    if (firstTime) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error fetching applications for left menu: ' + response.statusText);
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            var fetchClustersInterval = $interval(function () {
+                fetchInstalledApps();
+            }, HTTP_CONSTANTS.LONG_FETCH_INTERVAL);
+
+            var fetchAppsWorkMenuListener = $rootScope.$on('fetchAppsWorkMenu', function () {
+                fetchInstalledApps(false);
+            });
+
+            $scope.hideXsMenu = function () {
+                $('.collapse').collapse('hide');
+                var closeIcon = $('.close-icon');
+                closeIcon.hide();
+                closeIcon.animate({opacity: 0}, 300);
+                var menuIcon = $('.menu-icon');
+                menuIcon.show();
+                menuIcon.animate({opacity: 1}, 300);
+            };
+
+            $scope.showXsMenu = function () {
+                var closeIcon = $('.close-icon');
+                closeIcon.show();
+                closeIcon.animate({opacity: 1}, 300);
+                var menuIcon = $('.menu-icon');
+                menuIcon.hide();
+                menuIcon.animate({opacity: 0}, 300);
+            };
+
+            $scope.getAppIcon = function (app) {
+                if (app.external) {
+
+                } else {
+                    return app.icon_url ? app.icon_url : app.image_url;
+                }
+            };
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchAppsWorkMenuListener)) {
+                    fetchAppsWorkMenuListener();
+                }
+                if (angular.isDefined(fetchClustersInterval)) {
+                    $interval.cancel(fetchClustersInterval);
+                    fetchClustersInterval = undefined;
+                }
+            });
+        }
+    ]
+});

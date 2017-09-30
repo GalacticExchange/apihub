@@ -1,0 +1,97 @@
+= stylesheet_link_tag "ours/tpl_admin", media: "all"
+= javascript_include_tag :datetime
+
+.page-header
+  .row
+    .col-md-7
+      %h1 Logs
+
+.filter
+  = inline_filter_form_for(@filter)
+  -#= render 'filter_form'
+
+%br
+Found <b>#{@total}</b> records.
+
+.center-block
+  = paginate @items
+
+
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th #
+    %th= link_to_sortable_column :created_at, 'Date'
+    %th Level
+    %th Source
+    %th Type
+    %th Message
+    %th User
+    %th Team
+    %th Cluster
+    %th Node
+    %th IP
+    %th Logger
+    %th Instance
+    -#%th= link_to_sortable_column :score, 'Search score'
+    %th Data
+
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td= item.created_at
+      %td= item.level
+      %td= item['source_name'] || 'N/A'
+      %td= item['type_name'] || 'N/A'
+      %td= item['message'] || 'N/A'
+      %td= item['user_name'] || 'N/A'
+      %td= item['team_name'] || 'N/A'
+      %td= item['cluster_name'] || 'N/A'
+      %td= item['node_name'] || 'N/A'
+      %td= item['ip'] || 'N/A'
+      %td= item['logger'] || 'N/A'
+      %td= item['instance_uid']
+      %td
+        = item['data'].truncate(240)
+        %br
+        =link_to 'More', '#', :data=>{target: '#modLogData', id: item.id}
+
+
+
+
+= paginate @items
+
+
+
+.modal#modLogData(tabindex="-1" role="dialog" aria-labelledby="myModalLabel")
+  .modal-dialog(role="document")
+    .modal-content
+      .modal-header
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Log data</h4>
+      #modLogDataContent.modal-body(style="word-wrap: break-word;")
+        Loading...
+
+      .modal-footer
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+
+:javascript
+  $(function(){
+    // intiliaze the modal but don't show it yet
+    $("#modLogData").modal('hide');
+
+    $('a[data-target="#modLogData"]').click(function(event) {
+        event.preventDefault();
+        var myModal = $('#modLogData');
+        modalBody = myModal.find('.modal-body');
+
+        // load content into modal
+        var id = $(this).data("id");
+        modalBody.html("Loading..");
+        modalBody.load("/admin/log_db/"+id+'/show_data?show=modal');
+
+        // display modal
+        myModal.modal('show');
+    });
+  });

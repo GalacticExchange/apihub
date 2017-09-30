@@ -1,0 +1,100 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Nodes
+    %p.sb-p-text.gr
+      Use this window to manage your nodes.
+  .flex-wrap(ng-if="utils.userPermissions.cluster_manage")
+    %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(data-btn="add-node" ng-click ="installNode()")
+      {{installNodeText}}
+
+
+.fl-cont.padd_top_big(ng-if="(!nodes || !nodes.length > 0) && loaded")
+  .fl-wrap.fl-grow
+  .fl-wrap
+    .text-center.marg_left_big.marg_ri_big
+      %h2.no_marg.bold.no-items-h Looks like you do not have any nodes in this cluster.
+      %p.no_marg.gr.marg_top_10
+        You can add a new node or switch to another cluster
+  .fl-wrap.fl-grow
+
+-#%a.hand_cursor{"data-target" => "#collapseOne", "data-toggle" => "collapse"}
+  sdgsg
+
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+
+.gx-page
+  .app_wrap.border.marg_bott_md(ng-if="loaded && nodes && nodes.length > 0")
+    %table#listNodes{:resizeable => "", :mode => "'BasicResizer'"}
+      %thead.padd_15.grey_bg
+        %tr
+          %th#colName.table-h.t-col-left Name
+          %th#colStatus.table-h.t-col-center State
+          %th#colChecks.table-h.t-col-center.hidden-xs.hidden-sm Status checks
+          %th#colCommands.table-h.t-col-ri.hidden-xs
+      %tbody
+        %tr.table-row.row-node.bord_bott.gr-hover-el(data-div='{{node.id}}'  ng-repeat="node in nodes track by node.id")
+
+          %td.bold
+            %a.t-col-left.fl-cont.fl-grow.undec(ng-href="{{linkToNode(node)}}")
+              %p.no_marg.bold.inl(data-div='name')
+                {{node.name}}
+              %p.no_marg.marg_left_sm.inl.gr.node_local_div(data-text="local-node" ng-if="node.local")
+                (local)
+
+          %td
+            %a.t-col-center.fl-cont.fl-grow.undec(ng-href="{{linkToNode(node)}}")
+              -#if
+              .progress_text(data-div="node-state" ng-if="node.local && node.status == 'installing' && node.instStatus"){:style=>"margin-top: -5px;"}
+                .fl-cont.marg_bott_sm
+                  .fl-wrap{style:'margin-top: -2px;'}
+                    =inline_svg 'new/icons/circle.svg', class: '{{utils.getStatusColor(node.status)}}-svg sm-icon'
+                  .fl-wrap.marg_left_sm
+                    %p.no_marg Installing
+                  .fl-wrap.marg_left_sm
+                    %p.gr.no_marg ({{node.instStatus.status}})
+                .progress_cont{:style=>"width: 70%"}
+                  %mdl-progress(progress="{{node.instStatus.progress}}")
+              -#else
+              .simple-status(data-div="node-state" ng-if="!(node.local && node.status == 'installing' && node.instStatus)")
+                %gx-status(data-status="node.status" data-utils="utils")
+
+          %td.hidden-xs.hidden-sm
+            %a.t-col-center.fl-cont.fl-grow.undec(ng-href="{{linkToNode(node)}}")
+              %gx-checks(data-checks="nodeChecks[node.id]" data-status="node.status" data-item-id="node.id")
+          %td.hidden-xs
+            %a.t-col-ri.fl-cont(ng-href="{{linkToNode(node)}}"){style:'min-width: 100px;'}
+
+              .fl-wrap.fl-grow
+              .fl-wrap.padd_ri_15(ng-if="node.local")
+                .lite-gr-bg{id:"{{node.id}}-local-icon", style:'border-radius: 50%;  padding: 5px;     height: 28px;    width: 28px; '}
+                  .div{style:'margin-left: 2px;'}
+                    =inline_svg "new/icons/desktop.svg", class: "xsm-icon white-svg fx-sm-icon"
+                .mdl-tooltip.mdl-tooltip--left{for: "{{node.id}}-local-icon", class:"head_tooltip"} Local node
+              .fl-wrap(ng-if="node.hadoopAppId == null")
+                .lite-gr-bg{id: "{{node.id}}-hadoop-app", style:'border-radius: 50%;  padding: 5px; height: 28px; width: 28px; '}
+                  =inline_svg "new/icons/store_.svg", class: "sm-icon white-svg fx-sm-icon"
+                .mdl-tooltip.mdl-tooltip--left{for: "{{node.id}}-hadoop-app", class:"head_tooltip"} Application only
+              .fl-wrap(ng-if="node.hadoopAppId != null")
+                .lite-gr-bg{id: "{{node.id}}-hadoop-app", style:'border-radius: 50%;  padding: 5px; height: 28px; width: 28px; '}
+                  =inline_svg "new/icons/dns.svg", class: "sm-icon white-svg fx-sm-icon"
+                .mdl-tooltip.mdl-tooltip--left{for: "{{node.id}}-hadoop-app", class:"head_tooltip"} Big Data node
+
+              -#.row-buttons
+                %a(class="undec" ng-if="utils.isShowRestartButton(node.status)")
+                  =image_tag "new/icons/restart.svg", :style=>"width: 20px; opacity: 0.8; ", :class=>"inl marg_ri_md hand_cursor", :id=>"{{node.id+'restart'}}", "ng-click" => "nodeCommand('restart', node.id)"
+                %a(class="undec" ng-if="utils.isShowStartButton(node.status)")
+                  =image_tag "new/icons/play.svg", :style=>"width: 20px; opacity: 0.8; ", :class=>"inl marg_ri_md hand_cursor", :id=>"{{node.id+'start'}}", "ng-click" => "nodeCommand('start', node.id)"
+                %a(class="undec" ng-if="utils.isShowStopButton(node.status)")
+                  =image_tag "new/icons/stop.svg", :style=>"width: 20px; opacity: 0.8;", :class=>"inl hand_cursor", :id=>"{{node.id+'stop'}}", "ng-click" => "nodeCommand('stop', node.id)"
+
+                .mdl-tooltip.mdl-tooltip--large(ng-if="utils.isShowStartButton(node.status)" for="{{node.id+'start'}}")
+                  Start node
+                .mdl-tooltip.mdl-tooltip--large(ng-if="utils.isShowStopButton(node.status)" for="{{node.id+'stop'}}")
+                  Stop node
+                .mdl-tooltip.mdl-tooltip--large(ng-if="utils.isShowRestartButton(node.status)" for="{{node.id+'restart'}}")
+                  Restart node

@@ -1,0 +1,23 @@
+.div(data-div="status-checks")
+  .gx-page(ng-if='!noChecks && checks' class='hand_cursor')
+    .gx-checks(id="{{itemId}}")
+      .fl-cont.gx-fl-center
+        .fl-wrap.padd_ri_10
+          =inline_svg 'new/icons/circle.svg', class: '{{checksColor}}-svg sm-icon'
+        .fl-wrap
+          %p.no_marg.gr(ng-if='!checksOff') {{passed}}/{{(checks | numKeys)}} passed
+          %p.no_marg.gr(ng-if='checksOff') N/A
+
+    .mdl-tooltip.mdl-tooltip--large.mdl-tooltip--top{for: "{{itemId}}", style: 'min-width: 300px; text-align: left;'}
+      .div(ng-if='checksOff')
+        %h6.no_marg.white Checks available only if state is "ON"
+      .div(ng-if='!checksOff' ng-repeat="check in checks" style="padding: 3px 0;")
+        .fl-cont.gx-fl-center
+          .fl-wrap.padd_ri_10
+            =inline_svg 'new/icons/circle.svg', class: '{{check.passed ? "green" : "red" }}-svg xsm-icon'
+          .fl-wrap
+            %h6.no_marg.white {{check.description}}
+
+
+  .gx-page(ng-if='noChecks || !checks')
+    %p.no_marg.gr -

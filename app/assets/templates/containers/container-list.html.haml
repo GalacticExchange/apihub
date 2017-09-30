@@ -1,0 +1,51 @@
+.sidebar-header
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Containers
+    %p.sb-p-text.gr
+      Use this window to manage your containers.
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+
+%div(ng-if="loaded")
+  .fl-cont.padd_top_big(ng-if="!containers || containers.length == 0")
+    .fl-wrap.fl-grow
+    .fl-wrap
+      .text-center
+        %h2.no_marg.bold.no-items-h Looks like you do not have any containers in this cluster
+    .fl-wrap.fl-grow
+
+  -#%h2.padd_top_md.text-center(ng-if="!containers || containers.length == 0")
+    Looks like you do not have any containers in this cluster.
+
+  .app_wrap.border.marg_bott_md.gx-page(ng-if="containers && containers.length > 0")
+    %table#myTable{:resizeable => "", :mode => "'BasicResizer'"}
+      %thead.padd_15.grey_bg
+        %tr
+          %th#colName.table-h.t-col-left Name
+          %th#colStatus.table-h.t-col-center State
+          %th#colChecks.table-h.t-col-center.hidden-xs.hidden-sm Status checks
+          %th#colNode.table-h.t-col-center.hidden-xs Node
+          %th#colApp.table-h.t-col-center.hidden-xs.hidden-sm Application
+          %th#colIp.table-h.t-col-ri.hidden-xs Local IP
+          %th#colGexIp.table-h.t-col-ri.hidden-xs GEX IP
+      %tbody
+        %tr.bord_bott.gr-hover-el(data-div='{{container.id}}' ng-repeat="container in containers track by container.id" ng-click="openContainer(container.id)")
+          %td.bold.t-col-left {{container.name}}
+          %td.t-col-center.gr
+            %gx-status(data-status="container.status" data-utils="utils")
+          %td.t-col-center.hidden-xs.hidden-sm
+            %gx-checks(data-checks="contChecks[container.id]" data-status="container.status" data-item-id="container.id" ng-if="checksLoaded")
+            .div(ng-if="!checksLoaded")
+              .fl-cont.gx-fl-center
+                .fl-wrap.padd_ri_10
+                  =inline_svg 'new/icons/circle.svg', class: 'lite-gr-svg sm-icon'
+                .fl-wrap
+                  %p.no_marg.gr Pending
+          %td.t-col-center.hidden-xs {{container.masterContainer ? 'master' : container.nodeName}}
+          %td.t-col-center.hidden-xs.hidden-sm {{container.applicationName}}
+          %td.t-col-ri.hidden-xs {{container.local_ip ? container.local_ip : '-'}}
+          %td.t-col-ri.hidden-xs {{container.gex_ip ? container.gex_ip : '-'}}

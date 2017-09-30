@@ -1,0 +1,162 @@
+# api
+api_host: 'localhost'
+domain: 'http://localhost:3000/'
+hub_url: 'http://localhost:3000/'
+website_url: 'http://localhost:3000/'
+doc_url: 'http://localhost:3002/'
+apphub_url: 'http://staging.apphub.galacticexchange.io'
+#apphub_url: 'http://apphub.galacticexchange.io/'
+#apphub_url: 'http://10.1.0.56:3000'
+
+#apphub_url: 'http://localhost:3003/'
+#apphub_url: 'http://localhost:3003/'
+checks_server_url: 'http://localhost:3040/'
+download_url: 'http://galactic.staging.wpengine.com/downloads/'
+youtrack_url: 'http://gex.myjetbrains.com/youtrack/'
+
+
+#
+TEST_PHONE_NUMBER: "+380570000000"
+TEST_USER_COUNTRY: "ua"
+TEST_USER_PWD: "PH_GEX_PASSWD1"
+
+
+#
+ruby_user: 'mmx'
+
+
+
+# ips, hosts
+dns_ip: 51.1.1.20
+api_ip: 51.1.1.21
+
+
+# first-level domain for our servers and clusters
+domain_zone: 'gex'
+
+
+# logs
+log_async: 0
+
+log_to_slack: 1
+log_to_db: 0
+log_to_kafka: 1
+
+#log_slack_channel: '#main_errors'
+#log_slack_channel: '#bot_test'
+log_slack_channel: '#dev_errors'
+
+log_kafka_server_url: "log.devgex.net:9092"
+log_kafka_topic: "log_app"
+
+logs_elasticsearch_host: '51.0.0.63'
+logs_elasticsearch_port: '9200'
+logs_elasticsearch_prefix: ''
+
+
+
+jwt_secret: 'r7mjurp2vfjsu6611e45'
+
+
+#
+email_from: 'betanoreply@galacticexchange.io'
+email_debug_catch_all: 'betauser@galacticexchange.io'
+support_email: 'support@galacticexchange.io'
+
+
+# elasticsearch
+elasticsearch_host: '51.0.0.13'
+elasticsearch_port: 9200
+elasticsearch_prefix: 'gex.'
+
+
+# provision
+provision_use_provisioner: 1
+
+provisioner_host: '51.0.0.55'
+provisioner_port: 22
+provisioner_user: 'root'
+provisioner_pwd: 'PH_GEX_PASSWD1'
+provisioner_notify_channel: 'provisionnotify'
+
+
+provision_env: 'main'
+#dir_clusters_data: "/mount/ansibledata/"
+dir_clusters_data: "/home/dmitry/mount/ansibledata/" # todo: tmp debug
+provision_scripts_dir: '/mount/ansible/'
+chef_dir: '/mount/chef-repo/'
+server_app_repo: 'http://gex1.devgex.net:8090/applications'
+server_app_repo_versions: 'http://gex1.devgex.net:8090/applications'
+
+
+
+# redis
+#redis_host: '51.0.0.12'
+redis_host: 'localhost'
+#redis_host: '51.12.0.12'
+redis_prefix: 'gex'
+
+
+# rabbit
+rabbit_host: 'rabbit.devgex.net'
+rabbit_url: 'rabbit.devgex.net'
+rabbit_api_endpoint: 'http://rabbit.devgex.net:15672'
+
+rabbit_host_private: '51.0.0.22'
+rabbit_url_private: '51.0.0.22'
+rabbit_api_endpoint_private: 'http://51.0.0.22:15672'
+
+rabbit_root_username: 'admin'
+rabbit_root_password: 'PH_GEX_PASSWD1'
+rabbit_prefix: 'gex'
+
+
+# sensu
+sensu_api_host: 'sensu.devgex.net'
+sensu_api_host_private: 'sensu.devgex.net'
+sensu_api_port: 4567
+sensu_api_user: 'admin'
+sensu_api_password: 'PH_GEX_PASSWD1'
+
+#rabbit_sensu_username: 'sensu'
+#rabbit_sensu_password: 'PH_GEX_PASSWD1'
+#rabbit_sensu_vhost: '/sensu'
+#rabbit_sensu_prefix: 'gex'
+
+
+
+# kafka
+counters_kafka_host: '51.0.0.72'
+counters_kafka_prefix: 'gex'
+
+
+
+# proxy
+sshproxy_host: "proxy.gex"
+
+
+
+# webproxy
+webproxy_host: "webproxy.devgex.net"
+
+
+
+
+# openvpn
+openvpn_host: '51.0.1.8'
+openvpn_private_ip: '51.0.1.8'
+
+# network
+ip_client_base: 'FDE9:E9:E9'
+ip_server_base: 'FD9E:9E:9E'
+
+
+# containers
+master_host: 'master.gex'
+
+hadoop_master_ip_prefix: '51.77'
+hue_master_ip_prefix: '51.78'
+
+
+
+

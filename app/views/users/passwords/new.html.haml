@@ -1,0 +1,23 @@
+
+-#= image_tag "service/pass_forgot(fixed).png", :class=>"pass_pic"
+
+
+
+%h2.text-center.padd_top_md_per.bold
+  Forgot your password?
+
+
+= simple_form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f|
+  = f.error_notification
+  .row
+    .container
+      .col-lg-4.col-md-3.col-sm-2.text-center
+      .col-lg-4.col-md-6.col-sm-8.text-center
+        = render 'shared/flash'
+        .form-inputs.padd_top_md
+          -#= f.input :email, required: true, autofocus: true
+          = f.input :login, required: true, autofocus: true,:class =>"mdl-textfield__input",  placeholder: "Login or email",:label=>false
+        .form-actions.text-center
+          = f.button :submit,"Send me reset password instructions",:class => "button mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md", :style=>"width: 100%"
+
+

@@ -1,0 +1,191 @@
+'use strict';
+
+angular.module('components').component('nodeDetailsTest', {
+    templateUrl: '<%= asset_path("nodes/node-details-test.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', 'ROUTES', 'HTTP_CONSTANTS', '$q',
+        function ($http, $scope, $interval, $routeParams, ROUTES, HTTP_CONSTANTS, $q) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.nodeId = $routeParams.nodeId;
+
+            fetchNode(true);
+
+            function fetchNode(firstTime) {
+                var nodeInfo = $q(function (resolve, reject) {
+                    $http.get('/nodes/' + $routeParams.nodeId + '/info', {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json'
+                    }).then(function (response) {
+                        resolve({node: response.data.node});
+                    }, function errorCallback(response) {
+                        if (GexUtils.isResponseCanceled(response)) {
+                            return;
+                        }
+                        GexUtils.redirectIfSomeRespCodes(response);
+
+                        reject(new Error('Cannot load node: ' + GexUtils.getErrMsgServ(response)));
+                    });
+                });
+
+                var localNodeInfo = $q(function (resolve, reject) {
+                    if (GexUtils.isDesktopClient) {
+                        GexUtils.getLocalNodeInfo(function (localNodeInfo, err) {
+                            if (err) {
+                                var errMessage = 'Cannot get local node info: ' + err.message;
+                                if (firstTime) {
+                                    GexUtils.showMessageDialog('Error', errMessage);
+                                } else {
+                                    console.log(errMessage);
+                                }
+                            }
+                            resolve({localNodeInfo: localNodeInfo})
+                        });
+                    } else {
+                        resolve({localNodeInfo: undefined})
+                    }
+                });
+
+                var remoteLogs = $q(function (resolve, reject) {
+                    if (GexUtils.isDesktopClient) {
+                        GexUtils.gexdGetRequest('/nodes/remote/logs', function (err, req, res, data) {
+                            if (err) {
+                                var errMessage = 'Cannot get remote install/uninstall logs: ' + err.message;
+                                if (firstTime) {
+                                    GexUtils.showMessageDialog('Error', errMessage);
+                                } else {
+                                    console.log(errMessage);
+                                }
+                            }
+
+                            resolve({remoteLogs: data});
+                        });
+                    } else {
+                        resolve({remoteLogs: undefined});
+                    }
+                });
+
+
+                $q.all([nodeInfo, localNodeInfo, remoteLogs]).then(function (data) {
+                    return $q(function (resolve) {
+                        $scope.node = data[0].node;
+                        $scope.node.local = $scope.node.id == (data[1].localNodeInfo && data[1].localNodeInfo.id);
+                        var installStatus = data[1].localNodeInfo && data[1].localNodeInfo.installStatus;
+                        $scope.node.installStatus = installStatus ? installStatus.status : null;
+                        $scope.node.installProgress = installStatus ? installStatus.progress : null;
+                        if (GexUtils.isDesktopClient) {
+                            $scope.node.remoteInstLog = _.find(data[2].remoteLogs.installs, function (o) {
+                                return o.nodeName == $scope.node.name
+                            });
+                            $scope.node.remoteUninstLog = _.find(data[2].remoteLogs.uninstalls, function (o) {
+                                return o.nodeName == $scope.node.name
+                            });
+                        }
+
+                        resolve(data);
+                    });
+                }).catch(function (err) {
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', err.message);
+                    } else {
+                        console.log(err.message);
+                    }
+                }).finally(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            var fetchNodeInterval = $interval(function () {
+                fetchNode();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchNodeInterval)) {
+                    $interval.cancel(fetchNodeInterval);
+                    fetchNodeInterval = undefined;
+                }
+            });
+
+            $scope.nodeCommand = function (command, nodeId) {
+                GexUtils.nodeCommand(command, nodeId, function () {
+                    fetchNode();
+                });
+            };
+
+            $scope.openInstallLogs = function (node) {
+                GexUtils.electron.shell.openItem(node.remoteInstLog.path);
+            }
+
+            $scope.openUninstallLogs = function (node) {
+                GexUtils.electron.shell.openItem(node.remoteUninstLog.path);
+            }
+
+            $scope.nodeLogs = function (node) {
+                if (node.local) {
+                    if (GexUtils.require('os').platform() === 'win32') {
+                        var programData = GexUtils.electron.process.env.ProgramData;
+                        GexUtils.electron.shell.openItem(GexUtils.require('path').join(programData, '.gex', 'gex_agent_log.log'));
+                    } else {
+                        var homePath = GexUtils.electron.remote.app.getPath('home');
+                        GexUtils.electron.shell.openItem(GexUtils.require('path').join(homePath, '.gex', 'gex_agent_log.log'));
+                    }
+                    return;
+                }
+
+                $scope.downloadingLog = true; //if local file don't need spinner
+                $http.get('/nodeAgentInfo', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {"nodeID": node.id}
+                }).then(function (response) {
+                    var agentInfo = response.data.agent;
+                    if (_.isEmpty(agentInfo.ip)) {
+                        GexUtils.showMessageDialog('Error', 'Unable to download log file. Cannot find node IP address.');
+                        return;
+                    } else if (_.isNil(agentInfo.port)) {
+                        GexUtils.showMessageDialog('Error', 'Unable to download log file. Cannot find node port.');
+                        return;
+                    }
+                    var agentUrl = 'http://' + agentInfo.ip + ':' + agentInfo.port;
+                    GexUtils.extGetRequest(agentUrl, {
+                            path: '/itsalive',
+                            connectTimeout: 3000,
+                            requestTimeout: 5000
+                        }, true,
+                        function (err, req, res, data) {
+                            if (err) {
+                                $scope.downloadingLog = false;
+                                var errMessage = 'Unable to download log file. ' +
+                                    'You can download log file only if you are in local network with this node. ' +
+                                    'Probably this machine has a firewall.\nDetailed error: ';
+                                GexUtils.showMessageDialog('Error', errMessage + (err.message ? err.message : err.code));
+                                return;
+                            }
+
+                            var pathLib = GexUtils.require('path');
+                            GexUtils.downloadFileEl(agentUrl + '/logs?token='
+                                + GexUtils.getToken(),
+                                function (err, savePath) {
+                                    $scope.downloadingLog = false;
+                                    if (err) {
+                                        GexUtils.showMessageDialog('Error', 'Cannot download log file.\nDetailed error: ' + err.message);
+                                        return;
+                                    }
+
+                                    GexUtils.electron.shell.openItem(savePath);
+                                },
+                                pathLib.join(GexUtils.electron.remote.app.getPath('temp'), 'gex_agent_log_' + node.name + '.log'));
+                        });
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    $scope.downloadingLog = false;
+                    GexUtils.showMessageDialog('Error', 'Cannot get node agent information: ' + GexUtils.getErrMsgServ(response));
+                })
+            }
+
+        }
+    ]
+});

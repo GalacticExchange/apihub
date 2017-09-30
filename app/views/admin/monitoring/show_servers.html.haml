@@ -1,0 +1,76 @@
+= render 'admin/shared/css'
+
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Our servers
+
+%table.table.table-striped.table-bordered
+  %tr
+    %td Server
+    %td State
+    %td CPU, % busy
+    %td Free memory, GB
+
+  - @servers.each do |server_name, server|
+    - id = server[:id]
+    %tr
+      %td
+        %b=server[:name]
+      %td
+        %div{id: "node_#{id}_state"}
+      %td
+        %div{id: "node_#{id}_metrics_cpu"}
+      %td
+        %div{id: "node_#{id}_metrics_memory"}
+
+#status
+
+:javascript
+  var interval = 5000;
+
+
+  jQuery(function($) {
+      //setTimeout(update_data, interval);
+      update_data();
+
+  });
+
+  function update_data(){
+  $('#status').html('Updating...');
+
+  $.ajax({
+    url: "/admin/monitoring/servers",
+    type: "GET",
+    dataType: "json",
+    contentType: "application/json",
+    success: function(data){
+      $('#status').html('');
+
+      for( var i=0; i<data.length; i++ ){
+        var id = data[i].id.toString();
+
+        // set values
+        set_node_value('node_'+id+'_state', data[i].state);
+        set_node_value('node_'+id+'_metrics_cpu', data[i].counters.cpu);
+        set_node_value('node_'+id+'_metrics_memory', data[i].counters.memory);
+      }
+    },
+    complete: function (data) {
+      // Schedule the next
+      setTimeout(update_data, interval);
+    }
+
+  });
+  }
+
+
+  function set_node_value(id, counter){
+    if (counter){
+      $('#'+id).html('<b>'+counter.value+'</b><br><span class="notes">'+counter.date+'</span>');
+    }
+    else{
+      $('#'+id).html('ERROR');
+    }
+  }

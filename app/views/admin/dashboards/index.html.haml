@@ -1,0 +1,47 @@
+= stylesheet_link_tag "ours/tpl_admin", media: "all"
+
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Dashboards
+        %small
+          <i class="ace-icon fa fa-angle-double-right"></i>
+          manage dashboards
+    .col-md-5
+      -if @cluster_id
+        = link_to "new", new_admin_dashboard_path(:cluster_id => @cluster_id), :class => "btn btn-sm btn-primary"
+      -#-else
+        = link_to "new", new_admin_dashboard_path, :class => "btn btn-sm btn-primary"
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Enabled
+    %th Name
+    %th Title
+    %th Cluster
+    %th Commands
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td= render "admin/shared/label_yesno", v: item.enabled
+      %td
+        = link_to item.name, edit_admin_dashboard_path(:id => item.id)
+      %td
+        = link_to item.title, edit_admin_dashboard_path(:id => item.id)
+      %td
+        = link_to item.cluster.name, admin_cluster_path(item.cluster_id) if item.cluster
+      %td
+        = link_to "edit", edit_admin_dashboard_path(:id => item.id)
+      -#%td
+        &nbsp;
+
+= paginate @items

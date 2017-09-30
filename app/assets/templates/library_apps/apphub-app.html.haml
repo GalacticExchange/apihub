@@ -1,0 +1,149 @@
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+.gx-page
+  .div(ng-if="loaded")
+    .sidebar-header(data-div="page-title")
+      .fl-wrap.fl-grow
+        .fl-cont{style:"align-items: center;"}
+          .fl-wrap.padd_ri_10
+            =image_tag "new/icons/extention.svg", class:"card-icon inl", style:"width: 19pt; height: 19pt;"
+          .fl-wrap
+            %h2.sb-text.sb-h1-text.inl {{app.name}}
+        %p.sb-p-text.gr {{app.short_description ? app.short_description : 'No description provided'}}
+      .fl-wrap
+        .gx-bage.gx-bage-lg{class:'{{bageColor(app.application_type)}}-bage'}
+          .fl-cont.fl-center
+            .fl-wrap
+              .div(ng-if='app.application_type == "compose_app" ' style='height: 14px; margin-top: -8px;')
+                =inline_svg "new/icons/compose_app.svg", class: 'apphub-help-icon', width: 14, height: 14
+              .div(ng-if='app.application_type == "container" ' style='height: 14px; margin-top: -10px;')
+                =inline_svg "new/icons/one.svg", class: 'apphub-help-icon'
+            .fl-wrap.marg_left_10
+              %h6.no_marg {{applicationTypeName(app.application_type)}}
+
+
+    .row.flex-container-all{:style=>"flex-wrap: wrap;"}
+      .col-md-12.col-sm-12.col-xs-12.no_padd{:style=>"display: flex;"}
+        .app_wrap.border.marg_bott_md{:style=>"width: 100%"}
+          .flex-container-all.grey_bg.padd_10.padd_left_md{style:"align-items: center;"}
+            .flex-wrap.padd_ri_10
+              =image_tag "new/icons/skip-next.svg", class:"card-icon"
+            .flex-wrap
+              %p.card-h Install
+          .row
+            %form(style="max-width: 900px;" novalidate="novalidate" class="simple_form new_cluster_application" ng-if="loaded")
+              -#if
+              .padd_md(ng-if="!nodes || nodes.length == 0")
+                %h5.no_marg You need at least one 'joined' node
+                .padd_top_md
+                  %a(ng-href="{{ROUTES.getAddr('NODES', clusterId)}}" class="undec button mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_transp_md marg_ri_sm")
+                    Manage nodes
+              -#else
+              .row.padd_md(ng-if="nodes && nodes.length > 0")
+                %h5.d_gr{style:"font-size: 16px; "} Node
+                .fl-cont.fl-center
+                  -#.fl-col.padd_ri_md
+                    %h5.d_gr{style:"font-size: 16px; "} Node
+                  .fl-col.fl-grow
+                    %ui-select(ng-model="selectNodeWrapper.selectedNode" theme="select2" search-enabled="false" style="width:100%;")
+                      %ui-select-match {{getNodeNameWithLocal($select.selected)}}
+                      %ui-select-choices(repeat="node in nodes track by node.id")
+                        %div(ng-bind-html="getNodeNameWithLocal(node) | highlight: $select.search")
+
+                -#.padd_top_md
+                  %h5.d_gr{style:"font-size: 16px; "} Run command
+                  %textarea.new-textarea{"ng-model"=> "newApp.runCommand", :style => "width: 100%;height: 80px; font-size: 14pt;"}
+
+                .fl-cont.fl-center.marg_bott_md.padd_top_md.marg_top_md(ng-if='app.application_type != "compose_app" '){style:"justify-content: flex-start;"}
+                  .fl-wrap.fl-growr
+                    %h3.h-txt.bold.no_marg.marg_bott_sm Advanced options
+                    %h6.gr.no_marg  Click on the arrow to set advanced install options.
+                  .fl-wrap.padd_left_big
+                    %button.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--colored.gex-btn-icon.lite-gr-btn(ng-class="advanced ? 'rotate-180' : '' " ng-click="switchAdvanced()"){style:"bactkground-color: rgba(183, 183, 183, 0.3);"}
+                      = image_tag 'new/icons/down.svg', style:"opacity: 0.7; margin-top: 3px;"
+
+                .advanced-fields(ng-show="advanced")
+                  .padd_bott_md
+                    %h4.no_marg.bold.padd_top_10.padd_bott_10{style:"font-size: 17pt !important; "} Services
+                    .div(ng-if="!newApp.services || !objNotEmpty(newApp.services) ")
+                      %h5.gr No services
+                    .div(ng-if="newApp.services && objNotEmpty(newApp.services) ")
+                      .row.padd_bott_10
+                        .col-md-4.no_padd.padd_ri_md
+                          %h5.d_gr{style:"font-size: 15px;"} Name
+                        .col-md-4.no_padd.padd_ri_md
+                          %h5.d_gr{style:"font-size: 15px;"} Port
+                        .col-md-4.no_padd
+                          %h5.d_gr{style:"font-size: 15px;"} Protocol
+
+
+                      .div(ng-repeat="(key,value) in newApp.services")
+                        .row.padd_bott_15
+                          .col-md-4.no_padd.padd_ri_md
+                            %input.new-input{"ng-change":"value.title = value.name", :name=>"serviceName", "ng-model" => "value.name", :type => "text", :placeholder=>"Service name" }
+                            %input.new-input{:name=>"serviceName", "ng-model" => "value.title", :type => "hidden"}
+                          .col-md-4.no_padd.padd_ri_md
+                            %input.new-input{:name=>"servicePort", "ng-model" => "value.port", :type => "text", :placeholder=>"Service port", style:"width: 100%" }
+                          .col-md-4.no_padd
+                            .fl-cont{style:"align-items: center;"}
+                              .fl-wrap.fl-grow
+                                %input.new-input{:name=>"serviceProtocol", "ng-model" => "value.protocol", :type => "text", :placeholder=>"Service protocol" }
+                              .fl-wrap.padd_left_10(ng-click="removeService(key)"){ style:'margin-top: -2px;'}
+                                =inline_svg "new/icons/remove.svg", class:'red-svg hand_cursor'
+                                -#=inline_svg "new/icons/trash.svg", class:'red-svg'
+
+                    .padd_top_md
+                      %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(data-btn="add-service" ng-click ="addService()") Add service
+
+                  .padd_top_md
+                    %h4.no_marg.bold.padd_top_10{style:"font-size: 17pt !important;"} Docker variables
+                    .div(ng-repeat="(key,value) in newApp.metadata")
+                      %h5.d_gr.uppercase.padd_top_10{style:"font-size: 17px; "}
+                        {{key}}
+                      %textarea.new-textarea{ "ng-model"=> "newApp.metadata[key]", :style => "width: 100%;height: 80px; font-size: 12pt;"}
+
+                .padd_top_md.marg_top_10
+                  %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(ng-click="installApp(app)"){style:"padding: 0px 48px !important;"} Install
+
+
+    .row.flex-container-all{:style=>"flex-wrap: wrap;"}
+      .col-md-12.col-sm-12.col-xs-12.no_padd{:style=>"display: flex;"}
+        .app_wrap.border.marg_bott_md{:style=>"width: 100%"}
+          .flex-container-all.grey_bg.padd_10.padd_left_md{style:"align-items: center;"}
+            .flex-wrap.padd_ri_10
+              =image_tag "new/icons/info_bl.svg", class:"card-icon"
+            .flex-wrap
+              %p.card-h Info
+          .row
+            .padd_md{style:"padding: 30px !important;"}
+              .flex-container-all
+                .flex-wrap.padd_ri_md.marg_ri_md
+                  %h4.no_marg.gr.padd_bott_md Source type:
+                  %h4.no_marg.gr.padd_bott_md Securitry rating:
+                  %h4.no_marg.gr.padd_bott_md Application type:
+                  %h4.no_marg.gr.padd_bott_md Operating system:
+                  %h4.no_marg.gr.padd_bott_md Size:
+                  %h4.no_marg.gr.padd_bott_md RAM:
+
+
+
+                  .flex-container-all.fl-center.marg_top_10.hand_cursor(ng-click="utils.openInNewTab(app.link_to_self)")
+                    .flex-wrap.flex-grow
+                      %p.no_marg.link-el More about this app
+                    .flex-wrap.padd_left_sm
+                      =image_tag "new/icons/arrow_link.svg", style:"width: 20px; margin-top: 4px;"
+
+                .flex-wrap.padd_ri_md.marg_ri_md
+                  %h4.no_marg.padd_bott_md.bold{class:"{{app.source_type}}-bage"} {{app.source_type}}
+                  %h4.no_marg.padd_bott_md
+                    =inline_svg "new/icons/security.svg", class: '{{getSecurityColor(app.clair_rating)}} app-sec-detail', style:"margin-top: -4px;"
+                    {{app.clair_rating}}
+                  %h4.no_marg.padd_bott_md {{applicationTypeName(app.application_type)}}
+                  %h4.no_marg.padd_bott_md {{app.os_whole_name ? app.os_whole_name : 'Unknown'}}
+                  %h4.no_marg.padd_bott_md {{app.size}} MB
+                  %h4.no_marg {{app.ram ? app.ram+" MB" : "Unknown" }}
+
+

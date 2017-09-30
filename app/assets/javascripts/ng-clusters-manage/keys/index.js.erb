@@ -1,0 +1,125 @@
+'use strict';
+
+angular.module('components').component('keys', {
+    templateUrl: '<%= asset_path("keys/index.html") %>',
+    controller: ['$location', '$http', '$scope', '$interval', '$routeParams', 'ROUTES', 'HTTP_CONSTANTS',
+        function ($location, $http, $scope, $interval, $routeParams, ROUTES, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+
+            $scope.spinner = false;
+            $scope.newKey = { }
+
+            function fetchKeys(firstTime) {
+                $http.get('/keys', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.keys = response.data.keys;
+
+                    if (firstTime) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error fetching keys : ' + response.statusText);
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            fetchKeys(true);
+
+            var fetchKeysInterval = $interval(function () {
+                fetchKeys();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchKeysInterval)) {
+                    $interval.cancel(fetchKeysInterval);
+                    fetchKeysInterval = undefined;
+                }
+            });
+
+
+
+
+
+            $scope.createNewKey = function () {
+
+                $scope.addSpinner = true;
+
+                var data = {
+                  name: $scope.newKey.name,
+                  creds: {
+                      aws_key_id: $scope.newKey.awsKeyId,
+                      aws_secret_key: $scope.newKey.awsKeySecret
+                  }
+                }
+
+                $scope.newKey = { }
+
+
+                $http.post('/key/add/aws', data,
+                    {
+                  headers: {Accept: 'application/json'},
+                  responseType: 'json'
+                }).then(function (response) {
+                    //$scope.keys = response.data.keys;
+
+                    $scope.addSpinner = false;
+                    $scope.newKeyDiv = false;
+
+
+                    fetchKeys();
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    console.log('Cannot create key: ' + response.statusText);
+                });
+
+                $scope.createKey = true;
+            }
+
+
+            $scope.removeKeyWrap = function (id) {
+              GexUtils.showConfirmDialog('Remove key', 'Do you really want to remove this key?',
+                function () {
+                    removeKey(id);
+                });
+            };
+
+
+            function removeKey(id) {
+                $http.delete('/keys', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {id: id}
+                }).then(function (response) {
+                    $scope.utils.showSnackbarMessage("Key removed.");
+                    fetchKeys();
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error: ' + response.statusText + " " + response.status);
+                });
+            }
+
+
+
+
+
+
+
+
+        }
+    ]
+});

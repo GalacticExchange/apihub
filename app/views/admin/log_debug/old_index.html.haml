@@ -1,0 +1,145 @@
+= stylesheet_link_tag "ours/tpl_admin", media: "all"
+= javascript_include_tag :datetime
+
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Logs debug
+
+.filter
+
+
+  = inline_filter_form_for(@filter)
+  -#= render 'filter_form'
+
+%br
+Found <b>#{@total}</b> records.
+
+.center-block
+  = paginate @records
+
+
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th= link_to_sortable_column :created_at, 'Date'
+    %th Level
+    %th Source
+    %th Type
+    %th Message
+    %th User
+    %th Team
+    %th Cluster
+    %th Node
+    %th IP
+    %th Instance
+    %th= link_to_sortable_column :score, 'Search score'
+    %th Data
+
+
+  - @records.each_with_hit do |item, hit|
+    %tr
+      %td= item.id
+      %td= item.created_at
+      %td= item.level_title
+      %td= item.source_name
+      %td
+        = item.type.present? ? item.type.name : '-'
+        - if item.subtype.present?
+          %br
+          = item.subtype.name
+      -# for higlight ElasticSearch
+      %td
+        -if hit.try(:highlight).try(:message)
+          - hit.highlight.message.each do |snippet|
+            %p
+              = snippet.html_safe
+        -else
+          = item.message
+      %td
+        - if item.user.present?
+          = item.user.username
+        - else
+          N/A
+      %td
+        - if item.team.present?
+          = item.team.name
+        - else
+          N/A
+      %td
+        - if item.cluster.present?
+          = item.cluster.name
+        - else
+          N/A
+      %td
+        - if item.node.present?
+          = item.node.name
+        - else
+          N/A
+      %td
+        - if item.ip.present?
+          = item.ip
+        - else
+          N/A
+      %td
+        - if item.instance.present?
+          = item.instance.uid
+        - else
+          N/A
+      %td
+        = hit._score
+      %td
+        = item.data.truncate(240)
+        %br
+        =link_to 'More', '#', :data=>{target: '#modLogData', id: item.id}
+        -# for higlight ElasticSearch
+        %br
+        -if hit.try(:highlight).try(:data)
+          %b Found:<br>
+          - hit.highlight.data.each do |snippet|
+            = snippet.html_safe
+            %br
+
+
+
+
+
+-#= page_entries_info @items
+
+= paginate @records
+
+
+
+.modal#modLogData(tabindex="-1" role="dialog" aria-labelledby="myModalLabel")
+  .modal-dialog(role="document")
+    .modal-content
+      .modal-header
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Log data</h4>
+      #modLogDataContent.modal-body(style="word-wrap: break-word;")
+        Loading...
+
+      .modal-footer
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+
+:javascript
+  $(function(){
+    // intiliaze the modal but don't show it yet
+    $("#modLogData").modal('hide');
+
+    $('a[data-target="#modLogData"]').click(function(event) {
+        event.preventDefault();
+        var myModal = $('#modLogData');
+        modalBody = myModal.find('.modal-body');
+
+        // load content into modal
+        var id = $(this).data("id");
+        modalBody.html("Loading..");
+        modalBody.load("/admin/log_debug/"+id+'/show_data?show=modal');
+
+        // display modal
+        myModal.modal('show');
+    });
+  });

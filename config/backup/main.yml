@@ -1,0 +1,49 @@
+dir_backups_base: "/var/www/backups/api-main/"
+
+backup:
+  app_files:
+    exclude:
+      - data/
+      - clusters/
+      - db/
+      - spec/
+      - app/assets/components/
+      - public/js/
+      - public/elfinder/
+      - public/system/
+      - public/uploads/
+      - public/uploads-init/
+
+
+  user_files:
+    include:
+      - public/uploads
+      - public/images
+      - data
+      - clusters
+      - /var/www/data
+
+
+notify:
+  mail:
+    from: noreply@galacticexchange.io
+    to: max.ivak@galacticexchange.io
+    reply_to: support@galacticexchange.io
+
+
+
+s3:
+  access_key_id: "PH_GEX_KEY_ID"
+  secret_access_key: "PH_GEX_ACESS_KEY"
+  region: "us-west-2"
+  bucket: "gex-backups"
+  #path: "/api-main"
+
+
+storages:
+  -
+    type: "local"
+    path: "/var/www/backups/api-main"
+
+
+

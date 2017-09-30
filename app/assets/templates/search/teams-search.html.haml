@@ -1,0 +1,33 @@
+.app_wrap.marg_bott_md#top_of_teams
+  .flex-container.lite_shadow
+    %form.header_search_wrap(novalidate ng-submit="submitSearch()" ng-class="focusSearch ? 'search_box_focus' : undefined" style="padding-top: 0px")
+      %input(type="text" name="searchText" placeholder="Search teams" ng-model="searchText" class="custom-input dform-control" ng-autofocus ng-focus="focusSearch = true" ng-blur="focusSearch = false")
+      .header_search_icon_wrap.inl.hand_cursor(ng-click="submitSearch()")
+        =image_tag "new/icons/search_black.svg", class:"search_input_icon"
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+%div(ng-if="loaded")
+  .app_wrap.border(ng-if="teams && teams.length > 0")
+    .row
+      %a(ng-href="/team/{{team.name}}" class="undec" ng-repeat="team in teams track by team.name")
+        .flex-container-all.table-row.bord_bott
+          .flex-wrap
+            .padd_md.padd_top_10.padd_bott_10
+              %img(ng-src="{{team.avatarUrl}}" style="width: 40pt" class="img-circle")
+          .flex-wrap
+            .padd_md.padd_top_10.padd_bott_10
+              %h2.project_name.no_marg{:style=>"color: #338cda"} {{team.name}}
+              %h6.gr.no_marg.padd_top_10
+                Since {{team.created_at | dateTimeFormat:"D MMM YYYY"}}
+
+  .app_wrap(ng-if="teams && pagination.totalItems > pagination.itemsPerPage")
+    .row
+      .text-center
+        %ul(uib-pagination total-items="pagination.totalItems" ng-model="pagination.currentPage" max-size="pagination.maxSize" class="pagination-sm" boundary-link-numbers="true" ng-change="pageChanged()" items-per-page="pagination.itemsPerPage")
+
+  %h3.text-center.no_marg.padd_md(ng-if="!teams || teams.length == 0")
+    We could not find any teams
+

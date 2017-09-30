@@ -1,0 +1,10 @@
+'use strict';
+
+var gxConstants = angular.module("gxUtils", []);
+
+gxConstants.constant("HTTP_CONSTANTS", {
+    FETCH_INTERVAL: <%=Rails.env.development? ? 300000 : 15000%>, // 5 min : 15 sec
+    LONG_FETCH_INTERVAL: <%=Rails.env.development? ? 600000 : 60000%> //10 min : 1min
+});
+
+

@@ -1,0 +1,95 @@
+
+-#.navbar-header
+  .row.bord_bott
+    %button.navbar-toggle{"data-target" => ".navbar-collapse", "data-toggle" => "collapse", :type => "button", :style=>"float: left; padding: 0px; margin: 0px;"}
+      .row
+        .col-xs-3.no_padd
+          .padd_left_md{:style=>"padding-top: 18pt"}
+            %span.icon-bar
+            %span.icon-bar
+            %span.icon-bar
+        .col-xs-4.no_padd
+          %h3.step_text.side_menu_h{:style=>"color: #434343"}
+            Profile/Team
+
+
+.navbar-header
+  .row.bord_bott
+    .navbar-toggle{ :style=>"float: left; padding: 0px; margin: 0px; width: 100%;"}
+      .row
+        .col-xs-1.no_padd{:style=>"cursor: pointer"}
+          .padd_left_md
+            .close-icon{:style=>"padding-top: 14pt; display: none; margin-left: -2px"}
+              =image_tag "new/icons/close.svg", :width=>"25pt", :style=>"opacity: 0.7"
+            .menu-icon{:style=>"padding-top: 18pt", "data-target" => "#myNavbar", "data-toggle" => "collapse", :type => "button"}
+              %span.icon-bar
+              %span.icon-bar
+              %span.icon-bar
+        .col-xs-10.no_padd{:style=>"text-align: left;"}
+          %h3.step_text.side_menu_h{:style=>"color: #434343"}
+            Profile/Team
+
+
+#target.container-fluid.no_padd.no_marg
+  #myNavbar.collapse.navbar-collapse.no_padd.no_marg
+    %ul.nav.navbar-nav.no_padd.no_marg{:style=>"float: none;"}
+      .install_step.side_menu_lny{:style=>"margin-top: 0px"}
+        %h3.step_text.side_menu_h PROFILE
+
+        = link_to profileedit_path, :class=>"undec" do
+          .install_step.side_menu_element{:class => (s = @page_selected == "main_info" ? "current_step" : "")}
+            %h3.step_text.side_menu_text{:class => (s = @page_selected == "main_info" ? "current_step_text" : "")} Main info
+        = link_to avataredit_path, :class=>"undec" do
+          .install_step.side_menu_element{:class => (s = @page_selected == "avatar" ? "current_step" : "")}
+            %h3.step_text.side_menu_text{:class => (s = @page_selected == "avatar" ? "current_step_text" : "")}  Avatar
+        = link_to profileeditpassword_path, :class=>"undec" do
+          .install_step.side_menu_element{:class => (s = @page_selected == "password" ? "current_step" : "")}
+            %h3.step_text.side_menu_text{:class => (s = @page_selected == "password" ? "current_step_text" : "")} Password
+        = link_to user_path(:name => current_user.username), :class=>"undec" do
+          .install_step.side_menu_element{:class => (s = @page_selected == "public" ? "current_step" : "")}
+            %h3.step_text.side_menu_text{:class => (s = @page_selected == "public" ? "current_step_text" : "")} Public page
+
+
+        .install_step.side_menu_ln
+          %h3.step_text.side_menu_h TEAM
+
+        = link_to members_team_path, :class=>"undec" do
+          .install_step.side_menu_element{:class => (s = @page_selected == "team_memb" ? "current_step" : "")}
+            %h3.step_text.side_menu_text{:class => (s = @page_selected == "team_memb" ? "current_step_text" : "")}  Members
+
+        -if (@user.can? :get_list_of_invitations_team, @team)
+
+          = link_to NgRoutes::TEAM_INV, :class=>"undec" do
+            .install_step.side_menu_element{:class => (s = @page_selected == "team_inv" ? "current_step" : "")}
+              %h3.step_text.side_menu_text{:class => (s = @page_selected == "team_inv" ? "current_step_text" : "")}  Invitations
+
+          = link_to edit_team_path, :class=>"undec" do
+            .install_step.side_menu_element{:class => (s = @page_selected == "team_edit" ? "current_step" : "")}
+              %h3.step_text.side_menu_text{:class => (s = @page_selected == "team_edit" ? "current_step_text" : "")}  Edit
+
+        = link_to team_path(:name => current_user.team.name), :class=>"undec" do
+          .install_step.side_menu_element{:class => (s = @page_selected == "team_public" ? "current_step" : "")}
+            %h3.step_text.side_menu_text{:class => (s = @page_selected == "team_public" ? "current_step_text" : "")}  Team public page
+
+
+
+:javascript
+
+  $( document ).ready(function() {
+     $(".close-icon").animate({opacity: 0},100);
+  });
+
+  $( ".close-icon" ).click(function() {
+   $('.collapse').collapse('hide');
+   $('.close-icon').hide();
+   $(".close-icon").animate({opacity: 0},300);
+   $('.menu-icon').show();
+   $(".menu-icon").animate({opacity: 1},300);
+  });
+
+  $( ".menu-icon" ).click(function() {
+    $('.close-icon').show();
+    $(".close-icon").animate({opacity: 1},300);
+    $('.menu-icon').hide();
+    $(".menu-icon").animate({opacity: 0},300);
+  });

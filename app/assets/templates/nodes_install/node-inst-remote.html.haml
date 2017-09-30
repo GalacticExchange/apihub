@@ -1,0 +1,100 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Install remote nodes
+      .gr.inl ({{withHadoop ? 'Big Data node' : 'Application-only node' }})
+    %p.sb-p-text.gr
+      Step 3: Configure nodes.
+  .flex-wrap
+    %div(ng-if="loaded")
+      %material-spinner.fade-element-in.marg_ri_md(ng-show="instSpinner")
+      %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(ng-click="installNodes()" ng-disabled="instSpinner" data-toggle="tooltip" title="Hooray!")
+        Install {{nodesInstalls.length}} {{nodesInstalls.length == 1 ? 'node' : 'nodes'}}
+
+%add-pass-modal
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+%div.remote-nodess(ng-if="loaded")
+  .app_wrap.border.marg_bott_big
+    %table#instRemoteNodesConf.bord_bott{resizeable: "", mode: "'BasicResizer'"}
+      %thead.padd_15.grey_bg
+        %tr
+          %th#colName.table-h.t-col-left Node name
+          %th#colHostName.table-h.t-col-center Machine hostname or IP
+          %th#colUsername.table-h.t-col-center.hidden-xs
+            .fl-cont
+              .fl-wrap.fl-grow
+                SSH username
+              .fl-wrap.padd_ri_md.marg_ri_sm(ng-click="sameUsers()"){style:"margin-top: -1px;"}
+                =inline_svg "new/icons/infinity.svg", class:"hand_cursor {{sameUserFields ? 'gr-svg' : 'lite-gr-svg'}}", id:"sameUsers"
+              .mdl-tooltip.mdl-tooltip--large(for="sameUsers")
+                Reuse SSH username to add another node
+
+          %th#colPassword.table-h.t-col-center.hidden-xs.hidden-sm
+            .fl-cont
+              .fl-wrap.fl-grow
+                {{authMethod == 'password' ? 'SSH password' : 'SSH private key'}}
+              .fl-wrap.padd_ri_md.marg_ri_sm(){style:"margin-top: -1px;"}
+                .fl-cont
+                  %div(ng-switch on="authMethod" style="margin-right: 10px;" )
+                    .fl-wrap(ng-switch-when="password" ng-click="changeAuthMethod('privateKey')")
+                      =inline_svg "new/icons/key.svg", class:"hand_cursor lite-gr-svg", id:"changeAuthToPrvKey"
+                      .mdl-tooltip.mdl-tooltip--large(for="changeAuthToPrvKey")
+                        Change to private key
+                    .fl-wrap(ng-switch-when="privateKey" ng-click="changeAuthMethod('password')")
+                      =inline_svg "new/icons/lock.svg", class:"hand_cursor lite-gr-svg", id:"changeAuthToPassword"
+                      .mdl-tooltip.mdl-tooltip--large(for="changeAuthToPassword")
+                        Change to password
+                  .fl-wrap(ng-click="samePasswords()")
+                    =inline_svg "new/icons/infinity.svg", class:"hand_cursor {{samePasswordFields ? 'gr-svg' : 'lite-gr-svg'}}", id:"samePasswords"
+              .mdl-tooltip.mdl-tooltip--large(for="samePasswords")
+                {{authMethod == 'password' ? 'Reuse SSH password to add another node' : 'Reuse SSH private key to add another node'}}
+
+          %th#colPort.table-h.t-col-ri.hidden-xs
+            .fl-cont
+              .fl-wrap.fl-grow
+                SSH port
+              .fl-wrap(ng-click="samePorts()"){style:"margin-top: -1px; margin-right: 44px;"}
+                =inline_svg "new/icons/infinity.svg", class:"hand_cursor {{samePortFields ? 'gr-svg' : 'lite-gr-svg'}}", id:"samePorts"
+              .mdl-tooltip.mdl-tooltip--large(for="samePorts")
+                Reuse SSH port to add another node
+
+      %tbody
+        %tr.bord_bottt.gr-hover-elf(ng-repeat="nodeInst in nodesInstalls track by $index")
+          %td.bold.t-col-left
+            .padd_ri_md
+              %input.new-input(ng-model="nodeInst.nodeName" type="text" ng-class="nodeInst.err.nodeName ? 'new-input_err' : undefined" ng-change="validateNodeName(nodeInst, true)" uib-popover="{{nodeInst.err.nodeName}}" ng-focus="nodeInst.err.nodeNameShow = !!nodeInst.err.nodeName" ng-blur="nodeInst.err.nodeNameShow = false" popover-is-open="nodeInst.err.nodeNameShow" popover-trigger="'none'" ng-disabled="instSpinner")
+          %td.t-col-center
+            .padd_ri_md
+              %input.new-input(ng-model="nodeInst.sshCredentials.host" type="text" ng-class="nodeInst.err.host ? 'new-input_err' : undefined" ng-change="validateHostnameOrIp(nodeInst, true)" uib-popover="{{nodeInst.err.host}}" ng-focus="nodeInst.err.hostShow = !!nodeInst.err.host" ng-blur="nodeInst.err.hostShow = false" popover-is-open="nodeInst.err.hostShow" popover-trigger="'none'" ng-disabled="instSpinner")
+          %td.t-col-center
+            .padd_ri_md
+              %input.new-input(ng-model="nodeInst.sshCredentials.username" type="text" ng-class="nodeInst.err.username ? 'new-input_err' : undefined" ng-change="validateUsername(nodeInst, true)" uib-popover="{{nodeInst.err.username}}" ng-focus="nodeInst.err.usernameShow = !!nodeInst.err.username" ng-blur="nodeInst.err.usernameShow = false" popover-is-open="nodeInst.err.usernameShow" popover-trigger="'none'" ng-disabled="sameUserFields && !$first || instSpinner")
+          %td.t-col-center
+            .padd_ri_md(ng-switch on="nodeInst.sshCredentials.authMethod")
+              .new-input-with-icon(ng-switch-when="password" ng-init="passwordShow = false; fieldDisabled = false;" ng-class="{'new-input_err': nodeInst.err.password, 'new-input-with-icon-dis': fieldDisabled}" uib-popover="{{nodeInst.err.password}}" popover-is-open="nodeInst.err.passwordShow" popover-trigger="'none'")
+                %input(ng-model="nodeInst.sshCredentials.password" onfocus="$(this).parent().addClass('new-input-with-icon-focus')" onblur="$(this).parent().removeClass('new-input-with-icon-focus')" ng-attr-type="{{passwordShow ? 'text' : 'password'}}" ng-change="validatePassword(nodeInst, true)" ng-focus="nodeInst.err.passwordShow = !!nodeInst.err.password" ng-blur="nodeInst.err.passwordShow = false" ng-disabled="fieldDisabled = samePasswordFields && !$first || instSpinner")
+                =image_tag "new/icons/eye.svg", "ng-mousedown": "passwordShow = fieldDisabled ?  false : true", "ng-mouseup": "passwordShow = false", "ng-mouseleave":"passwordShow = false"
+              .new-input-with-icon(ng-switch-when="privateKey" ng-init="fieldDisabled = false;" ng-class="{'new-input_err': nodeInst.err.privateKeyPath, 'new-input-with-icon-dis': fieldDisabled}" uib-popover="{{nodeInst.err.privateKeyPath}}" popover-is-open="nodeInst.err.privateKeyPathShow" popover-trigger="'none'")
+                %input(readonly ng-model="nodeInst.sshCredentials.privateKeyPath" onfocus="$(this).parent().addClass('new-input-with-icon-focus')" onblur="$(this).parent().removeClass('new-input-with-icon-focus')" ng-focus="nodeInst.err.privateKeyPathShow = !!nodeInst.err.privateKeyPath" ng-blur="nodeInst.err.privateKeyPathShow = false" type="text" ng-disabled="fieldDisabled = samePasswordFields && !$first || instSpinner")
+                =image_tag "new/icons/folder.svg", class:'hand_cursor', "ng-click":"choosePrivateKey(nodeInst, fieldDisabled)"
+
+          %td.t-col-ri
+            .fl-cont.fl-center
+              .fl-wrap.fl-grow.padd_ri_md
+                %input.new-input.inl(ng-model="nodeInst.sshCredentials.port" type="number" ng-class="nodeInst.err.port ? 'new-input_err' : undefined" ng-change="validatePort(nodeInst, true)" style="width:100%;" uib-popover="{{nodeInst.err.port}}" ng-focus="nodeInst.err.portShow = !!nodeInst.err.port" ng-blur="nodeInst.err.portShow = false" popover-is-open="nodeInst.err.portShow" popover-trigger="'none'" ng-disabled="samePortFields && !$first != 0 || instSpinner")
+              .fl-wrap(style="min-width: 24px;" )
+                .div(ng-show="!$first" ng-click="removeNodeConfigFromList(nodeInst)")
+                  =inline_svg "new/icons/remove.svg", class:'red-svg hand_cursor'
+    .div.padd_md.gr-hover-el(ng-click="addNodeConfigToList()")
+      .fl-cont{style:"align-items: center;"}
+        .fl-wrap.padd_ri_md.padd_left_10(ng-if="!spinner")
+          =inline_svg "new/icons/add_circle.svg", class:'hand_cursor add_node_icon'
+        .fl-wrap(ng-if="!spinner")
+          %h4.no_marg.bold{style:"color: #585858;"}
+            Add node
+        .fl-wrap.padd_left_md
+          %material-spinner.fade-element-inr(ng-if="spinner" data-spinner-radius="12")

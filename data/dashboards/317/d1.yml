@@ -1,0 +1,1 @@
+dashboard:  description: Dashboard description here.  links:    - title: Realtime analytics      link: http://kibana.com/?p=134      description: some text      img: kibana1.jpg    - title: Weekly report      link: http://kibana.com/?p=500      description: some text      img: kibana2.png

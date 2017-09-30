@@ -1,0 +1,84 @@
+#wrap
+  %br
+  .container
+    = render "shared/flash"
+    .row
+      .col-md-3
+        .list-group
+          = render "shared/profile_column_left_main", bt: ""
+
+        .list-group
+          = render "shared/profile_column_left_team", bt: ""
+
+
+        %br
+        .list-group
+          = render "shared/profile_column_left_cluster", bt: ""
+
+      .col-md-9.no_padd_top
+        .profile_header
+          %h2.inl
+            Your
+          %h2.inl.gr
+            clusters
+
+
+        -if @my_clusters.empty?
+          %h3.text-center.no_padd_top
+            =t('clusters.own.empty')
+        -else
+          -for cluster in  @my_clusters[0..9]
+            .panel-cluster
+              %h4{:style=>"margin: 3px;"}
+                =image_tag "clust12.png", :width=>12,:style=>"margin-bottom: 2px; margin-right: 4px"
+                = link_to cluster.name, show_cluster_path(:name => cluster.name)
+
+              .right_part_cl_bl{:style=>"display: inline;"}
+                .additional_info.no_marg
+                  %h4{:style=>"font-size:16px; margin-bottom: 3px;"}
+                    %p{:style=>"color:#7f7f7f !important; margin-bottom: 0px"}
+                      -if cluster.description=""
+                        =t('clusters.description.empty')
+                      -else
+                        =cluster.description
+
+            %hr.no_marg
+
+
+        .profile_header{:style=>"padding-top: 35px"}
+          %h2.inl
+            Shared
+          %h2.inl.gr
+            clusters
+
+        %p
+          -if @shared_clusters.empty?
+            %h3.text-center.no_padd_top
+              =t('clusters.shared.empty')
+          -else
+            -for cluster in  @shared_clusters[0..9]
+
+
+              .panel-cluster
+                %h4{:style=>"margin: 3px;"}
+                  =image_tag "clust12.png", :width=>12,:style=>"margin-bottom: 2px; margin-right: 4px"
+                  = link_to cluster.name, show_shared_cluster_path(:name => cluster.name)
+
+                .right_part_cl_bl.inl
+                  .additional_info.no_marg
+                    %h4{:style=>"font-size:16px; margin-bottom: 3px;"}
+                      %p{:style=>"color:#7f7f7f !important; margin-bottom: 0px"}
+                        -if cluster.description=""
+                          =t('clusters.description.empty')
+                        -else
+                          =cluster.description
+
+              %hr.no_marg
+
+
+
+            -if @shared_clusters.length>10
+              %h3.text-center.semibold
+                = link_to shared_clusters_path do
+                  Show all
+

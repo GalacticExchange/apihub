@@ -1,0 +1,47 @@
+!!! Strict
+%html
+  %head
+    = meta_tags rescue nil
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    = csrf_meta_tag
+
+    = stylesheet_link_tag    "ours/sidebar_view", media: "all"
+    = stylesheet_link_tag    "ours/sidebar_view_fx", media: "all"
+
+    = javascript_include_tag :application
+    = javascript_include_tag :ng_workspace_app
+
+
+    = render "shared/head_icons"
+
+    = yield(:head)
+    %title Galactic Exchange
+  %body{:class => (@app_page ? "app_page" : "")}
+
+
+
+
+    #popup
+      =render "shared/main_popup"
+    #body#wrap{style:' ffilter: opacity(.9);'}
+      =render "shared/snackbar"
+      =render 'shared/header'  unless @no_header
+
+      = content_for?(:content) ? yield(:content) : yield
+
+
+
+    -#collapseOne.panel-collapse.collapse.in.div.border{style:'    z-index: 999; padding: 20px 30px;       box-shadow: 0 0 6px rgba(0, 0, 0, 0.04), 1px -6px 12px 1px rgba(0, 0, 0, 0.07);   background-color: rgba(247, 247, 247, 0.94); position: absolute;  bottom: 0;  right: 0;    width: 100vw;     border-radius: 15px 15px 0px 0px;'}
+      .div{style:"height:300px;"}
+        .div.text-center
+          %a.hand_cursor{"data-target" => "#collapseOne", "data-toggle" => "collapse"}
+            =inline_svg "new/icons/arrow_down.svg", class:"info-gr-icon lg-icon"
+        -#=inline_svg "new/icons/arrow_down.svg", class:"info-gr-icon lg-icon"
+        .fl-cont.gx-fl-center
+          .fl-wrap{style:'border-radius: 50%; background-color: #00afa8; padding: 5px;'}
+            = inline_svg "new/icons/nodes_.svg", class: "sm-icon white-svg"
+          .fl-wrap.padd_left_md
+            %p.no_marg.bold 4 nodes selected

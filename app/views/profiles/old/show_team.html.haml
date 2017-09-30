@@ -1,0 +1,52 @@
+%br
+.container
+  = render "shared/flash"
+  .row
+    .col-md-3
+      .list-group
+        = render "shared/profile_column_left_main", bt: ""
+      .list-group
+        = render "shared/profile_column_left_team", bt: ""
+      %br
+      .list-group
+        = render "shared/profile_column_left_cluster", bt: ""
+
+    .col-md-9
+      .info_bl.padd_top_big.padd_bott_bg
+        .row
+          .col-md-3
+            .main_info
+              = image_tag avatar_url_team(@team, :medium);
+          .col-md-3
+            .text.padd_bott_sm
+              %h2.no_marg.semibold
+                =@team.name.capitalize
+            %h3#since_ln.padd_bott_md.no_marg.padd_top_sm.gr
+              =image_tag "since.png",:class=>"since_pic_sm"
+              = our_date(@team.created_at)
+
+            .block1.padd_top_sm
+              =link_to team_path(:name => @team.name), :class=>"undec" do
+                %h3.inl.link_col
+                  Team public page
+                -#=image_tag "back_link.png", :class=>"back_pic", :width=>6,:style=>"margin-bottom: 2px; margin-left: 2px; opacity: 0.8"
+            .block1.padd_top_sm
+              =link_to members_team_path,:class=>"undec" do
+                %h3.inl.link_col Members
+
+            .block1.padd_top_sm
+              =link_to my_clusters_path(:name => @team.name), :class=>"undec" do
+                %h3.inl.link_col Clusters
+
+            -if (@user.can? :get_list_of_invitations_team, @team)
+              .block1.padd_top_sm
+                =link_to edit_team_path, :class=>"undec" do
+                  %h3.inl.link_col Edit team
+
+
+        .padd_top_md.padd_bott_md
+          .profile_inf_ln
+            %h3.profile_inf
+              About:
+            %h3.profile_inf_user
+              = @team.about

@@ -1,0 +1,50 @@
+.app_wrap.marg_bott_md#top_of_users
+  .flex-container.lite_shadow
+    %form.header_search_wrap(novalidate ng-submit="submitSearch()" ng-class="focusSearch ? 'search_box_focus' : undefined" style="padding-top: 0px")
+      %input(type="text" name="searchText" placeholder="Search users" ng-model="searchText" class="custom-input dform-control" ng-autofocus ng-focus="focusSearch = true" ng-blur="focusSearch = false")
+      .header_search_icon_wrap.inl.hand_cursor(ng-click="submitSearch()")
+        =image_tag "new/icons/search_black.svg", class:"search_input_icon"
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+%div(ng-if="loaded")
+  .app_wrap.border(ng-if="users && users.length > 0")
+    .row
+      .flex-container-all.table-row.bord_bott(ng-repeat="user in users track by user.username")
+        %a(ng-href="/user/{{user.username}}")
+          .flex-wrap
+            .padd_md
+              %img(ng-src="{{user.avatar_url}}" alt="" class="img-circle avarars-satur inl undec marg_left_sm" style="width: 40pt;")
+        .flex-wrap
+          .padd_md.no_padd_ri
+            %a(ng-href="/user/{{user.username}}" class="undec")
+              %h5.no_marg.bold.inl
+                {{user.firstName}}
+                {{user.lastName}}
+              %p.no_marg.inl.gr.marg_left_sm
+                ({{user.username}})
+            %br
+            .padd_top_sm(ng-if="user.team_name")
+              %h6.no_marg.gr.inl{style:"font-size: 12pt;"}
+                Team:
+              %h6.no_marg.inl.marg_left_sm{style:"font-size: 12pt;"}
+                %a(ng-href="/team/{{user.team_name}}") {{user.team_name}}
+        %a(ng-href="/user/{{user.username}}" class="flex-wrap" style="flex-grow: 1")
+          .padd_md
+        .flex-wrap
+          .padd_md.pull-right
+            %a(ng-href="/profile/dialogs/show?to={{user.username}}" class="undec")
+              = inline_svg "new/icons/messagesss.svg", class: "img_send_msg", height:"20pt", width:"20pt", id:"send_msg_{{user.username}}"
+            .mdl-tooltip.mdl-tooltip--large{for:"send_msg_{{user.username}}"}
+              Send message
+  .app_wrap(ng-if="users && pagination.totalItems > pagination.itemsPerPage")
+    .row
+      .text-center
+        %ul(uib-pagination total-items="pagination.totalItems" ng-model="pagination.currentPage" max-size="pagination.maxSize" class="pagination-sm" boundary-link-numbers="true" ng-change="pageChanged()" items-per-page="pagination.itemsPerPage")
+
+  %h3.text-center.no_marg.padd_md(ng-if="!users || users.length == 0")
+    We could not find any users
+
+

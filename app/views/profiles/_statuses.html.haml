@@ -1,0 +1,11 @@
+- if item.status == Invitation::STATUS_NOT_ACTIVATED
+  .label.label-primary not activated
+
+- elsif item.status == Invitation::STATUS_DELETED
+  .label.label-default deleted
+
+- elsif item.status == Invitation::STATUS_EXPIRED
+  .label.label-default expired
+
+- elsif item.status == Invitation::STATUS_ACTIVATED
+  .label.label-success activated

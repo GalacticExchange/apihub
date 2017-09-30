@@ -1,0 +1,84 @@
+'use strict';
+
+angular.module('components').component('containerDetails', {
+    templateUrl: '<%= asset_path("containers/container-details.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', 'ROUTES', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, $routeParams, ROUTES, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+            $scope.username = GexUtils.currentUser.username;
+
+            fetchContainer(true);
+
+            function fetchContainer(firstTime) {
+                $http.get('/clusters/' + $scope.clusterId + '/containers/' + $routeParams.containerId, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.container = response.data.container;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Error fetching container: ' + GexUtils.getErrMsgServ(response));
+                    } else {
+                        console.log('Error fetching container: ' + GexUtils.getErrMsgServ(response));
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+
+            $scope.containerCommand = function (command, containerId) {
+                GexUtils.showSnackbarMessage("Sending request...");
+
+                // todo: refactor it!
+                var containerResponses = {
+                    "start": "Container starting",
+                    "stop": "Container stopping",
+                    "restart": "Container restarting"
+                };
+
+                var data = {
+                    clusterId: $scope.clusterId,
+                    command: command,
+                    containerID: containerId
+                }
+
+                $http.put('/containers', data, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    GexUtils.showSnackbarMessage(containerResponses[command]);
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    GexUtils.showMessageDialog('Error', 'Failed to send container command: ' + GexUtils.getErrMsgServ(response));
+                }).then(function () {
+                    fetchContainer();
+                });
+            };
+
+
+            var fetchContainerInterval = $interval(function () {
+                fetchContainer();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchContainerInterval)) {
+                    $interval.cancel(fetchContainerInterval);
+                    fetchContainerInterval = undefined;
+                }
+            });
+
+        }
+    ]
+});

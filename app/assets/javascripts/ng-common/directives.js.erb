@@ -1,0 +1,356 @@
+'use strict';
+
+var directives = angular.module('directives', []);
+
+
+directives.directive('mdlProgress', function () {
+    return {
+        restrict: 'E',
+        template: '<div class="mdl-progress mdl-js-progress" ng-model="ngModel"></div>',
+        scope: {
+            ngModel: '='
+        },
+        transclude: true,
+        link: {
+            pre: function ($scope, el, $attrs) {
+                $attrs.$observe('progress', function (progress) {
+                    progress = angular.isUndefined(progress) ? 0 : parseInt(progress);
+                    if (progress) {
+                        var child = el[0].childNodes[0];
+                        if (child.MaterialProgress) {
+                            child.MaterialProgress.setProgress(progress);
+                        } else {
+                            child.addEventListener('mdl-componentupgraded', function () {
+                                child.MaterialProgress.setProgress(progress);
+                            });
+                        }
+                    }
+                })
+            },
+            post: function ($scope, el) {
+                componentHandler.upgradeElement(el[0].childNodes[0]);
+            }
+        }
+    };
+});
+
+directives.directive('ngMdlSelect', function () {
+    return {
+        restrict: 'A',
+        link: {
+            pre: angular.noop,
+            post: function ($scope, el) {
+                setTimeout(function () {
+                    componentHandler.upgradeElement(el[0]);
+                }, 500);
+            }
+        }
+    };
+});
+
+directives.directive('mdlButton', function () {
+    return {
+        restrict: 'C',
+        link: {
+            pre: angular.noop,
+            post: function ($scope, el) {
+                componentHandler.upgradeElement(el[0]);
+            }
+        }
+    };
+});
+
+directives.directive('mdlTooltip', function () {
+    return {
+        restrict: 'C',
+        link: {
+            pre: angular.noop,
+            post: function ($scope, el) {
+                setTimeout(function () {
+                    componentHandler.upgradeElement(el[0]);
+                }, 500);
+            }
+        }
+    };
+});
+
+directives.directive('mdlTabs', function () {
+    return {
+        restrict: 'C',
+        link: {
+            pre: angular.noop,
+            post: function ($scope, el) {
+                componentHandler.upgradeElement(el[0]);
+            }
+        }
+    };
+});
+
+directives.directive('mdlSwitch', function () {
+    return {
+        restrict: 'C',
+        link: {
+            pre: angular.noop,
+            post: function ($scope, el) {
+                componentHandler.upgradeElement(el[0]);
+            }
+        }
+    };
+});
+
+directives.directive('mdlCheckbox', function () {
+    return {
+        restrict: 'C',
+        scope: {
+            ngModel: '='
+        },
+        link: {
+            pre: function ($scope, el, $attrs) {
+                componentHandler.upgradeElement(el[0]);
+                $scope.ngModel ?  el[0].MaterialCheckbox.check() :  el[0].MaterialCheckbox.uncheck();
+            },
+            post: function ($scope, el) {
+                componentHandler.upgradeElement(el[0]);
+            }
+        },
+    };
+});
+
+directives.directive('mdcRipple', function () {
+    return {
+        restrict: 'A',
+        scope: {
+            'mdcRippleCond': '<'
+        },
+        link: {
+            pre: angular.noop,
+            post: function ($scope, el) {
+                var ripple;
+                $scope.$watch('mdcRippleCond', function (condition) {
+                    if (condition !== false) {
+                        el.addClass('mdc-ripple-surface');
+                        ripple = mdc.ripple.MDCRipple.attachTo(el[0]);
+                    } else {
+                        if (ripple) {
+                            el.removeClass('mdc-ripple-surface');
+                            ripple.destroy();
+                            ripple = undefined;
+                        }
+                    }
+                });
+
+                $scope.$on("$destroy", function () {
+                    if (ripple) {
+                        ripple.destroy();
+                        ripple = undefined;
+                    }
+                });
+            }
+        }
+    };
+});
+
+directives.directive('popupMessage', function () {
+    return {
+        restrict: 'E',
+        templateUrl: '<%= asset_path("common/popup-message.html") %>',
+        scope: {
+            text: '=text',
+            type: '<type'
+        },
+        controller: ['$http', '$scope',
+            function ($http, $scope) {
+                switch ($scope.type) {
+                    case 'error':
+                        $scope.bgClass = 'error-bg';
+                        break;
+                    case 'success':
+                        $scope.bgClass = 'success-bg';
+                        break;
+                    case 'wait':
+                        $scope.bgClass = 'wait-bg';
+                        break;
+                    case 'install':
+                        $scope.bgClass = 'install-bg';
+                        break;
+                    default:
+                        $scope.bgClass = 'default-bg';
+                }
+            }
+        ]
+    };
+});
+
+
+directives.directive('gxChecks', function () {
+    return {
+        restrict: 'E',
+        templateUrl: '<%= asset_path("common/gx-checks.html") %>',
+        scope: {
+            checks: '<checks',
+            status: '<status',
+            itemId: '<itemId'
+        },
+        link: function($scope) {
+            $scope.$watch('checks', function() {
+                if (!$scope.checks || Object.keys($scope.checks).length == 0){
+                    $scope.noChecks = true;
+                    return;
+                }
+
+                var passed = 0;
+                Object.keys($scope.checks).forEach(function (key) { if($scope.checks[key] != null && $scope.checks[key].passed == true){  passed++ } });
+                $scope.passed = passed;
+
+                if($scope.status == 'active' || $scope.status == 'joined'){
+
+                    $scope.checksOff = false;
+
+                    if(passed == Object.keys($scope.checks).length){
+                        $scope.checksColor = 'green';
+                    }else{
+                        $scope.checksColor = 'red';
+                    }
+                }else{
+                    $scope.checksOff = true;
+                    $scope.checksColor = 'lite-gr';
+                }
+            });
+        }
+    };
+});
+
+
+directives.directive('gxStatus', function () {
+    return {
+        restrict: 'E',
+        templateUrl: '<%= asset_path("common/gx-status.html") %>',
+        scope: {
+            status: '=status',
+            utils: '<utils'
+        },
+
+        link: function($scope) {
+            $scope.$watch('status', function() {
+                $scope.color = $scope.utils.getStatusColor($scope.status);
+                $scope.parsedStatus = GexUtils.fixStatus($scope.status);
+            })
+        }
+    };
+});
+
+
+directives.directive('clusterInstallSteps', function () {
+    return {
+        restrict: 'E',
+        templateUrl: '<%= asset_path("clusters/install-steps.html") %>',
+        scope: {
+            currentStep: '=currentStep',
+            step1: '=step1'
+        },
+
+        controller: ['$http', '$scope',
+            function ($http, $scope) {
+
+                // todo: refactor that - wtf
+                $scope.getStep1Color = function (step1) {
+                   if(step1=='aws'){ return 'grad-aws' }
+                   if(step1=='onprem'){ return 'grad' }
+                }
+                // todo: refactor that - wtf
+                $scope.getStepColor = function (stepNumber, requiredStep) {
+                    if(stepNumber > requiredStep){ return 'green-bg' }
+                }
+        }]
+    };
+
+});
+
+
+directives.directive('materialSpinner', function () {
+    return {
+        restrict: 'E',
+        scope: {
+            radius: '@spinnerRadius'
+        },
+        link: function (scope, element) {
+            element.spinner({radius: scope.radius == undefined || scope.radius == null ? 20 : scope.radius});
+        }
+    };
+});
+
+directives.directive('ngAutofocus', ['$timeout', function ($timeout) {
+    return {
+        restrict: 'A',
+        link: function ($scope, $element) {
+            $timeout(function () {
+                $element[0].focus();
+            });
+        }
+    }
+}]);
+
+directives.directive('addPassModal', function () {
+    return {
+        restrict: 'E',
+        scope: {},
+        templateUrl: '<%= asset_path("common/add-pass-modal.html") %>',
+        link: function (scope, element) {
+            var id = "addPassModal" + Math.floor(Math.random() * 100000000);
+            element[0].childNodes[0].setAttribute("href", '#' + id);
+            element[0].childNodes[4].setAttribute("id", id);
+            scope.closeButton = element[0].childNodes[2];
+            scope.closeButton.classList.add('close-' + id);
+            var wrappedLink = $(element[0].childNodes[0]);
+            wrappedLink.animatedModal(
+                {
+                    color: 'rgba(191, 191, 191, 0.682353)',
+                    animatedIn: 'fadeIn',
+                    animatedOut: 'fadeOut',
+                    modalTarget: id
+                }
+            );
+            scope.openLink = wrappedLink;
+        },
+        controller: ['$scope',
+            function ($scope) {
+                $scope.utils = GexUtils;
+                $scope.password = undefined;
+                $scope.err = {};
+
+                $scope.closeModal = function (password) {
+                    $scope.$emit('closeAddPassModal-' + $scope.passwordId, {password: password});
+                    $scope.closeButton.click();
+                }
+
+                $scope.addPass = function () {
+                    $scope.validatePassword();
+                    if (_.isEmpty($scope.err.message)) {
+                        $scope.closeModal($scope.password);
+                    }
+                }
+
+                $scope.validatePassword = function (showErrTooltip) {
+                    if (_.isEmpty($scope.password)) {
+                        $scope.err.message = 'SSH passphrase must not be empty.';
+                    } else {
+                        $scope.err.message = undefined;
+                    }
+
+
+                    if (showErrTooltip) {
+                        $scope.err.show = !!$scope.err.message;
+                    }
+                }
+
+                $scope.$on('openAddPassModal', function (event, data) {
+                    $scope.passwordId = data.id;
+                    $scope.password = undefined;
+                    $scope.err = {};
+                    $scope.openLink.click();
+                });
+            }
+        ]
+    };
+});
+

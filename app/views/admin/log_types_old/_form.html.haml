@@ -1,0 +1,8 @@
+.col-md-8
+  = simple_form_for([:admin, @log_type], html: { class: 'form-horizontal' }) do |f|
+    = f.error_notification
+
+    = render "fields", f: f
+
+
+    = f.button :submit

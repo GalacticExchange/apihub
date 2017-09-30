@@ -1,0 +1,7 @@
+%h1 Error
+
+=@res.error_msg
+%p
+- @res.errors.each do |err|
+  = err[:message] || err['message']
+  %br

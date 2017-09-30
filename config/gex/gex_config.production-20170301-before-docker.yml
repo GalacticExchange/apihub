@@ -1,0 +1,121 @@
+api_host: 'api.galacticexchange.io'
+domain: 'http://api.galacticexchange.io/'
+hub_url: 'http://hub.galacticexchange.io/'
+website_url: 'http://galacticexchange.io/'
+doc_url: 'http://docs.galacticexchange.io/'
+apphub_url: 'http://apphub.galacticexchange.io/'
+checks_server_url: 'http://checks.friendlydata.com/'
+#download_url: 'http://galactic.staging.wpengine.com/downloads/'
+download_url: 'http://galacticexchange.io/downloads/'
+youtrack_url: 'http://gex.myjetbrains.com/youtrack/'
+
+
+#
+TEST_PHONE_NUMBER: "+14150000000"
+TEST_USER_COUNTRY: "us"
+TEST_USER_PWD: "PH_GEX_PASSWD1"
+
+
+#
+ruby_user: 'uadmin'
+
+
+
+# ips, hosts
+dns_ip: 104.247.194.114
+api_ip: 104.247.194.115
+
+# dns
+dns_server: '104.247.194.114'
+
+
+# first-level domain for our servers and clusters
+domain_zone: 'gex'
+
+#
+jwt_secret: 'mjuRP5vfjsu6611e99'
+
+#
+log_async: 1
+
+#
+email_from: 'noreply@galacticexchange.io'
+email_debug_catch_all: 'betauser@galacticexchange.io'
+
+
+#
+server_app_repo: 'http://applications.galacticexchange.io'
+dir_clusters_data: "/var/www/data/"
+
+
+ansible_env: 'production'
+storage_files_dir: '/var/www/ansible/'
+
+chef_dir: '/var/www/chef/'
+
+
+
+# redis
+redis_host: '104.247.203.210'
+redis_prefix: 'gex'
+
+
+# rabbit
+
+rabbit_host: 'rabbit.galacticexchange.io'
+rabbit_url: '104.247.194.116'
+rabbit_api_endpoint: 'http://104.247.194.116:15672'
+
+rabbit_host_private: 'rabbit.gex'
+rabbit_url_private: '51.0.1.5'
+rabbit_api_endpoint_private: 'http://51.0.1.5:15672'
+
+rabbit_root_username: 'admin'
+rabbit_root_password: 'PH_GEX_PASSWD1'
+rabbit_prefix: 'gex'
+
+
+# sensu
+rabbit_sensu_username: 'sensu'
+rabbit_sensu_password: 'PH_GEX_PASSWD1'
+rabbit_sensu_vhost: '/sensu'
+rabbit_sensu_prefix: 'gex'
+
+sensu_api_host: '104.247.194.116'
+sensu_api_host_private: '51.0.1.5'
+sensu_api_port: 4567
+sensu_api_user: 'admin'
+sensu_api_password: 'PH_GEX_PASSWD1'
+
+# kafka
+counters_kafka_host: '51.1.0.52'
+counters_kafka_prefix: 'gex'
+
+
+# elasticsearch
+elasticsearch_host: '51.1.0.51'
+elasticsearch_port: 9200
+elasticsearch_prefix: 'gex.'
+
+
+# proxy
+sshproxy_host: "proxy.galacticexchange.io"
+
+# webproxy
+webproxy_host: "webproxy.galacticexchange.io"
+
+
+# openvpn
+openvpn_host: '172.82.184.107'
+
+
+# network
+ip_client_base: 'FDE9:E9:E9'
+ip_server_base: 'FD9E:9E:9E'
+
+
+# containers
+master_host: 'master.gex'
+
+hadoop_master_ip_prefix: '51.77'
+hue_master_ip_prefix: '51.78'

@@ -1,0 +1,79 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        User create
+
+= link_to 'Generate user', '#', id: 'btn_user_generate', class: 'btn btn-default'
+%br
+
+= render 'user_create_form'
+
+
+
+
+:javascript
+  $( document ).ready(function() {
+
+    $('#btn_user_generate').click(function( event ) {
+      event.preventDefault();
+
+      // get user data from server
+      user_load_data();
+    }); // click
+
+
+  }); // ready
+
+  function user_load_data(){
+    $.ajax({
+        url: "/admin/users/generate",
+        data: {},
+        type: "GET",
+        dataType: "json",
+        contentType: "application/json",
+
+        beforeSend: function(){
+          // Handle the beforeSend event
+        },
+        success: function(res_data){
+          user_fill_form(res_data);
+        },
+
+        complete: function (res_data) {
+
+        }
+
+    }); // ajax
+  }
+
+  function user_fill_form(data){
+    console.log("random");
+    console.log(data);
+
+    for (var k in data) {
+        if (data.hasOwnProperty(k)) {
+           //console.log("k");
+           console.log(k);
+           console.log(data[k]);
+           //data[k];
+
+           var f = $('#'+'user_'+k);
+           if (f.length){
+            console.log("set field");
+            f.val(data[k]);
+           }
+
+           // team
+           $('#'+'user_team_attributes_name').val(data["team_name"]);
+
+           // pwd
+           $('#'+'user_password_confirmation').val(data["password"]);
+
+
+
+        }
+    }
+
+
+  }

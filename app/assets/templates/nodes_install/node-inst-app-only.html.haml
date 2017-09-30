@@ -1,0 +1,110 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Add nodes
+    %p.sb-p-text.gr
+      Add Big Data containers to node.
+  .fl-wrap
+
+
+.gx-page
+  .fl-cont.padd_bott_md
+    .div(ng-click="withHadoop()")
+      .fl-wrap.padd_md.hand_cursor.lite-gx-border(data-div="core-node-card")
+        .fl-cont.gx-fl-center{style:'width: 700px;'}
+          .fl-wrap.padd_ri_md
+            .div.grad-amber{style:'border-radius: 50%; backgrfound-color: #5d5d5d; padding: 20px;'}
+              =inline_svg "new/icons/dns.svg", class: "lg-icon white-svg"
+          .fl-wrap.fl-grow.padd_left_md.padd_ri_md
+            %h3.bold.no_marg{style:"font-size: 20pt; color: #585858;"} Big Data node
+            .fl-cont.marg_top_10
+              -#.fl-wrap.padd_ri_10
+                =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+              .fl-wrap
+                %h5.no_marg.gr{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+                  Add big data slave nodes to the cluster
+
+              #big-data-node-help.fl-wrap.padd_left_10.hand_cursor{style:'opacity: 0.9'}
+                =inline_svg "new/icons/help.svg", class:"gex-svg sm-icon"
+              .mdl-tooltip.mdl-tooltip--large(for="big-data-node-help" style='line-height: 1.3; min-width: 300px !important;')
+                Each big data slave node will deploy the big data template options you selected when first creating this cluster
+
+          .fl-wrap.padd_left_md.padd_ri_10.marg_left_md
+            =inline_svg "new/icons/next.svg", class:"lg-icon gex-svg"
+
+  .fl-cont.padd_bott_md
+    .div(ng-click="appOnly()")
+      .fl-wrap.padd_md.hand_cursor.lite-gx-border(data-div="app-node-card")
+        .fl-cont.gx-fl-center{style:'width: 700px;'}
+          .fl-wrap.padd_ri_md
+            .div.grad-blue{style:'border-radius: 50%; backgrfound-color: #5d5d5d; padding: 20px;'}
+              =inline_svg "new/icons/store_.svg", class: "lg-icon white-svg"
+          .fl-wrap.fl-grow.padd_left_md.padd_ri_md
+            %h3.bold.no_marg{style:"font-size: 20pt; color: #585858;"} Application-only node
+            .fl-cont.marg_top_10
+              -#.fl-wrap.padd_ri_10
+                =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+              .fl-wrap
+                %h5.no_marg.gr{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+                  Add a lightweight node that runs applications only
+
+              #app-only-node-help.fl-wrap.padd_left_10.hand_cursor{style:'opacity: 0.9'}
+                =inline_svg "new/icons/help.svg", class:"gex-svg sm-icon"
+              .mdl-tooltip.mdl-tooltip--large(for="app-only-node-help" style='line-height: 1.3; min-width: 300px !important;')
+                This type of nodes does not run core Big Data frameworks.
+
+          .fl-wrap.padd_left_md.padd_ri_10.marg_left_md
+            =inline_svg "new/icons/next.svg", class:"lg-icon gex-svg"
+
+
+
+
+
+
+
+
+-#.gex-content.gx-page
+  .row{style:"max-width: 800px;"}
+    .col-md-6.no_padd_left.padd_bott_md(data-div="on-premise-card")
+      .border
+        .bord_bott.hand_cursor.padd_bott_md.flex-center{style:"min-height: 300px;"}(ng-click="withHadoop()")
+          .div
+            .padd_md.flex-center.no_padd_bott
+              .div{style:'border-radius: 50%; background-color: #5d5d5d; padding: 40px;'}
+                =inline_svg "new/icons/dns.svg", class: "xlg-icon white-svg"
+            .padd_top_10
+              %h3.bold.text-center.marg_top_10.no_marg_bott{style:"    font-size: 20pt; color: #585858;"} With Hadoop & Hue
+
+
+        -#.padd_top_md.padd_left_md
+          %h3.bold.no_marg.bold.text-center{style:"color: #585858;"} With Hadoop & Hue
+
+        .fl-cont.padd_md.marg_top_10.marg_bott_10{style:"min-height: 100px;"}
+          .fl-wrap.padd_ri_10
+            =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+          .fl-wrap
+            %h5.no_marg.gr{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+              Install Hadoop and Hue containers to the node.
+
+
+        .flex-center.padd_md.no_padd_top
+          %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(style="width: 100%" data-btn="hadoop-node" ng-click="withHadoop()") Install Hadoop node(s)
+
+    .col-md-6.no_padd_ri.padd_bott_md(data-div="aws-card")
+      .border
+        .bord_bott.padd_bott_md.hand_cursor.flex-center{style:"min-height: 300px;"}(ng-click="appOnly()")
+          .div
+            .padd_md.flex-center.no_padd_bott
+              .div{style:'border-radius: 50%; background-color: #5d5d5d; padding: 40px;'}
+                =inline_svg "new/icons/store_.svg", class: "xlg-icon white-svg"
+            .padd_top_10
+              %h3.bold.text-center.marg_top_10.no_marg_bott{style:"    font-size: 20pt; color: #585858;"} Applications only
+        .fl-cont.padd_md.marg_top_10.marg_bott_10{style:"min-height: 100px;"}
+          .fl-wrap.padd_ri_10
+            =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+          .fl-wrap
+            %h5.no_marg.gr{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+              Empty lightweight node for applications, without Hadoop.
+
+        .flex-center.padd_md.no_padd_top
+          %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(style="width: 100%" data-btn="app-only-node" ng-click="appOnly()") Install applications-only node(s)

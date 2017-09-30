@@ -1,0 +1,55 @@
+'use strict';
+
+angular.module('components').component('applicationDetails', {
+    templateUrl: '<%= asset_path("applications/application-details.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', 'ROUTES', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, $routeParams, ROUTES, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+            $scope.applicationId = $routeParams.applicationId;
+            $scope.username = GexUtils.currentUser.username;
+
+            fetchApplication(true);
+
+            function fetchApplication(firstTime) {
+                $http.get('/clusters/' + $scope.clusterId + '/applications/' + $routeParams.applicationId, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {type: "_with_library_application"}
+                }).then(function (response) {
+                    $scope.app = response.data.application;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (response.status == 404) {
+                        $scope.applicationNotFound = true;
+                        return;
+                    }
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Error fetching application: ' + GexUtils.getErrMsgServ(response));
+                    } else {
+                        console.log('Error fetching application: ' + GexUtils.getErrMsgServ(response));
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            var fetchApplicationInterval = $interval(function () {
+                fetchApplication();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchApplicationInterval)) {
+                    $interval.cancel(fetchApplicationInterval);
+                    fetchApplicationInterval = undefined;
+                }
+            });
+        }
+    ]
+});

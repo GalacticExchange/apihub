@@ -1,0 +1,22 @@
+{
+  "directoryName" : "/var",
+  "systemInfo": {
+          "osName": "Linux",
+          "osVersion" : "3.19.0-26-generic",
+          "networkInterfaces": [
+                  {
+                  "displayName" : "eth0",
+                  "isLoopback": "false",
+                  "isPointToPoint" : "false",
+                  "isVirtual" : "false",
+                  "macAddress" : "fc:aa:14:c2:3d:4e",
+                  "name" : "eth0",
+                  "addresses": [
+                      {
+                          "hostAddress" : "fe80:0:0:0:feaa:14ff:fec2:3d4e2",
+                          "prefixLength" : "64"
+                      }
+                  ]}
+           ]
+      }
+}

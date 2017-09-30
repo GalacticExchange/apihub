@@ -1,0 +1,9 @@
+---
+:concurrency: 10
+:timeout: 1800
+
+:queues:
+  - default
+  - mailers
+  - clusters
+  - provisionnotify

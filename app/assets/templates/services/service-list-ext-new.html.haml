@@ -1,0 +1,61 @@
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+.div(ng-if="loaded")
+  .fl-cont.gx-fl-center.padd_bott_md.padd_left_md.padd_ri_md
+    .fl-wrap.padd_ri_10
+      .card-h-icon
+        .svg-wrap
+          =inline_svg "new/icons/services.svg", class: "sm-icon white-svg fx-sm-icon"
+    .fl-wrap
+      %p.card-h.bold {{isServicesEmpty ? 'No services' : 'Services' }}
+
+  -#.flex-container-all.grey_bg.padd_10.padd_left_md{style:"align-items: center;"}
+    .flex-wrap.padd_ri_10
+      =image_tag "new/icons/services.svg", class:"card-icon"
+    .flex-wrap
+      %p.card-h {{isServicesEmpty ? 'No services' : 'Services' }}
+
+  %table#servicesTable(ng-if="services && services.length != 0" ){:resizeable => "", :mode => "'BasicResizer'"}
+    %thead.padd_15{style:'background-color: white;'}
+      %tr
+        %th#colName.table-h.t-col-left Name
+        -#%th#colStatus.table-h.t-col-center State
+        %th#colChecks.table-h.t-col-center.hidden-xs.hidden-sm{style:'color: #797979 !important;'} Status checks
+        %th#colNode.table-h.t-col-center.hidden-xs{style:'color: #797979 !important;'} Local IP
+        %th#colPort.table-h.t-col-center.hidden-xs.hidden-sm{style:'color: #797979 !important;'} Port
+        %th#colProtocol.table-h.t-col-center.hidden-xs.hidden-sm{style:'color: #797979 !important;'} Protocol
+        %th#colHostname.table-h.t-col-center.hidden-xs.hidden-sm.hidden-md{style:'color: #797979 !important;'} Hostname
+        %th#colAction.table-h.t-col-ri.hidden-xs.gr
+    %tbody(data-div="services-list")
+      %tr.bord_bott(ng-repeat="service in services track by service.id"){id:"{{service.name}}_block"}
+        %td.bold.t-col-left(data-div="name") {{service.title ? service.title : service.name}}
+        -#%td.t-col-center.gr
+          %img(ng-src="{{utils.getStatusCircle(service.status)}}" class="status-dot")
+          {{service.status}}
+        %td.t-col-center.hidden-xs.hidden-sm
+          %gx-checks(data-checks="servicesChecks[service.id]" data-status="service.status" data-item-id="service.id")
+        %td.t-col-center.hidden-xs(data-div="local_ip") {{service.public_ip}}
+        %td.t-col-center.hidden-xs.hidden-sm(data-div="port") {{service.port}}
+        %td.t-col-center.hidden-xs.hidden-sm(data-div='protocol'){id:"{{service.name}}_protocol"} {{service.protocol}}
+        %td.t-col-center.hidden-xs.hidden-sm.hidden-md(data-div='host') {{service.host}}
+        %td
+          .gr-hover-el.t-col-ri(mdc-ripple data-div='connect_btn' ng-if="isShowTryToConnectBtn(service)" ng-click="tryConnectToService(service)")
+            .padd_left_md.warn-link-elc.link-el.flex-container-all
+              .flex-wrap.flex-grow
+              .flex-wrap
+                Try to connect
+              .flex-wrap.padd_left_md
+                =image_tag "new/icons/arrow_link.svg", style:"width: 20px;"
+
+
+          .hover-el.t-col-ri(mdc-ripple mdc-ripple-cond="utils.isDesktopClient || service.protocol == 'ssh'" ng-if="isShowConnectBtn(service)" ng-click="connectToService(service)")
+            .padd_left_md.link-el.flex-container-all
+              .flex-wrap.flex-grow
+              .flex-wrap
+                Connect
+              .flex-wrap.padd_left_md
+                =image_tag "new/icons/arrow_link.svg", style:"width: 20px;"
+
+

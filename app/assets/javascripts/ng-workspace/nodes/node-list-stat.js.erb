@@ -1,0 +1,69 @@
+'use strict';
+
+angular.module('components').component('nodeListStat', {
+    templateUrl: '<%= asset_path("nodes/node-list-stat.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', 'ROUTES', '$q', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, $routeParams, ROUTES, $q, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.currentClusterId = $routeParams.clusterId;
+
+            fetchNodesStatics(true);
+
+            function fetchNodesStatics(firstTime) {
+                $http.get('/stats/nodes', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {clusterID: $scope.currentClusterId}
+                }).then(function (response) {
+                    return $q(function (resolve, reject) {
+                        GexUtils.getCurrentNodeId(function (nodeId, err) {
+                            if (err) {
+                                console.log(err.message);
+                            }
+                            resolve(nodeId);
+                        });
+                    }).then(function (locNodeId) {
+                        return $q(function (resolve, reject) {
+                            var nodesStatsTemp = _.transform(response.data, function (result, value, key) {
+                                value.nodeId = key;
+                                value.local = (value.nodeId == locNodeId && locNodeId);
+                                result.push(value);
+                            }, []);
+                            $scope.nodesStats = _.orderBy(nodesStatsTemp, ['working', 'local'], ['desc', 'desc']);
+                            $scope.noNodes = !$scope.nodesStats || $scope.nodesStats.length == 0;
+
+                            if (firstTime) $scope.loaded = true;
+                            resolve();
+                        })
+                    }).catch(function (err) {
+                        console.log(err.message);
+                    });
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error fetching nodes: ' + response.statusText);
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            $scope.getBackgroundStyle = function (nodeStat) {
+                return {'background-color': nodeStat.working ? '#fff' : 'rgba(212, 208, 208, 0.27)'};
+            };
+
+            var fetchNodeInterval = $interval(function () {
+                fetchNodesStatics();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchNodeInterval)) {
+                    $interval.cancel(fetchNodeInterval);
+                    fetchNodeInterval = undefined;
+                }
+            });
+        }
+    ]
+});

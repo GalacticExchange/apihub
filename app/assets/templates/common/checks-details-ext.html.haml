@@ -1,0 +1,40 @@
+
+.gx-page
+  .app_wrap.border.marg_bott_md
+    .fl-cont.gx-fl-center.grey_bg.padd_10.padd_left_md
+      .fl-wrap.padd_ri_10
+        =inline_svg "new/icons/check.svg", class:"card-icon"
+      .fl-wrap
+        %p.card-h Status checks
+
+    .gx-content.padd_md
+      %div(ng-if="!loaded")
+        .flex-center.padd_top_md
+          %material-spinner.fade-element-in
+      %div(ng-if="loaded")
+
+
+        .fl-cont.padd_md(ng-if="!checks || checks.length == 0")
+          .fl-wrap.fl-grow
+          .fl-wrap
+            .text-center.marg_left_big.marg_ri_big
+              %h4.no_marg.gr.marg_top_10 No checks available
+          .fl-wrap.fl-grow
+
+
+        .div(ng-if="checks && checks.length != 0" )
+          .checksOff(ng-if="checksOff")
+            .fl-cont.padd_md
+              .fl-wrap.fl-grow
+              .fl-wrap
+                .text-center.marg_left_big.marg_ri_big
+                  %h4.no_marg.gr.marg_top_10 Checks available only if state is "ON"
+              .fl-wrap.fl-grow
+
+          .checks(ng-if="!checksOff")
+            .check.padd_top_10.padd_bott_10.padd_left_10(ng-repeat="check in checks")
+              .fl-cont.gx-flex-center
+                .fl-wrap.padd_ri_md{style:'margin-top: 1px;'}
+                  =inline_svg 'new/icons/circle.svg', class: '{{check.passed ? "green" : "red" }}-svg sm-icon'
+                .fl-wrap
+                  %p.no_marg {{check.description}}

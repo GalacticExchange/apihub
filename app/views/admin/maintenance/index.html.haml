@@ -1,0 +1,63 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        ElasticSearch Reindex
+        %small
+          <i class="ace-icon fa fa-angle-double-right"></i>
+          for clusters, users, teams
+
+%h2 Commands
+
+%ul.list-inline#commands
+  %li=link_to 'pull ansible', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'command', :"data-cmd"=>'pull_ansible'
+  %li=link_to 'git pull chef', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'command', :"data-cmd"=>'git_pull_chef'
+
+  %li=link_to 'ES: reindex', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'command', :"data-cmd"=>'import_index'
+  %li=link_to 'ES: reindex log_debug', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'command', :"data-cmd"=>'import_log_debug_index'
+  %li=link_to 'ES: reindex library_application', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'command', :"data-cmd"=>'import_library_application_index'
+  -#%li=link_to 'refresh', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'command', :"data-cmd"=>'refresh_index'
+
+  .div{style:"padding: 20px 0px;"}
+    %h4 Youtrack commands
+    .list-inline
+      %li=link_to 'update users', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'command', :"data-cmd"=>'yt_update_users'
+      %li=link_to 'force update users', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'command', :"data-cmd"=>'yt_force_update_users'
+  -#.div{style:"padding: 20px 0px;"}
+    %h4 Logs ES
+    .list-inline
+      %li=link_to 'update ES from DB', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'command', :"data-cmd"=>'add_models_to_elastic'
+
+#status_commands.bg-info.well
+
+
+:javascript
+  // commands
+  $( '#commands a[data-name="command"]' ).click(function() {
+    //$('#status_commands').html("Handler for .click() called." );
+    send_command($(this).data('cmd'));
+  });
+
+  function send_command(cmd){
+    $('#status_commands').html("Sending...");
+
+    $.ajax({
+      url: "/admin/maintenance/" + cmd,
+      data: {},
+      type: "GET",
+      dataType: "json",
+      contentType: "application/json",
+      beforeSend: function(){
+        // Handle the beforeSend event
+      },
+      success: function(res_data){
+        $('#status_commands').html("Result: "+res_data.output);
+      },
+
+      complete: function (res_data) {
+
+      }
+
+    });
+  }
+

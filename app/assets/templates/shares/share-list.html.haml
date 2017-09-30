@@ -1,0 +1,137 @@
+.sidebar-header(data-div="page-title"){"ng-class" => "invHalfOpacity"}
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text Shares
+    %p.sb-p-text.gr Use this window to manage your cluster shares.
+  .flex-wrap
+    %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new{"ng-click" => "createNewBtnClick()"} New share
+
+
+%div(ng-if="loaded")
+  .row(ng-show="createActive")
+    .col-md-2.no_padd
+    .col-md-8.no_padd
+      .app_wrap.border.item{:style=>"border-bottom: 0px; margin: 0px 0px 20px 0px; box-shadow: 0 0 6px rgba(0,0,0,.16),0 6px 12px rgba(0,0,0,.32); "}
+        .row.bord_bott.padd_top_mdu.padd_bott_md{style:"bagckground-color: rgba(243, 242, 242, 0.5)"}
+          .padd_left_mdd
+            .flex-container-all
+              -#.flex-wrap{style:"flex-grow: 1;"}
+
+              -#.flex-wrap.hand_cursor{"ng-click" => "closeNewIcon()"}
+                =image_tag "new/icons/off.svg", :style=>"width: 25px; opacity: 0.6; margin: -20px 10px 0px 0px "
+
+            .mdl-tabs.mdl-js-tabs.mdl-js-ripple-effect
+              .marg_bott_md
+                .mdl-tabs__tab-bar
+                  %a.accepted.mdl-tabs__tab.half-tajb.is-active{style:"text-transform: none; color: #434343 !important; font-size: 16px;", :href => "#by_username", "ng-click"=>"username_tab_on=true"} Invite existing user
+                  %a.pending.mdl-tabs__tab.half-tjab{style:"text-transform: none; color: #434343 !important; font-size: 16px;", :href => "#by_email", "ng-click"=>"username_tab_on=false"} Invite new user (by email)
+                .inl.pull-right.hand_cursor{style:"margin-top: -37px; margin-right: 10px", "ng-click" => "closeNewIcon()"}
+                  =image_tag "new/icons/off.svg", :style=>"width: 25px; opacity: 0.6; "
+
+              #by_username.mdl-tabs__panel.is-active
+                .flex-container-all.lite_shadow.marg_ri_md.marg_left_md
+                  %form.header_search_wrap(novalidate ng-submit="createInvitation(invitation.email)" ng-class="focusSearch ? 'search_box_focus' : undefined" style="padding-top: 0px")
+                    %input(type="text" name="share.username" placeholder="Start typing username or name..." ng-model="share.username" class="custom-input dform-control" ng-autofocus ng-focus="focusSearch = true" ng-blur="focusSearch = false")
+                    .header_search_icon_wrap.inl.hand_cursor(ng-if="!spinner")
+                      =image_tag "new/icons/search_blue.svg", class:"search_input_icon", style:"opacity: 1;"
+                    .flex-center(ng-if="spinner")
+                      %material-spinner.fade-element-in.padd_top_sm.padd_ri_sm
+              #by_email.mdl-tabs__panel
+                .marg_left_md.marg_ri_md
+                  %popup-message.padd_bott_md(data-text="errText" data-type=" 'error' ")
+
+                  .flex-container-all
+                    .flex-wrap{style:"flex-grow: 1;"}
+                      %form.simple-form{:novalidate => "", "ng-submit"=> "createInvitation(invitation.email)"}
+                        %input.new-input(placeholder="Type an email here..." ng-disabled="spinner" style="    width: 100%; height: 48px !important;"){"ng-model" => "share.email" }
+                    .flex-wrap
+                      .padd_left_md(ng-switch="spinner")
+                        %button#create_email_inv_btn.mdl-button.mdl-js-button.mdl-button--fab.mdl-js-ripple-effect.mdl-button--colored.gex_primary_bg.round_btn(ng-switch-when="false"){"ng-disabled"=>"submit_buttons_disable", "ng-click" => "createEmailShare(share.email)", :type => "submit"}
+                          =image_tag "new/icons/forward_white.svg", id:"create_email_inv_btn_icon"
+                        .div{style:"padding-top: 2.5px;"}
+                          %material-spinner.fade-element-in(ng-switch-when="true")
+
+
+
+                -#.flex-container-all
+                  .flex-wrap{style:"flex-grow: 1;"}
+                    %form.simple-form{:novalidate => "", "ng-submit"=> "createEmailShare(share.email)"}
+                      %input{"ng-model" => "share.email", :type => "email", :placeholder=>"Type an email here..." }
+                  .flex-wrap
+                    .padd_left_md.padd_ri_md
+                      %button#create_email_inv_btn.mdl-button.mdl-js-button.mdl-button--fab.mdl-js-ripple-effect.mdl-button--colored.gex_primary_bg{"ng-disabled"=>"submit_buttons_disable", "ng-click" => "createEmailShare(share.email)", :type => "submit", style:"width: 50px; height: 50px; min-width: 50px"}
+                        =image_tag "new/icons/forward_white.svg", id:"create_email_inv_btn_icon"
+
+
+
+
+              .padd_ri_md.padd_left_md(ng-show="username_tab_on" ng-init="username_tab_on=true"){style:"padding-top: 10px"}
+                %h5.text-center.padd_top_md(ng-if="usersList.length == 0 ")
+                  No users found
+                .padd_top_md(ng-if="usersList.length != 0 && usersList.length != undefined ")
+                .row.bord_bott.padd_top_md.padd_bott_md.table-row.hhand_cursor{class:"repeated-item", style:"margin: 0px -20px 0px -20px"}(ng-repeat="item in usersList" )
+                  .flex-container-all
+                    .flex-wrap.marg_left_md
+                      %img{:alt => "Description", :src => "{{item.avatar_url}}", :class=>"img-circle avarars-satur inl undec", :style=>"width: 25pt; margin-top: 1px"}
+                    .flex-wrap{style:"flex-grow: 1;"}
+                      %p.no_marg.marg_left_md.bold{style:"margin-top: -5px !important;"} {{item.username}}
+                      %h6.no_marg.marg_left_md.gr{style:"margin-top: 2px !important"} {{item.team_name}}
+                    .flex-wrap
+                      .padd_ri_md
+                        %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_md(ng-disabled="spinner==true" ng-click = "createShare(item.username)" ng-if="!isClusterSharedWith(item.username)") Share
+                        %h6.gr(ng-if="isClusterSharedWith(item.username)") User already invited
+
+
+  .div(ng-show="share_sent")
+    .app_wrap.border.item.marg_bott_md.item.animate-show
+      .row.bord_bott.padd_top_md.padd_bott_md{style:"background-color: hsla(120, 54%, 49%, 0.7)"}
+        .flex-container-all.padd_left_md
+          .flex-wrap
+            =image_tag "new/icons/done_white.svg"
+          .flex-wrap
+            %h5.white{style:"margin: 3px 0px 0px 10px !important"} {{notificationText}}
+
+
+#shares(ng-if="loaded")
+  .app_wrap.border.marg_bott_md.invitations_list{:style=>"border-bottom: 0px", "ng-class" => "invHalfOpacity"}(ng-if="(sharesList.length > 0)")
+    .div
+      .row.bord_bott.padd_top_md.padd_bott_md.table-row{class:"repeated-item"}(class="item" ng-animate=" 'animate' " ng-repeat="item in sharesList track by item.username")
+
+        .flex-container-all
+          .flex-wrap.marg_left_md
+            %a{"ng-href" => "/user/{{item.username}}"}
+              %img{:alt => "Description", :src => "{{item.avatar_url}}", :class=>"img-circle avarars-satur inl undec", :style=>"width: 25pt; margin-top: 1px"}
+          .flex-wrap{style:"flex-grow: 1;"}
+            %a{"ng-href" => "/user/{{item.username}}", "class"=>"undec"}
+              %p.no_marg.marg_left_md.bold{style:"margin-top: -5px !important;"} {{item.username}}
+              %h6.no_marg.marg_left_md.gr{style:"margin-top: 2px !important"} {{item.team_name}}
+          .flex-wrap
+            .row-buttons.hand_cursor
+              =image_tag "new/icons/delete_circle.svg", :style=>"width: 25px; opacity: 0.8; margin-top: 5.5px;", :class=>"marg_ri_md", :id=>"{{item.username+'del'}}", "ng-click" => "confirmDeleteShare(item.username)"
+            .mdl-tooltip.mdl-tooltip--large(for="{{item.username+'del'}}")
+              Delete share
+
+  .fl-cont.padd_top_big(ng-if="(sharesList.length == 0) && pendingSharesList.length == 0" ng-class = "invHalfOpacity")
+    .fl-wrap.fl-grow
+    .fl-wrap.text-center
+      %h2.no_marg.bold.no-items-h Looks like here's no shares for this cluster yet
+    .fl-wrap.fl-grow
+
+
+#pending(ng-if="pendingLoaded && pendingSharesList.length > 0 ")
+  .app_wrap.border.marg_bott_md.invitations_list{:style=>"border-bottom: 0px", "ng-class" => "invHalfOpacity"}
+    .bord_bott.grey_bg.padd_10.padd_left_md
+      %p.card-h Pending shares
+    .div(ng-if="(pendingSharesList.length > 0)")
+      .row.bord_bott.table-row{class:"repeated-item"}(class="item" ng-animate=" 'animate' " ng-repeat="item in pendingSharesList track by item.id")
+        .flex-container-all
+          .flex-wrap.padd_top_md.padd_bott_md{style:"flex-grow: 1;"}
+            %h5.no_marg.marg_left_md{style:"font-size: 16px"}
+              {{item.email}}
+          .flex-wrap.hide-hover{style:"padding-top: 16px"}
+            %h6.no_marg.marg_ri_md.gr.padd_top_sm
+              {{  item.created_at | dateTimeFormat:"MMM, d" }}
+          .flex-wrap{style:"    padding-top: 16px;"}
+            .row-buttons.hand_cursor
+              =image_tag "new/icons/delete_circle.svg", :style=>"width: 25px; opacity: 0.8;", :class=>"marg_ri_md", :id=>"{{item.id+'del'}}", "ng-click" => "confirmDeleteEmailShare(item.id,item.email)"
+            .mdl-tooltip.mdl-tooltip--large(for="{{item.id+'del'}}")
+              Delete invitation

@@ -1,0 +1,17 @@
+- if item.status == User::STATUS_NOT_VERIFIED
+  .label.label-success not verified
+
+- elsif item.status == User::STATUS_DISABLED
+  .label.label-danger disabled
+
+- elsif item.status == User::STATUS_DELETED
+  .label.label-default deleted
+
+- elsif item.status == User::STATUS_PENDING_CREATE
+  .label.label-danger pending create
+
+- elsif item.status == User::STATUS_PENDING_DELETE
+  .label.label-danger pending delete
+
+- elsif item.status == User::STATUS_ACTIVE
+  .label.label-primary active

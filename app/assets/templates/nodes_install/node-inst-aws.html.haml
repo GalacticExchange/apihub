@@ -1,0 +1,75 @@
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+%div(ng-switch on="show" ng-if="loaded")
+  %div.text-center(ng-switch-when='messageOk')
+    %h2(class="no_marg popup_header_text")
+      {{headerMessageOk}}
+    %div(class="popup_text_wrap")
+      %p(class="gr no_marg desc_popup" style="padding: 30px;" ng-bind-html="descriptionMessageOk")
+    %div(class="bottom_fixed_on_popup112")
+      %div(class="text-center")
+        %div(ng-click="submitMessageOk()" class="mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md" data-btn="popup-ok-btn")
+          {{buttonTextMessageOk}}
+  %div(ng-switch-when="addAws")
+    .sidebar-header(data-div="page-title")
+      .flex-wrap.flex-grow
+        %h2.sb-text.sb-h1-text
+          Add AWS nodes
+          .gr.inl ({{withHadoop ? ' Big Data node' : 'Application-only node' }})
+        %p.sb-p-text.gr Add multiple AWS nodes to this cluster.
+
+    .row
+      .padd_mdr
+        %form( name="awsForm")
+          %popup-message(data-text="err_message" data-type=" 'error' ")
+          .flex-container-all.padd_top_mdg
+            .flex-wrap.flex-grow
+
+              .padd_bott_15
+                %h5.d_gr.bold.marg_bott_smr{style:"font-size: 19px; "} Instance type
+                .fl-cont{style:"align-items: center;"}
+                  .fl-wrap
+                    %h6.gr.no_marg{style:"font-size: 16px;"}
+                      %a(href= "http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-types.html") Info about EC2 instance types
+
+              %ui-select.hand_cursor(ng-model="dataForPage.selectedInstance" theme="select2" search-enabled="false" ng-disabled="spinner" style="max-width: 300px; width:100%;")
+                %ui-select-match {{$select.selected.name}}
+                %ui-select-choices(repeat="instance in dataForPage.instances")
+                  %div(ng-bind-html="instance.name | highlight: $select.search")
+
+
+          .fl-cont.padd_top_md.marg_top_10
+            .fl-wrap{style:"padding-right: 25px;"}
+              .padd_bott_15
+                %h5.d_gr.bold.marg_bott_smr{style:"font-size: 19px; "} Number of AWS instances
+                .fl-cont{style:"align-items: center;"}
+                  .fl-wrap.marg_ri_10
+                    =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+                  .fl-wrap
+                    %h6.gr.no_marg{style:"font-size: 16px;"} Deploy multiple AWS nodes (1-10 instances)
+
+              %input(type="number" ng-model="dataForPage.nodeCount" min="1" max="10" required class="new-input" style="width:300px; max-width:300px;" ng-disabled="spinner")
+
+          .fl-cont.padd_top_md.marg_top_10
+            .flex-wrap.fl-grow{style:"padding-right: 25px;"}
+
+              .padd_bott_15
+                %h5.d_gr.bold.marg_bott_smr{style:"font-size: 19px; "} Amount of disk storage
+                .fl-cont{style:"align-items: center;"}
+                  .fl-wrap.marg_ri_10
+                    =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+                  .fl-wrap
+                    %h6.gr.no_marg{style:"font-size: 16px;"} Disk storage for each node (50-1024 GB)
+
+
+              .div{style:"max-width: 500px;"}
+                %input(type="number" ng-model="dataForPage.diskStorage" min="100" max="1024" required class="new-input" style="width:300px; max-width:300px;" ng-disabled="spinner")
+
+
+          .padd_top_md.marg_top_10.flex-container-all
+            .flex-wrap.marg_top_10
+              %button(class="mdl-button mdl-js-button mdl-js-ripple-effect gex-btn-new" ng-click="addNodes()" ng-disabled="spinner") Add nodes
+            .flex-wrap.marg_top_10.padd_left_md{style:"width: 40px; height: 40px;"}
+              %material-spinner.fade-element-in(ng-if="spinner")

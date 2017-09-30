@@ -1,0 +1,219 @@
+'use strict';
+
+angular.module('components').component('apphubAppCompose', {
+    templateUrl: '<%= asset_path("library_apps/apphub-app-compose.html") %>',
+    controller: ['$http', '$scope', '$routeParams', 'ROUTES', '$q', '$location',
+        function ($http, $scope, $routeParams, ROUTES, $q, $location) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+            $scope.appId = $routeParams.appId;
+            $scope.selectNodeWrapper = {selectedNode: undefined}; // because of https://github.com/angular-ui/ui-select/issues/18
+
+            $scope.updAppProps = {};
+
+            $scope.app = {};
+            $scope.newApp = {};
+            $scope.newApp.cred = {};
+            $scope.newApp.services = {};
+
+            $scope.advanced = false;
+
+            $scope.protocols = {
+                "HTTP": "http",
+                "HTTPS": "https",
+                "SSH": "ssh",
+                "Other/ I dont't know": ""
+            };
+
+            $scope.addService = function () {
+                var tmpKey = Math.floor(Math.random() * 1000000) + 1;
+                $scope.newApp.services['service-' + tmpKey.toString()] = {name: '', title: '', port: '', protocol: ''};
+            };
+
+            $scope.removeService = function (key) {
+                delete $scope.newApp.services[key];
+            };
+
+            $scope.objNotEmpty = function (obj) {
+                return Object.keys(obj).length != 0
+            };
+
+            $scope.applicationTypeName = function (appType) {
+                switch (appType){
+                    case 'compose_app':
+                        return 'Compose App';
+                    case 'container':
+                        return 'Container';
+                    default:
+                        return 'Open Source App';
+                }
+            };
+
+            $scope.bageColor = function (appType) {
+                switch (appType){
+                    case 'compose_app':
+                        return 'cyan';
+                    case 'container':
+                        return 'purple';
+                    default:
+                        return 'trace';
+                }
+            };
+
+            $scope.switchAdvanced = function () {
+                $scope.advanced = !$scope.advanced;
+            }
+
+
+            function fetchAppHubApp(firstTime) {
+                $http.get('/apphub/app', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: { id: $scope.appId }
+                }).then(function (response) {
+
+                    $scope.app = response.data.app;
+                    var appCred = {githubUser:  $scope.app.github_user, urlPath: $scope.app.url_path };
+
+                    fetchAppHubAppMeta(true, appCred);
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    var errMessage = 'Cannot load library apps: ' + GexUtils.getErrMsgServ(response);
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', errMessage);
+                        $scope.loaded = true;
+                    } else {
+                        console.log(errMessage);
+                    }
+                });
+            }
+
+
+            function fetchAppHubAppMeta(firstTime, appCred) {
+
+                var url = '/clusters/' + $scope.clusterId + '/apps/install_config_external'
+
+                $http.get(url, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        github_user: appCred.githubUser,
+                        url_path: appCred.urlPath
+                    }
+                }).then(function (response) {
+
+                    var newNodes = response.data.nodes;
+
+                    $scope.newApp.attributes = response.data.attributes;
+                    $scope.newApp.services = response.data.services;
+                    $scope.appProps = response.data.attributes;
+
+                    return $q(function (resolve, reject) {
+                        if (GexUtils.isDesktopClient) {
+                            GexUtils.getLocalNodeInfo(function (locNodeInfo, err) {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    var localNodeId = locNodeInfo.id;
+                                    if (localNodeId) {
+                                        var localNode = newNodes.find(function (node) {
+                                            return node.id == localNodeId;
+                                        });
+                                        if (localNode) {
+                                            localNode.local = true;
+                                            newNodes = _.sortBy(newNodes, ['local']);
+                                        }
+                                    }
+                                    resolve();
+                                }
+                            });
+                        } else {
+                            resolve();
+                        }
+                    }).catch(function (err) {
+                        var message = 'Error fetching local node info: ' + err.message;
+                        if (firstTime) {
+                            GexUtils.showMessageDialog('Error', message);
+                        } else {
+                            console.log(message);
+                        }
+                    }).finally(function () {
+                        $scope.nodes = newNodes;
+                        $scope.selectNodeWrapper.selectedNode = newNodes && newNodes[0] ? newNodes[0] : undefined;
+
+                        if (firstTime) $scope.loaded = true;
+                    });
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    var errMessage = 'Cannot fetching app: ' + GexUtils.redirectIfSomeRespCodes(response);
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', errMessage);
+                        $scope.loaded = true;
+                    } else {
+                        console.log(errMessage);
+                    }
+                });
+            }
+
+            $scope.getSecurityColor = function (rating) {
+                switch (rating) {
+                    case 'high':
+                        return 'green-svg';
+                    case 'medium':
+                        return 'yellow-svg';
+                    case 'low':
+                        return 'red-svg';
+                    case 'unknown':
+                        return 'lite-gr-svg';
+                }
+            };
+
+            $scope.getNodeNameWithLocal = function (node) {
+                return node.local ? node.name + ' (local)' : node.name;
+            };
+
+            $scope.installApp = function (app) {
+
+                $scope.newApp.cred = {github_user:  $scope.app.github_user, url_path: $scope.app.url_path }
+
+                var data = {
+                    cluster_application: {
+                        node_uid: $scope.selectNodeWrapper.selectedNode.id,
+                        id: app.id,
+                        external: true,
+                        application_name: app.name,
+                        application_type: app.application_type,
+                        settings: angular.copy($scope.updAppProps)
+                    },
+                    library_application_id: app.id
+                };
+
+                $http.post('/applications_new', data, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    GexUtils.showSnackbarMessage("Installing application...");
+                    $location.url(ROUTES.getNgAddr('APPLICATIONS', $scope.clusterId));
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    GexUtils.showMessageDialog('Error', 'Error installing app: ' + GexUtils.getErrMsgServ(response));
+                });
+            };
+
+            fetchAppHubApp(true);
+        }
+    ]
+});

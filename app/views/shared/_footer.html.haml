@@ -1,0 +1,112 @@
+.clearfix
+.footer{:style => "background-color: #434343; padding: 10px 0px 20px 0px"}
+  .footer-cont
+    .container
+      .row
+        .col-md-2
+        .col-md-2.text-center{:style=>"padding-top: 15px"}
+          %h3
+            %li=link_to 'Download Beta', '#'
+          %h3
+            %li=link_to 'About us', '#'
+          %h3
+            %li=link_to 'Docs', '#'
+
+        .col-md-4.text-center
+          #footer_logo{:style => "width: 25%"}
+          =link_to '/' do
+            =image_tag "footer_lg1.svg", :width=> "150px;"
+          %h5.text-center{:style => "color: white !important;"}
+            Handcrafted with ♥️ in Silicon Valley, CA
+
+        .col-md-2.text-center{:style=>"padding-top: 15px"}
+          %h3
+            %li=link_to 'Learn', '#'
+          %h3
+            %li=link_to 'Privacy policy', '#'
+          %h3
+            %li=link_to 'Terms of use', '#'
+
+        .col-md-2
+
+
+
+
+
+
+
+-#.footer{:style => "background-color: #434343"}
+  .footer-cont
+    .container
+      .row
+        .col-md-3.col-sm-4
+          #footer_logo{:style => "width: 25%"}
+          =link_to '/' do
+            =image_tag "footer_lg1.svg", :width=> "150px;"
+          %h5.text-center{:style => "color: white !important;"}
+            Handcrafted with ♥️ in Kharkiv, UA
+
+
+        .col-md-3.col-sm-4
+          .headline
+            %h2{:style => "color: white !important;"} Services
+          %ul.list-unstyled
+            %h3
+              %li=link_to 'Learn', '#'
+            %h3
+              %li=link_to 'Download Beta', '#'
+            %h3
+              %li=link_to 'Docs', '#'
+            %h3
+              %li=link_to 'About us', '#'
+
+        .col-md-3.col-sm-4
+          .headline
+            %h2{:style => "color: white !important;"} About us
+          %ul.list-unstyled
+            %li=link_to 'About us', '#'
+            %li=link_to 'About us', '#'
+            %li=link_to 'About us', '#'
+            %li=link_to 'About us', '#'
+
+        .col-md-3.col-sm-4
+          .headline
+            %h2{:style => "color: white !important;"} Contact Us
+
+          %p.address
+            CA
+            %br
+            CA, US
+            %br
+            %i.fa.fa-phone
+            (555) 555-5555
+            %br
+            %i.fa.fa-envelope
+            Email: gex@galacticexchange.io
+
+          %p
+            .tb-social
+              .brand-bg
+                <a href="#" class="google-plus"><i class="fa fa-google-plus square-2 rounded-1"></i></a>
+                <a href="#" class="facebook"><i class="fa fa-facebook square-2 rounded-1"></i></a>
+                <a href="#" class="twitter"><i class="fa fa-twitter square-2 rounded-1"></i></a>
+
+      .row
+        .col-md-6
+          %br
+          %br
+          %p
+            2015 © All Rights Reserved.
+            <a href="#" class="green">Privacy Policy</a>
+            |
+            <a href="#" class="green">Terms of Service</a>
+
+-#.bottombar
+  .container
+    .row
+      .col-md-12
+        %p
+          2015 © All Rights Reserved.
+          <a href="#" class="green">Privacy Policy</a>
+          |
+          <a href="#" class="green">Terms of Service</a>

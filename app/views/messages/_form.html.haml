@@ -1,0 +1,13 @@
+.col-md-12
+  = simple_form_for(@message, :url => messages_path, :method => :post, html: { class: 'form-horizontal' }, remote: @data) do |f|
+    = f.error_notification
+
+
+    = f.input :message, label: false, :as => :text, :input_html => { :rows => 7 , :style => 'width: 100%'}
+    = f.input :to_user_id, :as => :hidden, :input_html => { :value => @another_user.id }
+
+    -#.text-center
+      = f.button :submit, value: 'Send message', :style => 'margin-bottom: 20px;'
+
+    .text-center{:style=>"padding-top: 10px; padding-bottom: 15px"}
+      = f.button :submit, value: 'Send message',:class=>" mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent", :style => 'font-weight: 600 !important; border-radius: 20px; background-color: #185F97;'

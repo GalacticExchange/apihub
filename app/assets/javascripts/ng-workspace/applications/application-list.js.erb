@@ -1,0 +1,97 @@
+'use strict';
+
+angular.module('components').component('applicationList', {
+    templateUrl: '<%= asset_path("applications/application-list.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', 'ROUTES', '$q', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, $routeParams, ROUTES, $q, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.clusterId = $routeParams.clusterId;
+            $scope.ROUTES = ROUTES;
+
+            fetchApplications(true);
+
+            function fetchApplications(firstTime) {
+                $http.get('/clusters/' + $scope.clusterId + '/applications/', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {type: "_with_images"}
+                }).then(function (response) {
+                    var appsArr = response.data.apps;
+                    var appsArrEmpty = !appsArr || appsArr.length == 0;
+
+                    return $q(function (resolve, reject) {
+                        if (!appsArrEmpty) {
+                            getLocalInstAppInfo(function (localApp, err) {
+                                if (err) {
+                                    reject(err);
+                                } else if (localApp && localApp.id) {
+                                    var localAppFromArr = appsArr.find(function (app) {
+                                        return app.id == localApp.id;
+                                    });
+                                    if (localAppFromArr) {
+                                        localAppFromArr.instStatus = localApp.installStatus;
+                                    }
+                                }
+                                resolve();
+                            });
+                        } else {
+                            resolve();
+                        }
+                    }).catch(function (err) {
+                        var message = 'Error getting local node information: ' + err.message;
+                        if (firstTime) {
+                            GexUtils.showMessageDialog('Error', message);
+                        } else {
+                            console.log(message);
+                        }
+                    }).finally(function () {
+                        $scope.apps = appsArr;
+                        $scope.isAppsEmpty = appsArrEmpty;
+
+                        if (firstTime) $scope.loaded = true;
+                    });
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Error fetching applications: ' + GexUtils.getErrMsgServ(response));
+                        $scope.loaded = true;
+                    } else {
+                        console.log('Error fetching applications: ' + GexUtils.getErrMsgServ(response));
+                    }
+                });
+            }
+
+            var fetchApplicationsInterval = $interval(function () {
+                fetchApplications();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchApplicationsInterval)) {
+                    $interval.cancel(fetchApplicationsInterval);
+                    fetchApplicationsInterval = undefined;
+                }
+            });
+
+            function getLocalInstAppInfo(callback/*({status: string , progress: int}, err)*/) {
+                if (!GexUtils.isDesktopClient) {
+                    callback(undefined);
+                    return;
+                }
+
+                GexUtils.gexdGetRequest('/apps/local', function (err, req, res, data) {
+                    if (err) {
+                        callback(undefined, new Error(err.message ? err.message : err.code));
+                        return;
+                    }
+
+                    callback(data);
+                });
+            }
+
+        }
+    ]
+});

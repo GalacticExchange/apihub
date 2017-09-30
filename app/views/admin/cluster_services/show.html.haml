@@ -1,0 +1,53 @@
+%h1 Service "#{@item.name}"
+%b Status:
+= @item.status
+%br
+%b Library Service:
+-if @item.library_service
+  = link_to @item.library_service.name, admin_library_service_path(@item.library_service_id)
+%br
+
+%b Application:
+= link_to @item.application.name, admin_cluster_application_path(@item.application_id) if @item.application
+%br
+
+%b Cluster:
+= link_to @item.cluster.name, admin_cluster_path(@item.cluster_id) if @item.cluster
+%br
+
+%b Node:
+= link_to @item.node.name, admin_node_path(@item.node_id) if @item.node
+%br
+
+%b Container:
+= link_to @item.container.name, admin_cluster_container_path(@item.container_id) if @item.container
+%br
+
+%b Settings:
+%br
+%textarea{:style => "width: 80%;"}
+  = @item.settings
+
+%h2 Info
+%b Hostname:
+= @item.hostname
+%br
+%b Public IP:
+= @item.public_ip
+%br
+%b Private IP:
+= @item.private_ip
+%br
+%b Protocol:
+= @item.protocol
+%br
+%b Port IN:
+= @item.port_in
+%br
+%b Port OUT:
+= @item.port_out
+%br
+
+
+%h3 Connect
+= render 'admin/cluster_services/connect', item: @item

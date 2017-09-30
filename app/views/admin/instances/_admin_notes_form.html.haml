@@ -1,0 +1,9 @@
+
+= simple_form_for([:admin, @item], url: update_admin_notes_admin_instance_path, method: :put) do |f|
+  = render 'shared/form_errors', {f: f}
+
+  = f.input :admin_notes, as: :text
+  .button_place.padd_top_md.padd_bott_big
+    = f.button :submit, :value=>"Submit"
+
+

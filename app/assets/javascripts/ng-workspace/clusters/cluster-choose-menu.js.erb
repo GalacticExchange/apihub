@@ -1,0 +1,99 @@
+'use strict';
+
+angular.module('components').component('clusterChooseMenu', {
+    templateUrl: '<%= asset_path("clusters/cluster-choose-menu.html") %>',
+    controller: ['$http', '$scope', '$interval', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            var autoUpdateClusters = true;
+
+            fetchClusters(true);
+
+            function fetchClusters(firstTime) {
+                $http.get('/clusters/', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    var clusters = response.data.clusters;
+
+                    $http.get('/clusters/shared', {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json'
+                    }).then(function (response) {
+                        var sharedCluster = response.data.clusters;
+                        _.forEach(sharedCluster, function (value) {
+                            value.shared = true;
+                        });
+
+                        var allClusters = _.filter(clusters.concat(sharedCluster), function (o) {
+                            if (o.id == GexUtils.currentCluster.id) {
+                                o.selected = true;
+                            }
+                            return o.status == 'active';
+                        });
+
+                        var selectedClusterInClusterList = _.some(allClusters, function (cl) {
+                            return GexUtils.currentCluster.id == cl.id;
+                        });
+                        if (!selectedClusterInClusterList) {
+                            autoUpdateClusters = false;
+                            GexUtils.showMessageDialog('Error', 'Cluster ' + GexUtils.currentCluster.name +
+                                ' not found. Maybe it is not active.', function () {
+                                window.location.href = '<%=NgRoutes::CLUSTERS%>';
+                            });
+                            return;
+                        }
+
+                        $scope.clusters = _.sortBy(allClusters, [function (o) {
+                            return o.selected;
+                        }]);
+
+                        if (firstTime) $scope.loaded = true;
+                    }, function errorCallback(response) {
+                        if (GexUtils.isResponseCanceled(response)) {
+                            return;
+                        }
+                        GexUtils.redirectIfSomeRespCodes(response);
+
+                        console.log('Error fetching shared clusters: ' + response.statusText);
+                        if (firstTime) $scope.loaded = true;
+                    });
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error fetching clusters: ' + response.statusText);
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            $scope.getClusterTypeIcon = function (cluster) {
+                if (cluster.clusterType == 'aws' && cluster.selected) {
+                    return '<%= asset_path("new/icons/aws_selected.svg") %>';
+                } else if (cluster.clusterType == 'aws') {
+                    return '<%= asset_path("new/icons/aws.svg") %>';
+                } else if (cluster.selected) {
+                    return '<%= asset_path("new/icons/onprem_selected.svg") %>';
+                } else {
+                    return '<%= asset_path("new/icons/onprem.svg") %>';
+                }
+            };
+
+
+            var fetchClustersInterval = $interval(function () {
+                if (autoUpdateClusters) {
+                    fetchClusters();
+                }
+            }, HTTP_CONSTANTS.LONG_FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchClustersInterval)) {
+                    $interval.cancel(fetchClustersInterval);
+                    fetchClustersInterval = undefined;
+                }
+            });
+        }
+    ]
+});

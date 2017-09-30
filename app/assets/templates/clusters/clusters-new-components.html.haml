@@ -1,0 +1,84 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Create cluster
+    %p.sb-p-text.gr
+      Step 2: Select components
+  .flex-wrap
+    %cluster-install-steps(data-current-step='2' data-step-1="clusterType")
+
+
+
+.gx-page
+  .app_wrap.border.marg_bott_md
+    .fl-cont.gx-fl-center.padd_md
+      .fl-wrap.padd_ri_10
+        .card-h-icon
+          .svg-wrap
+            =inline_svg "new/icons/components.svg", class: "sm-icon white-svg fx-sm-icon"
+      .fl-wrap
+        %p.card-h.bold Components
+
+    .padd_md.marg_left_10
+      .fl-cont.padd_bott_md.fl-h-center
+        -#.fl-wrap.padd_ri_10
+          =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+        .fl-wrap
+          %h5.no_marg{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+            .gr Select the Big Data components you would like to have available on your cluster.
+            -#.gr.inl Choose components to be installed on the
+            -#.inl.bold master node
+            -#.gr.inl of the cluster.
+        .fl-wrap.padd_left_md.hand_cursor{"data-toggle" => "collapse", "href" => "#components-help"}
+          =inline_svg "new/icons/help.svg", class:"gex-svg"
+
+      #components-help.collapse
+        .padd_bott_md
+          %h5.no_marg{style:"line-height: 1.7 !important; padding-botthom: 10px; max-width: 900px;"}
+            The options you select here will become the template for your cluster as you deploy compute nodes. If you are
+            unsure of which options to deploy, select them all. Note however that each option will consume memory on each
+            compute node even if it is not being used. For maximum cost and performance efficiency select only options you
+            require.
+
+      .gx-content
+        %div(ng-if="!loaded")
+          .flex-center.padd_top_md.padd_bott_md
+            %material-spinner.fade-element-in
+        %div(ng-if="loaded")
+
+          -#.padd_bott_md
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.gex-sm-btn(data-btn="details") Uncheck all
+          .row.padd_left_sm.div.padd_bott_10{style: " margin-left: -15px; margin-right: -15px"}
+            .div(ng-repeat='component in components')
+              .clearfix{"ng-if" => "$index % 3 == 0"}
+              .col-lg-4.col-md-12
+                .padd_md.marg_top_15.marg_bott_15.lite-gx-border.fl-cont.hand_cursor(class="{{selectedElement(component)}}" ng-click="component.default=!component.default")
+                  .fl-wrap.padd_ri_md.gx-fl-center.padd_left_sm.padd_ri_sm
+                    .gex-bg(ng-if="component.default"){style:'background-color: #5782a9; border-radius: 50%;  padding: 5px; height: 28px; width: 28px; '}
+                      .div{style:'margin-top: 3px;'}
+                        =inline_svg "new/icons/done.svg", class: "sm-icon white-svg fx-sm-icon"
+                    .grey_bg(ng-if="!component.default"){style:'background-color: #5782a9; border-radius: 50%;  padding: 5px; height: 28px; width: 28px; '}
+                      .div{style:'margin-top: 3px;'}
+                        =inline_svg "new/icons/done.svg", class: "sm-icon white-svg fx-sm-icon"
+                    -#%label.mdl-checkbox.mdl-js-checkbox.mdl-js-ripple-effect(ng-model="component.default"){for: "{{component.id}}"}
+                      %input.mdl-checkbox__input(ng-model="component.default"){id:"{{component.id}}", type: "checkbox"}
+                  .fl-wrap.fl-grow.padd_ri_10
+                    %p.no_marg.bold{style:'font-size: 20px;  line-height: 20px;'} {{component.title}}
+                    %h5.marg_top_10.gr.no_marg_bott{style:'line-height: 1.4 !important; min-height: 46px;'} {{component.description}}
+                  .fl-wrap
+                    .gx-bage.gx-bage-lg{class:'lite-gr-bage'}
+                      .fl-cont.fl-center
+                        .fl-wrap.marg_left_sm.marg_ri_sm
+                          %h6.no_marg.gr.one-liner v. {{component.version}}
+
+          -#.padd_left_sm.div.padd_bott_10(ng-repeat='component in components')
+            .fl-cont.gx-fl-center
+              .fl-wrap.padd_ri_10
+                %label.mdl-checkbox.mdl-js-checkbox.mdl-js-ripple-effect(ng-model="component.default"){for: "{{component.id}}"}
+                  %input.mdl-checkbox__input(ng-model="component.default"){id:"{{component.id}}", type: "checkbox"}
+              .fl-wrap
+                %p.no_marg {{component.title}}
+
+          .padd_top_md.marg_top_10.marg_bott_10
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(data-btn="select-components" ng-click="submitComponents()")
+              Next step

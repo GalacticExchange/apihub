@@ -1,0 +1,28 @@
+.main_install#hint_warn{:style=>"background-color: #F4DDD4; padding: 10px; height: 63px"}
+  .col-sm-10
+    %h4.install_ri_text Warn: Something went wrong!
+
+  .col-sm-2
+    .pull-right#hide_hint_warn
+      =image_tag "new/close.png", :width => 18, :style=>"opacity: 0.5; cursor:  pointer; margin: 12px"
+
+
+.main_install#hint_gr{:style=>"background-color: #D4F4D6; padding: 10px; height: 63px"}
+  .col-sm-10
+    %h4.install_ri_text Success: Something done well.
+
+  .col-sm-2
+    .pull-right#hide_hint_gr
+      =image_tag "new/close.png", :width => 18, :style=>"opacity: 0.5; cursor:  pointer; margin: 12px"
+
+
+:javascript
+  $(document).ready(function(){
+    $("#hide_hint_warn").click(function(){
+        $("#hint_warn").hide(1000);
+    });
+
+    $("#hide_hint_gr").click(function(){
+      $("#hint_gr").hide(1000);
+  });
+  });

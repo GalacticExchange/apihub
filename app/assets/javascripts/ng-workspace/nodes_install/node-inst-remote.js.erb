@@ -1,0 +1,401 @@
+'use strict';
+
+angular.module('components').component('nodesInstRemote', {
+    templateUrl: '<%= asset_path("nodes_install/node-inst-remote.html") %>',
+    controller: ['$http', '$scope', '$q', '$location', 'ROUTES', '$timeout',
+        function ($http, $scope, $q, $location, ROUTES, $timeout) {
+            $scope.utils = GexUtils;
+
+            $scope.nodesInstalls = [];
+            $scope.spinner = false;
+            $scope.authMethod = 'password';
+
+            var urlParams = $location.search();
+            $scope.withHadoop = urlParams.withHadoop;
+
+            $scope.addNodeConfigToList = function (firstTime) {
+                if ($scope.instSpinner) {
+                    return;
+                }
+
+                $scope.spinner = true;
+
+                $http.get('/nodes/get_name', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.nodesInstalls.push({
+                        nodeName: response.data.name,
+                        hadoopApp: urlParams.withHadoop,
+                        sshCredentials: {port: 22, authMethod: $scope.authMethod},
+                        err: {}
+                    });
+
+                    var lastInd = $scope.nodesInstalls.length - 1;
+                    $scope.sameUserFields ? setDefName(lastInd) : true;
+                    $scope.samePasswordFields &&  $scope.authMethod == 'password' ? setDefPassword(lastInd) : true;
+                    $scope.samePasswordFields &&  $scope.authMethod == 'privateKey' ? setDefPrivateKey(lastInd) : true;
+                    $scope.samePortFields ? setDefPort(lastInd) : true;
+
+                    if (firstTime) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load node name: ' + response.statusText + " " + response.status);
+                        $scope.loaded = true;
+                    } else {
+                        console.log('Cannot load node name: ' + response.statusText + " " + response.status);
+                    }
+                }).then(function () {
+                    $scope.spinner = false;
+                });
+            }
+
+            $scope.changeAuthMethod = function (type) {
+                $scope.authMethod = type;
+                _.forEach($scope.nodesInstalls, function (value, key) {
+                    value.sshCredentials.authMethod = type;
+                });
+            }
+
+            $scope.choosePrivateKey = function (nodeInst, fieldDisabled) {
+                if (fieldDisabled) {
+                    return;
+                }
+
+                var dialog = GexUtils.electron.remote.dialog;
+                var updPrivateKeyPath = dialog.showOpenDialog({
+                    title: "Choose SSH private key for machine",
+                    buttonLabel: "Choose",
+                    properties: ['openFile']
+                });
+                if (updPrivateKeyPath) {
+                    var fs = GexUtils.require('fs');
+                    if (fs.lstatSync(updPrivateKeyPath[0]).size > 1048576) { //greater than 1 mb
+                        GexUtils.showMessageDialog('Error', 'Incorrect SSH private key: Maximum key size must be 1MB');
+                        return;
+                    }
+
+                    var privateKey = new TextDecoder("utf-8").decode(fs.readFileSync(updPrivateKeyPath[0]));
+                    var res = GexUtils.nodeSyncMessage('isSshKeyEncrypted', privateKey);
+                    if (res.err) {
+                        GexUtils.showMessageDialog('Error', 'Cannot parse SSH private key: ' + res.err.message);
+                    } else if (res.keyEncrypted) {
+                        var id = Date.now();
+                        var deregEvent = $scope.$on('closeAddPassModal-' + id, function (event, data) {
+                            if (data.password) {
+                                nodeInst.sshCredentials.privateKeyPath = updPrivateKeyPath[0];
+                                nodeInst.sshCredentials.privateKey = privateKey;
+                                nodeInst.sshCredentials.passphrase = data.password;
+                                $scope.validatePrivateKey(nodeInst);
+                            }
+
+                            deregEvent();
+                        });
+                        $scope.$broadcast('openAddPassModal', {id: id});
+                    } else {
+                        nodeInst.sshCredentials.privateKeyPath = updPrivateKeyPath[0];
+                        nodeInst.sshCredentials.privateKey = privateKey;
+                        $scope.validatePrivateKey(nodeInst);
+                    }
+                }
+            };
+
+            $scope.addNodeConfigToList(true);
+
+            $scope.removeNodeConfigFromList = function (node) {
+                if ($scope.instSpinner) {
+                    return;
+                }
+
+                var index = $scope.nodesInstalls.indexOf(node);
+
+                if (index > -1) {
+                    $scope.nodesInstalls.splice(index, 1);
+                }
+            }
+
+            $scope.sameUsers = function () {
+                if ($scope.instSpinner) {
+                    return;
+                }
+
+                if (!$scope.sameUserFields) {
+                    setDefNames();
+                    $scope.sameUserFields = true;
+                } else {
+                    $scope.sameUserFields = false;
+                }
+            }
+
+            $scope.samePasswords = function () {
+                if ($scope.instSpinner) {
+                    return;
+                }
+
+                if (!$scope.samePasswordFields) {
+                    setDefPasswords();
+                    $scope.samePasswordFields = true;
+                } else {
+                    $scope.samePasswordFields = false;
+                }
+            }
+
+            $scope.samePorts = function () {
+                if ($scope.instSpinner) {
+                    return;
+                }
+
+                if (!$scope.samePortFields) {
+                    setDefPasswords();
+                    $scope.samePortFields = true;
+                } else {
+                    $scope.samePortFields = false;
+                }
+            }
+
+            $scope.$watch('nodesInstalls[0].sshCredentials.username', function () {
+                $scope.sameUserFields ? setDefNames() : true;
+            });
+
+            $scope.$watch('nodesInstalls[0].sshCredentials.password', function () {
+                $scope.samePasswordFields ? setDefPasswords() : true;
+            });
+
+            $scope.$watch('nodesInstalls[0].sshCredentials.port', function () {
+                $scope.samePortFields ? setDefPorts() : true;
+            });
+
+            $scope.$watch('nodesInstalls[0].sshCredentials.privateKey', function () {
+                $scope.samePasswordFields ? setDefPasswords() : true;
+            });
+
+            function setDefName(ind) {
+                $scope.nodesInstalls[ind].sshCredentials.username = $scope.nodesInstalls[0].sshCredentials.username;
+            }
+
+            function setDefPassword(ind) {
+                $scope.nodesInstalls[ind].sshCredentials.password = $scope.nodesInstalls[0].sshCredentials.password;
+            }
+
+            function setDefPrivateKey(ind) {
+                $scope.nodesInstalls[ind].sshCredentials.privateKeyPath = $scope.nodesInstalls[0].sshCredentials.privateKeyPath;
+                $scope.nodesInstalls[ind].sshCredentials.privateKey = $scope.nodesInstalls[0].sshCredentials.privateKey;
+                $scope.nodesInstalls[ind].sshCredentials.passphrase = $scope.nodesInstalls[0].sshCredentials.passphrase;
+            }
+
+            function setDefPort(ind) {
+                $scope.nodesInstalls[ind].sshCredentials.port = $scope.nodesInstalls[0].sshCredentials.port;
+            }
+
+            function setDefNames() {
+                for (var i = 1, len = $scope.nodesInstalls.length; i < len; i++) {
+                    setDefName(i);
+                    $scope.nodesInstalls[i].err.username = undefined;
+                }
+            }
+
+            function setDefPasswords() {
+                for (var i = 1, len = $scope.nodesInstalls.length; i < len; i++) {
+                    if ($scope.authMethod === 'password') {
+                        setDefPassword(i);
+                        $scope.nodesInstalls[i].err.password = undefined;
+                    } else {
+                        setDefPrivateKey(i);
+                    }
+                }
+            }
+
+            function setDefPorts() {
+                for (var i = 1, len = $scope.nodesInstalls.length; i < len; i++) {
+                    setDefPort(i);
+                    $scope.nodesInstalls[i].err.port = undefined;
+                }
+            }
+
+            $scope.installNodes = function () {
+                $scope.instSpinner = true;
+
+                validateNodesInsts($scope.nodesInstalls).then(function () {
+                    for (var i in $scope.nodesInstalls) {
+                        var errObj = $scope.nodesInstalls[i].err;
+                        for (var j in errObj) {
+                            if (errObj[j]) {
+                                $scope.instSpinner = false;
+                                return;
+                            }
+                        }
+                    }
+
+                    GexUtils.gexdPostRequest('/nodes/remote', {
+                            nodesConfigs: $scope.nodesInstalls,
+                            clusterId: GexUtils.currentCluster.id
+                        },
+                        function (err, req, res, data) {
+                            if (err) {
+                                $scope.$apply(function () {
+                                    $scope.instSpinner = false;
+                                });
+                                GexUtils.showMessageDialog('Error', (err.message ? err.message : err.code));
+                                return;
+                            }
+
+                            $timeout(function () {
+                                $scope.instSpinner = false;
+                                $location.path(ROUTES.getNgAddr('NODES', GexUtils.currentCluster.id));
+                            }, 4000);
+                        });
+                });
+            }
+
+            $scope.validatePort = function (nodeInst, showPopup) {
+                if (_.isNil(nodeInst.sshCredentials.port)) {
+                    nodeInst.err.port = 'SSH port must not be empty.';
+                } else if (nodeInst.sshCredentials.port < 1 || nodeInst.sshCredentials.port > 65535) {
+                    nodeInst.err.port = 'SSH port must be in range between 1 and 65535.';
+                } else {
+                    nodeInst.err.port = undefined;
+                }
+
+                if (showPopup) {
+                    nodeInst.err.portShow = !!nodeInst.err.port;
+                }
+            }
+
+            $scope.validateUsername = function (nodeInst, showPopup) {
+                if (_.isEmpty(nodeInst.sshCredentials.username)) {
+                    nodeInst.err.username = 'SSH username must not be empty.';
+                } else {
+                    nodeInst.err.username = undefined;
+                }
+
+                if (showPopup) {
+                    nodeInst.err.usernameShow = !!nodeInst.err.username;
+                }
+            }
+
+            $scope.validatePassword = function (nodeInst, showPopup) {
+                if (nodeInst.sshCredentials.authMethod === 'privateKey') {
+                    nodeInst.err.password = undefined;
+                    return;
+                }
+
+                if (_.isEmpty(nodeInst.sshCredentials.password)) {
+                    nodeInst.err.password = 'SSH password must not be empty.';
+                } else {
+                    nodeInst.err.password = undefined;
+                }
+
+                if (showPopup) {
+                    nodeInst.err.passwordShow = !!nodeInst.err.password;
+                }
+            }
+
+            $scope.validatePrivateKey = function (nodeInst, showPopup) {
+                if (nodeInst.sshCredentials.authMethod === 'password') {
+                    nodeInst.err.privateKeyPath = undefined;
+                    return;
+                }
+
+                if (_.isEmpty(nodeInst.sshCredentials.privateKey)) {
+                    nodeInst.err.privateKeyPath = 'SSH private key must not be empty.';
+                } else {
+                    var res = GexUtils.nodeSyncMessage('isSshKeyEncrypted', nodeInst.sshCredentials.privateKey);
+                    if (res.err) {
+                        nodeInst.err.privateKeyPath = 'Cannot parse SSH private key.';
+                    } else if (res.keyEncrypted) {
+                        if (_.isEmpty(nodeInst.sshCredentials.passphrase)) {
+                            nodeInst.err.privateKeyPath = 'Need passphrase for SSH private key.';
+                        } else {
+                            nodeInst.err.privateKeyPath = undefined;
+                        }
+                    } else {
+                        nodeInst.err.privateKeyPath = undefined;
+                    }
+                }
+
+                if (showPopup) {
+                    nodeInst.err.privateKeyPathShow = !!nodeInst.err.privateKeyPath;
+                }
+            }
+
+            $scope.validateHostnameOrIp = function (nodeInst, showPopup) {
+                if (_.isEmpty(nodeInst.sshCredentials.host)) {
+                    nodeInst.err.host = 'Machine hostname or IP must not be empty.';
+                } else if (GexUtils.validHostnameRegex.test(nodeInst.host)) {
+                    nodeInst.err.host = undefined;
+                } else if (GexUtils.validIpAddressRegex.test(nodeInst.host)) {
+                    nodeInst.err.host = undefined;
+                } else {
+                    nodeInst.err.host = 'Invalid machine hostname or IP.';
+                }
+
+                if (showPopup) {
+                    nodeInst.err.hostShow = !!nodeInst.err.host;
+                }
+            }
+
+            $scope.validateNodeName = function (nodeInst, showPopup) {
+                var deferred = $q.defer();
+
+                if (_.isEmpty(nodeInst.nodeName)) {
+                    nodeInst.err.nodeName = 'Node name must not be empty.';
+                    if (showPopup) {
+                        nodeInst.err.nodeNameShow = true;
+                    }
+                    deferred.resolve();
+                    return deferred.promise;
+                }
+
+                var nodeInstalls = _.filter($scope.nodesInstalls, function (o) {
+                    return o.nodeName === nodeInst.nodeName;
+                });
+                if (nodeInstalls.length > 1) {
+                    nodeInst.err.nodeName = 'The same node name already exists in the list.';
+                    if (showPopup) {
+                        nodeInst.err.nodeNameShow = true;
+                    }
+                    deferred.resolve();
+                    return deferred.promise;
+                }
+
+                $http.get('/nodes/check_name', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        name: nodeInst.nodeName,
+                        clusterId: GexUtils.currentClusterId
+                    }
+                }).then(function (response) {
+                    nodeInst.err.nodeName = undefined;
+                }, function errorCallback(response) {
+                    nodeInst.err.nodeName = response.data ? response.data.errors[0].message : 'Sorry, but something went wrong';
+                }).then(function () {
+                    if (showPopup) {
+                        nodeInst.err.nodeNameShow = !!nodeInst.err.nodeName;
+                    }
+                    deferred.resolve();
+                });
+                return deferred.promise;
+            }
+
+            function validateNodesInsts(nodesInsts) {
+                var promises = [];
+                for (var i in nodesInsts) {
+                    var nodeInst = nodesInsts[i];
+                    $scope.validatePort(nodeInst);
+                    $scope.validateUsername(nodeInst);
+                    $scope.validatePassword(nodeInst);
+                    $scope.validateHostnameOrIp(nodeInst);
+                    $scope.validatePrivateKey(nodeInst);
+                    promises.push($scope.validateNodeName(nodeInst));
+                }
+                return $q.all(promises);
+            }
+        }
+    ]
+});

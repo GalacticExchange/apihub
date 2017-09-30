@@ -1,0 +1,222 @@
+%h1 Cluster "#{@item.name}"
+uid: #{@item.uid}
+%br
+%b Status:
+= @item.status
+%br
+%b Team:
+= link_to @item.team.name, admin_team_path(@item.team_id)
+%br
+%b Primary admin:
+= link_to @item.primary_admin.username, admin_user_path(@item.primary_admin) if @item.primary_admin
+%br
+%b Type:
+= @item.cluster_type.name if @item.cluster_type
+%br
+%b Hadoop:
+#{@item.hadoop_type.name}
+
+%p
+  %b Notes:
+  %p
+    = (nl2br @item.admin_notes || "").html_safe
+  = link_to 'edit', admin_edit_cluster_notes_path(id: @item)
+
+%p
+  %b Options:
+  %p
+    = @item.options || ""
+  = link_to 'edit', admin_edit_cluster_options_path(id: @item)
+
+%b Data in consul
+%br
+%textarea(style="width:800px;height:120px;")
+  =@info_consul
+%br
+%br
+%b Locks in consul
+%pre
+  =@locks_consul
+
+%h2 Commands
+
+%ul.list-inline#commands
+  %li=link_to 'Get info', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'cluster_command_info'
+  %li=link_to 'Check', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'cluster_command_check'
+  -#%li=link_to 'Check', "#{Gexcore::Settings.checks_server_url}/checks/set?server_name=cluster_example&checkset_name=cluster_master&extra_opts_url="+URI.encode("#{Gexcore::Settings.domain}clusterInfoContainersAll?id=#{@item.id}"), :class=>'btn btn-primary btn-sm', :target => '_blank'
+
+  %li
+    Provision:
+    =link_to 'create_cluster', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'cluster_command', :"data-cmd"=>'create_cluster'
+    =link_to 'fix_cluster_webproxy', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'cluster_command', :"data-cmd"=>'fix_cluster_webproxy'
+    =link_to 'remove_cluster', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'cluster_command', :"data-cmd"=>'remove_cluster'
+
+  %li
+    Operations:
+    =link_to 'Uninstall', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'cluster_command_operation', :"data-cmd"=>'uninstall_cluster'
+    =link_to 'Remove', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'cluster_command_operation', :"data-cmd"=>'remove_cluster'
+
+  %li
+    Fix status:
+    =link_to 'Install error', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'cluster_fix_status', :"data-cmd"=>'set_install_error'
+    =link_to 'Uninstall error', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'cluster_fix_status', :"data-cmd"=>'set_uninstall_error'
+
+
+
+  %li
+    Test:
+    =link_to 'Test master', '#', :class=>'btn btn-primary btn-sm', :"data-name"=>'cluster_command_test', :"data-cmd"=>'test_cluster_master'
+
+
+#status_commands.bg-info.well
+
+
+%h2 Containers on Master Node
+%table.table.table-bordered
+  %tr
+    %td Container
+    %td IP
+
+  - @containers.each do |r|
+    %tr
+      %td
+        %b=r.name
+      %td
+        =r.public_ip
+      %td
+
+=link_to "All containers in cluster", admin_cluster_containers_path(filter_cmd: 'set', :cluster_id => @item.id)
+
+%h2 Nodes
+=link_to "Nodes (#{@item.nodes.count})", admin_nodes_path(:cluster_id => @item.id)
+
+%h2 Services
+=link_to "Services in cluster", admin_cluster_services_path(filter_cmd: 'set', :cluster_id => @item.id)
+
+%h2 Dashboards
+=link_to "Dashboards (#{@item.dashboards.count})", admin_dashboards_path(:cluster_id => @item.id)
+
+
+
+
+:javascript
+  //
+  $( document ).ready(function() {
+    // commands
+    $( '#commands a[data-name="cluster_command_operation"]' ).click(function() {
+      return run_command_operation(#{@item.id}, $(this).data('cmd'));
+    });
+
+    $( '#commands a[data-name="cluster_command"]' ).click(function() {
+      return send_run_ansible_script(#{@item.id}, $(this).data('cmd'));
+    });
+
+    $( '#commands a[data-name="cluster_command_info"]' ).click(function() {
+      run_get_info_containers(#{@item.id});
+    });
+
+    $( '#commands a[data-name="cluster_fix_status"]' ).click(function() {
+      return send_fix_status(#{@item.id}, $(this).data('cmd'));
+    });
+
+    $( '#commands a[data-name="cluster_command_test"]' ).click(function(e) {
+      e.preventDefault();
+
+      var cluster_id = "#{@item.id}";
+      var cmd_name = $(this).data('cmd');
+
+      //run_ajax_command("/admin/clusters/"+cluster_id+"/commands/test?cmd_name="+cmd_name);
+
+      run_test_command("/admin/clusters/"+cluster_id+"/commands/test?cmd_name="+cmd_name);
+
+
+
+    });
+
+    $( '#commands a[data-name="cluster_command_check"]' ).click(function() {
+      open_checks(#{@item.team.primary_admin_user_id}, 'cluster_example', 'cluster', #{@item.id}, "#{Gexcore::Settings.domain}clusterInfoContainersAll");
+
+      return false;
+    });
+
+  });
+
+
+  // operation
+  function run_command_operation(cluster_id, cmd_name){
+    return run_ajax_command("/admin/clusters/"+cluster_id+"/run_operation?cmd_name="+cmd_name);
+  }
+
+  // provision
+  function send_run_ansible_script(cluster_id, cmd_name){
+    return run_ajax_command("/admin/clusters/"+cluster_id+"/run_provision_script?cmd_name="+cmd_name);
+  }
+
+  // fix status
+  function send_fix_status(cluster_id, cmd_name){
+    return run_ajax_command("/admin/clusters/"+cluster_id+"/run_fix_status?cmd_name="+cmd_name);
+  }
+
+
+  // info
+  function run_get_info_containers(cluster_id){
+    run_ajax_command("/admin/clusters/"+cluster_id+"/get_info_containers");
+  }
+
+  // tests
+  function run_test_command(url){
+      $('#status_commands').html("Sending...");
+
+    $.ajax({
+        url: url,
+        data: {},
+        type: "GET",
+        dataType: "json",
+        contentType: "application/json",
+        beforeSend: function(){
+          // Handle the beforeSend event
+        },
+        success: function(data){
+        },
+        complete: function (data) {
+          //console.log(data.responseJSON);
+          var d = data.responseJSON;
+          //console.log("total: "+d.data.total_examples);
+          var total = d.data.total_examples;
+          var n_failures = d.data.total_failures;
+          var col = n_failures > 0 ? "red" : "green";
+
+          $('#status_commands').html("test: <span style='color:"+col+";'>"+"failures: "+n_failures+", total: "+total+
+            "</span><br><br>Result: "+JSON.stringify(d));
+        }
+
+      });
+  }
+
+
+  // common
+  function run_ajax_command(url){
+    $('#status_commands').html("Sending...");
+
+    $.ajax({
+        url: url,
+        data: {},
+        type: "GET",
+        dataType: "json",
+        contentType: "application/json",
+        beforeSend: function(){
+          // Handle the beforeSend event
+        },
+        success: function(data){
+        },
+        complete: function (data) {
+          //console.log(data.responseJSON);
+          $('#status_commands').html("Result: "+JSON.stringify(data.responseJSON));
+        }
+
+      });
+  }
+
+
+= render 'admin/checks/js_checks_common'
+

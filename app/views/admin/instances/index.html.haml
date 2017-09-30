@@ -1,0 +1,36 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Instances
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th UID
+    %th Admin notes
+    %th Last node
+    %th Created
+    %th Commands
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td
+        = link_to "#{item.uid}", admin_instance_path(id: item.id)
+      %td= item.admin_notes
+      %td
+        -if item.last_node
+          = link_to "#{item.last_node.name}", admin_node_path(id: item.last_node_id)
+      %td= item.created_at
+      %td
+        = link_to admin_log_debug_index_path(:filter_cmd=>'set', :instance_id => item.id, :instance => item.uid) do
+          Logs
+
+= paginate @items

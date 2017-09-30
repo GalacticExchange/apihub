@@ -1,0 +1,12 @@
+.padd_top_15
+  .flex-container-all
+    .flex-wrap{style:"flex-grow: 6"}
+    .flex-wrap{style:"flex-grow: 2"}
+      .padd_bott_md
+        %h2.no_marg.d_gr.bold{style:"font-size: 18pt !important; color: #444444; "}
+          -if @invitation
+            Welcome to the GEX!
+          -else
+            Create an account
+      = render 'form'
+    .flex-wrap{style:"flex-grow: 6"}

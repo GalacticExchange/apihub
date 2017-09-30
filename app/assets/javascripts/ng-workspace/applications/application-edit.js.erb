@@ -1,0 +1,123 @@
+'use strict';
+
+angular.module('components').component('applicationEdit', {
+    templateUrl: '<%= asset_path("applications/application-edit.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', '$location', 'ROUTES', 'HTTP_CONSTANTS', '$rootScope',
+        function ($http, $scope, $interval, $routeParams, $location, ROUTES, HTTP_CONSTANTS, $rootScope) {
+            $scope.utils = GexUtils;
+            $scope.clusterId = $routeParams.clusterId;
+            $scope.applicationId = $routeParams.applicationId;
+            $scope.form = {id: $scope.applicationId};
+
+            fetchApplication(true);
+
+            function fetchApplication(firstTime) {
+                $http.get('/clusters/' + $scope.clusterId + '/applications/' + $routeParams.applicationId, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {type: "_with_library_application"}
+                }).then(function (response) {
+                    $scope.app = response.data.application;
+                    $scope.form.title = $scope.app.title;
+                    $scope.form.notes = $scope.app.notes;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Error fetching application: ' + GexUtils.getErrMsgServ(response));
+                    } else {
+                        console.log('Error fetching application: ' + GexUtils.getErrMsgServ(response));
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            $scope.submitEditForm = function () {
+                $scope.spinner = true;
+                $scope.updateSpinner = true;
+
+                $http.post('/applications/update_comments', $scope.form, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    if (response.data === true) {
+                        GexUtils.showSnackbarMessage('Updated successfully.');
+                        fetchApplication();
+                        $rootScope.$emit('fetchAppsWorkMenu');
+                    } else {
+                        GexUtils.showMessageDialog('Error', 'Error updating application settings.');
+                    }
+                }, function errorCallback(response) {
+                    GexUtils.showMessageDialog('Error', 'Error updating application settings: ' + GexUtils.getErrMsgServ(response));
+                }).then(function () {
+                    $scope.spinner = false;
+                    $scope.updateSpinner = false;
+                });
+            };
+
+            $scope.uninstallApp = function () {
+                GexUtils.showConfirmDialog('Uninstall application', 'Do you really want to uninstall the application?', function () {
+                    $scope.spinner = true;
+                    $scope.uninstallSpinner = true;
+
+                    $http.post('/applications/' + $scope.applicationId + '/uninstall', {}, {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json'
+                    }).then(function (response) {
+                        GexUtils.showSnackbarMessage("Uninstalling application...");
+                        fetchAppsAndRedirectToAppList();
+                    }, function errorCallback(response) {
+                        GexUtils.showMessageDialog('Error', 'Error uninstalling application: ' + GexUtils.getErrMsgServ(response));
+                    }).then(function () {
+                        $scope.spinner = false;
+                        $scope.uninstallSpinner = false;
+                    });
+                });
+            };
+
+            $scope.removeApp = function () {
+                GexUtils.showConfirmDialog('Remove application', 'This is dangerous operation!!! '
+                    + 'Removing the application will only delete information about the application from our servers. '
+                    + 'The files on your local machine will not be deleted. Do you really want to remove the application?', function () {
+
+                    $scope.spinner = true;
+                    $scope.removeSpinner = true;
+
+                    $http.delete('/applications', {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json',
+                        params: {applicationID: $scope.applicationId}
+                    }).then(function (response) {
+                        GexUtils.showSnackbarMessage("Application removed.");
+                        fetchAppsAndRedirectToAppList();
+                    }, function errorCallback(response) {
+                        GexUtils.showMessageDialog('Error', 'Error removing application: ' + GexUtils.getErrMsgServ(response));
+                    }).then(function () {
+                        $scope.spinner = false;
+                        $scope.removeSpinner = false;
+                    });
+                });
+            };
+
+            function fetchAppsAndRedirectToAppList() {
+                $rootScope.$emit('fetchAppsWorkMenu');
+                $location.url(ROUTES.getNgAddr('APPLICATIONS', $scope.clusterId));
+            }
+
+            var fetchAppInterval = $interval(function () {
+                fetchApplication();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchAppInterval)) {
+                    $interval.cancel(fetchAppInterval);
+                    fetchAppInterval = undefined;
+                }
+            });
+        }
+    ]
+});

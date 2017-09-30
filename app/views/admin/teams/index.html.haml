@@ -1,0 +1,50 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Teams
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Status
+    %th Name
+    %th= link_to_sortable_column :created_at, 'Date'
+    %th Commands
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td
+        = render "status", item: item
+      %td
+        = link_to admin_team_path(:id => item.id) do
+          = item.name
+      %td= item.created_at
+      %td
+        = link_to admin_users_path(team_id: item.id) do
+          users
+          %span
+            (#{@users_count[item.id] || 0})
+        |
+        =link_to admin_clusters_path(team_id: item.id) do
+          clusters
+          %span
+            (#{@clusters_count[item.id] || 0})
+        |
+        = link_to admin_invitations_path(:team_id => item.id) do
+          invitations
+          %span
+            -if @invitations_count[item.id]
+              (#{@invitations_count[item.id]})
+            -else
+              (0)
+
+
+= paginate @items

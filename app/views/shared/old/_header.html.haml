@@ -1,0 +1,137 @@
+
+
+-if current_user
+  %nav.navbar.navbar-default
+    .containerg
+      .navbar-header
+        %button.navbar-toggle.collapsed{"aria-expanded" => "false", "data-target" => "#bs-example-navbar-collapse-1", "data-toggle" => "collapse", :type => "button"}
+          %span.sr-only Toggle navigation
+          %span.icon-bar
+          %span.icon-bar
+          %span.icon-bar
+        = link_to site_page_path("beta") do
+          -#= image_tag 'icon_in_round.png', :width=>36, :id=>"for_logged_icon", :style=>" padding-top: 11px; padding-bottom: 11px"
+          = image_tag 'icon_in_round.png', :width=>40, :style=>"margin: 10px 0px 10px 16px"
+          -#= image_tag 'logos/white_text.png', :width=>230, :style=>"margin: 6px 0px 0px 6px"
+      #bs-example-navbar-collapse-1.collapse.navbar-collapse
+        -if !@flag
+          -#.nav.navbar-nav{:style=>"padding-top: 11px; padding-bottom: 11px"}
+            = render 'shared/header_search'
+          %ul.nav.navbar-nav.hidden-xs.hidden-sm
+            %li{:style=> "padding-top: 1px !important; padding-left:30%; opacity: 0.7"}
+              = render 'shared/header_search'
+
+        .nav.navbar-nav.navbar-right
+          .buttons
+            = link_to dialogs_path, :style=> "padding: 2px 15px 0px 0px; text-decoration: none;display: inline;" do
+              .relative_container.relative_container{:style=>"position: relative; display: inline;"}
+                =image_tag "mess.png", :width=>30, :style=>" padding: 2px 0px 0px 0px;"
+                - n_new_messages = count_dialogs(current_user)
+                -if n_new_messages>0
+                  %span.badge.header_badge.dialogs_badge
+                    =n_new_messages
+            -#=@not_read_dialogs
+
+            -#= link_to profileshow_path, :style=> "padding: 0px 5px 0px 5px; text-decoration: none;" do
+              =image_tag "tmp_av.png", :width=>30
+            / Right aligned menu below button
+
+            %button#demo-menu-lower-left.mdl-button.mdl-js-button.mdl-button--icon{:style=>"margin-left: 10px; margin-right: 20px"}
+              = image_tag avatar_url(current_user, :thumb), :width=>30, :class=>"img-circle"
+            %ul.mdl-menu.mdl-menu--bottom-right.mdl-js-menu.mdl-js-ripple-effect{:for => "demo-menu-lower-left"}
+              = link_to profileshow_path, :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Profile
+              = link_to dialogs_path, :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Messages
+              = link_to site_page_path("download"), :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Download
+              %hr{:style=>"margin-top: 5px; margin-bottom: 5px"}
+              -#= link_to profileedit_path, :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Settings
+              = link_to destroy_user_session_path, :method => :delete, :style=>"text-decoration: none;" do
+                %li.mdl-menu__item Sign Out
+
+
+
+            -#.dropdown{:style=>"display: inline;"}
+              .dropdown-toggle{"data-toggle" => "dropdown", :style=>"display: inline; cursor: pointer;"}
+                = image_tag avatar_url(current_user, :thumb), :width=>30, :class=>"img-circle"
+                %span.caret
+              .dropdown-menu{:style=>"border-radius: 5px;  border: 1px solid #cccccc !important; background-color: white; margin-top: 3px"}
+                #header_username.text-center
+                  =current_user.username
+                %li.divider
+                %li
+                  %a{:href => "#{profileshow_path}", :style=>"border-width: 0px;"} Profile
+                %li
+                  %a{:href => "#{dialogs_path}", :style=>"border-width: 0px;"} Messages
+                %li
+                  %a{:href => "#", :style=>"border-width: 0px;"} Explore
+
+                %li.divider
+                %li
+                  %a{:href => "#{profileedit_path}", :style=>"border-width: 0px;"} Settings
+
+                %li
+                  = link_to destroy_user_session_path, :method => :delete, :style=>"border-width: 0px" do
+                    Sign Out
+
+    %hr{:style=>"margin: 0px 0px 0px 0px;"}
+
+
+
+
+-else
+  %nav.navbar.navbar-default
+    .containerg
+      .navbar-header
+        %button.navbar-toggle.collapsed{"aria-expanded" => "false", "data-target" => "#bs-example-navbar-collapse-1", "data-toggle" => "collapse", :type => "button"}
+          %span.sr-only Toggle navigation
+          %span.icon-bar
+          %span.icon-bar
+          %span.icon-bar
+        = link_to site_page_path("beta") do
+          = image_tag 'icon_in_round.png', :width=>40, :style=>"margin: 10px 0px 10px 16px"
+          -#= image_tag 'gex_can_lg.png', :width=>240, :style=>"margin: 4px 0px 0px 4px"
+      #bs-example-navbar-collapse-1.collapse.navbar-collapse
+        -if !@flag
+          %ul.nav.navbar-nav.hidden-xs.hidden-sm
+            %li{:style=> "padding-top: 15px !important; padding-left:30%; "}
+              = render 'shared/header_search'
+
+        %ul.nav.navbar-nav.navbar-right
+          .buttons
+            -#= link_to getting_started_path, :style=>"text-decoration: none;" do
+              %button.mdl-button.mdl-js-button.mdl-js-ripple-effect{:style=>"font-weight: 400 !important; border-radius: 6px; color: #434343"}
+                Getting Started
+
+
+            -#= link_to new_user_session_path, :style=>"text-decoration: none;" do
+              %button.mdl-button.mdl-js-button.mdl-js-ripple-effect{:style=>"font-weight: 400 !important; border-radius: 6px; color: #434343"}
+                Tour
+            .hidden-lg.hidden-md
+              = link_to new_user_session_path, :style=>"text-decoration: none;" do
+                %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.btn{:style=>"font-weight: 400 !important; border-radius: 6px; color: #434343"}
+                  Search
+
+            &nbsp;
+            = link_to new_user_session_path, :style=>"text-decoration: none;" do
+              %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.btn{:style=>"font-weight: 400 !important; border-radius: 6px; color: #434343"}
+                Sign In
+
+            &nbsp;
+            -if @download_btn
+              = link_to site_page_path("download"), :style=>"text-decoration: none;" do
+                %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.btn{:style=>"font-weight: 400 !important; border-radius: 6px; color: #434343"}
+                  Download
+            -else
+              = link_to site_page_path("download"), :style=>"text-decoration: none;" do
+                %button.mdl-button.mdl-js-button.mdl-button--raised.mdl-js-ripple-effect.mdl-button--accent.material_orange_btn.btn
+                  Download
+            -#= link_to download_path, :class => "btn btn-success" do
+              #text{:style=>"color: white !important; "}
+                Download me
+            -#= link_to new_user_session_path, :class => "btn btn-default" do
+              %b
+                Sign in
+    %hr.no_marg

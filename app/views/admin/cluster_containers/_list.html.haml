@@ -1,0 +1,23 @@
+
+%table.table.table-bordered
+  %tr
+    %td Container
+    %td Node
+    %td public IP
+    %td private IP
+
+  - items.each do |r|
+    %tr
+      %td
+        =link_to admin_cluster_container_path(r) do
+          %b=r.name
+      %td
+        - if r.node
+          =link_to r.node.name, admin_node_path(r.node)
+        - else
+          master
+
+      %td
+        =r.public_ip
+      %td
+        =r.private_ip

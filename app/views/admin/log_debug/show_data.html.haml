@@ -1,0 +1,19 @@
+-#=@row.data
+-#%hr
+-#id: #{@row.id}
+-#%br
+-#date: #{@row.created_at}
+
+=@record['data']
+%hr
+id: #{@record['_id']}
+%br
+date: #{@record['adapt_created_at']}
+
+
+%hr
+team: #{@record['team_name']}
+%br
+cluster: #{@record['cluster_name']}
+%br
+node: #{@record['node_name']}

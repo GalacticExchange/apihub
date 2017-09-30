@@ -1,0 +1,32 @@
+{
+  "name": "clustergx",
+  "version": "0.1.0",
+  "dependencies": {
+    "angular": "1.6.4",
+    "angular-route": "1.6.4",
+    "angular-animate": "1.6.4",
+    "angular-sanitize": "1.6.4",
+    "angular-bootstrap": "2.5.0",
+    "angular-table-resize": "1.0.7",
+    "lodash": "4.17.4",
+    "mdl": "1.3.0",
+    "moment": "2.18.1",
+    "material-spinner": "0.0.1",
+    "animatedmodal": "https://github.com/joaopereirawd/animatedModal.js.git#fa9a7079e73cb6e87fcaac9a92accbc1ef903650",
+    "animate.css": "3.5.2",
+    "chart.js": "2.5.0",
+    "intl-tel-input": "9.2.0",
+    "bootstrap-datetimepicker-3": "4.17.45",
+    "angular-ui-select": "0.19.8",
+    "select2": "3.5.4",
+    "outdated-browser": "1.1.3",
+    "ng-file-upload": "12.2.13",
+    "bootstrap-xlgrid": "https://github.com/arnisp/bootstrap-xlgrid.git#2267f50aad01564389dba1e95a51141739cb2958",
+    "mdc-animation": "npm:@material/animation#0.1.5",
+    "mdc-base": "npm:@material/base#0.1.2",
+    "mdc-ripple":"npm:@material/ripple#0.5.1"
+  },
+  "resolutions": {
+    "angular": "1.6.4"
+  }
+}

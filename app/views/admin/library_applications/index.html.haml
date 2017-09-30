@@ -1,0 +1,89 @@
+= stylesheet_link_tag "ours/tpl_admin", media: "all"
+
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Library applications
+    .col-md-5
+      .pull-right
+        = link_to new_admin_library_application_path do
+          %btn.btn.btn-info New app
+
+
+.filter
+  = inline_filter_form_for(@filter)
+
+%br
+Found <b>#{@total}</b> records.
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Enabled
+    %th= link_to_sortable_column :pos, 'Pos'
+    %th Name
+    %th Title
+    %th Image
+    -#%th Image URL
+    %th Git Repo
+    %th Download
+
+  - @items.each_with_hit do |item, hit|
+    %tr
+      %td= item.id
+      %td
+        = render "admin/shared/label_yesno", v: item.enabled
+      %td= item.pos
+      %td
+        -if hit.try(:highlight).try(:name)
+          - hit.highlight.name.each do |snippet|
+            %p
+              = link_to snippet.html_safe, admin_library_application_path(item.id)
+        -else
+          = link_to item.name, admin_library_application_path(item.id)
+      %td
+        -if hit.try(:highlight).try(:title)
+          - hit.highlight.title.each do |snippet|
+            %p
+              = link_to snippet.html_safe, admin_library_application_path(item.id)
+        -else
+          = link_to item.title, admin_library_application_path(item.id)
+
+      %td= image_tag picture_url_library_application(item, :thumb)
+      -#%td
+        -if hit.try(:highlight).try(:image_url)
+          - hit.highlight.image_url.each do |snippet|
+            %p
+              = snippet.html_safe
+        -else
+          = item.image_url
+      %td
+        -if hit.try(:highlight).try(:git_repo)
+          - hit.highlight.git_repo.each do |snippet|
+            %p
+              = link_to snippet.html_safe, target: '_blank'
+        -else
+          =link_to item.git_repo, target: '_blank'
+      %td
+        - if @versions[item.id]
+          =link_to @download_urls[item.id], target: '_blank' do
+            =@versions[item.id]
+
+        %br
+        version:
+        =link_to @versions_urls[item.id], target: '_blank' do
+          =@versions[item.id] || 'N/A'
+
+      -#%td
+        -if hit.try(:highlight).try(:description)
+          - hit.highlight.description.each do |snippet|
+            %p
+              = snippet.html_safe
+        -else
+          = truncate(item.description, length: 240)
+
+= paginate @items

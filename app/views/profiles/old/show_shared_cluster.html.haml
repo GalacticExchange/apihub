@@ -1,0 +1,117 @@
+%br
+  .container
+    = render "shared/flash"
+    .row
+      .col-md-3
+        .list-group
+          = render "shared/profile_column_left_main", bt: ""
+
+        .list-group
+          = render "shared/profile_column_left_team", bt: ""
+
+
+        %br
+        .list-group
+          = render "shared/profile_column_left_cluster", bt: ""
+
+      .col-md-9.no_padd_top
+        .text-center
+          %h2.inl.semibold
+            =@cluster.name
+          %h2.inl.gr
+            manage (shared)
+
+        %hr{:style=>"width:280px; margin-top: 8px; margin-bottom: 4px"}
+
+        .profile_header
+          %h5.inl.gr
+            That cluster is shared to you by
+          %h5.inl
+            = link_to  team_path(:name => @cluster.team.name) do
+              =@cluster.team.name
+          %h5.inl.gr
+            team
+
+
+        .row
+          .col-md-10
+
+            %hr.cluster_sep_line
+            %h3.inl
+              Stats
+
+            .clust_block
+              %h5.cl_line
+                .pull-right.text-center
+                  -if @cluster.deleted? or @cluster.deleting? or @cluster.install_error?
+                    =image_tag "red_dot.png", :width=>10,:style=>"margin-bottom: 2px;"
+                  -if @cluster.installing?
+                    =image_tag "orange_dot.png", :width=>10,:style=>"margin-bottom: 2px; "
+                  -if @cluster.active?
+                    =image_tag "green_dot.png", :width=>10,:style=>"margin-bottom: 2px;"
+                Cluster status
+              -#%hr
+
+
+            .clust_block
+              %h5.cl_line
+                .pull-right
+                  =@nodes_count
+                Nodes
+
+            -#.clust_block
+              %h5.cl_line
+                .pull-right
+                  50%
+                Capacity usage
+
+              %h5.cl_line
+                .pull-right
+                  70%
+                Power usage
+
+              %h5.cl_line
+                .pull-right
+                  7100 req/sec
+                Requests frequency
+
+
+            %br
+
+            -#.perm
+              %hr.cluster_sep_line
+              %h3.inl{:style=>"padding-bottom: 20px"}
+                Your permissions
+
+              .clust_block
+                .pull-right
+                  =image_tag "red_dot.png", :width=>10,:style=>"margin-bottom: 2px; margin-right: 10px;"
+                %h5
+                  Permission example 1   (you can't do it)
+
+                .pull-right
+                  =image_tag "green_dot.png", :width=>10,:style=>"margin-bottom: 2px; margin-right: 10px;"
+                %h5
+                  Permission example 2   (you can do it)
+
+                .pull-right
+                  =image_tag "green_dot.png", :width=>10,:style=>"margin-bottom: 2px; margin-right: 10px;"
+                %h5
+                  Permission example 3   (you can do it)
+
+
+
+              %br
+              %br
+              %br
+              %br
+
+            -#%hr.cluster_sep_line
+            -#%h3.inl
+              Controls
+
+
+            -#.clust_block
+              %h5
+                Controls here
+

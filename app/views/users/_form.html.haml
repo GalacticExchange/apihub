@@ -1,0 +1,189 @@
+= vertical_simple_form_for(@user,  :defaults => { :input_html => { :class => "new-input" } }) do |f|
+  .app_wrap.border{style:"background-color: rgba(241,241,241,0.75) !important;"}
+    .row
+      .padd_md
+        = render 'shared/form_errors', {f: f}
+
+        - flash.each do |name, msg|
+          -cls = name=='notice' ? "info" : "error"
+          #flash.app_wrap.border.item.marg_bott_md.item.animate-show
+            .row.bord_bott.padd_top_md.padd_bott_md{class:"#{cls}-flash"}
+              .flex-container-all.padd_left_md
+                .flex-wrap.marg_ri_md{style:"flex-grow: 1"}
+                  %h5.white{style:"margin: 3px 0px 0px 10px !important"}=msg
+
+        -#.padd_bott_10
+          %h4.no_marg
+            =image_tag "new/icons/business.svg", style:"width: 18px; opacity: 0.6; margin-top: -4px; margin-right: 5px;"
+            Team info
+
+        - if @invitation
+          = hidden_field_tag :invitation_token, @invitation_token
+
+          - if @invitation.invitation_type == Invitation::TYPE_MEMBER
+            = f.simple_fields_for :team do |f_team|
+              %h5.d_gr{style:"font-size: 16px; "}
+                Team name
+              = f_team.input :name, readonly: true, hint: 'You will be joined to the team', :input_html => { :value => @user.team.name}, :label=>false
+            -#= f.input :teamname, readonly: true, hint: 'You cannot change your teamname.' if @invitation.invitation_type == Invitation::TYPE_MEMBER
+          - elsif @invitation.invitation_type == Invitation::TYPE_SHARE
+            = f.simple_fields_for :team do |f_team|
+              = f_team.input :name, label: 'Team', :input_html => { :value => @user.team.name}
+
+
+          = f.input :email, readonly: true, hint: ''
+        -else
+          %h5.d_gr{style:"font-size: 16px; "}
+            Organisation short name (without spaces)
+
+          = f.simple_fields_for :team do |f_team|
+            = f_team.input :name, placeholder: '', :label=>false, :error => false
+
+
+        .padd_top_md
+
+        .padd_bott_10
+          %h4.no_marg.d_gr
+            =image_tag "new/icons/admin_black.svg", style:"width: 18px; opacity: 0.6; margin-top: -4px; margin-right: 5px;"
+            User credentials
+
+        -unless @invitation
+          %h5.d_gr.padd_top_10{style:"font-size: 16px; "}
+            Email (corporate email only)
+          = f.input :email, placeholder: '', :label=>false, :error => false, class: 'new-input'
+
+        %h5.padd_top_10.d_gr{style:"font-size: 16px; "}
+          Username
+        = f.input :username, placeholder: '', :label=>false, :error => false
+        %h5.padd_top_10.d_gr{style:"font-size: 16px; "}
+          First name
+
+        = f.input :firstname, placeholder: '', :label=>false, :error => false
+        %h5.padd_top_10.d_gr{style:"font-size: 16px;"}
+          Last name
+        = f.input :lastname, placeholder: '', :label=>false, :error => false
+
+        %h5.padd_top_10.d_gr{style:"font-size: 16px; "}
+          Mobile phone number (we will SMS the password to this phone number)
+        .phone_drop.form-group.string.required.user_phone.no_marg
+
+          %input.new-input#user_phone{:name => "user[phone]", :type => "tel", style:"    padding-right: 6px !important; padding-left: 52px  !important; width: 100%;"}
+          %input#user_fullphone{:name => "user[phonefull]", :type => "hidden"}
+          %input#user_country{:name => "user[country]", :type => "hidden"}
+
+
+        -#%div
+          %h5.padd_top_sm
+            Password
+          = f.input :password, placeholder: 'Minimum 8 characters.', :label=>false
+          %h5.padd_top_sm
+            Confirm your password
+          = f.input :password_confirmation, placeholder: '', :label=>false
+
+        .padd_top_md.marg_bott_10
+
+        .captcha
+          = recaptcha_tags
+
+        .padd_top_md.marg_top_10.padd_bott_sm
+          - if @invitation
+            = f.button :submit, style:"padding: 0px 65px !important;", class: "undec button mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md", :value=>"Create user", "data-btn"=>"sign-up-inv", :data => { :disable_with => "Creating user..." }
+          - else
+            -#= f.button :submit, :class => "undec button mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md", :style=>"    ", :value=>"Create a new cluster"
+            = f.button :submit, style:"padding: 0px 65px !important;", class:"undec button mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md", :value=>"Sign up", "data-btn"=>"sign-up", :data => { :disable_with => "Creating user..." }
+
+
+
+:javascript
+
+
+  $(document).ready(function() {
+
+    $("#user_phone").intlTelInput({
+      nationalMode: true,
+      utilsScript: "#{ActionController::Base.helpers.asset_path("intl-tel-input/build/js/utils.js")}"
+    });
+
+    // update the hidden input on submit
+    $("#new_user").submit(function() {
+      $("#user_fullphone").val($("#user_phone").intlTelInput("getNumber"));
+      var country = $(".iti-flag").attr("class").split(" ")[1].toUpperCase();
+      $("#user_country").val(country);
+    });
+
+
+  });
+
+
+
+
+
+-#.row
+  = vertical_simple_form_for(@user) do |f|
+    -#= f.error_notification
+    -#%h3.padd_bott_md Main info
+    .row
+      .col-md-6
+        = render 'shared/form_errors', {f: f}
+
+        - if @invitation
+          -#= f.input :token, :as => :hidden, :input_html => { :value => @invitation.uid }
+          = hidden_field_tag :invitation_token, @invitation_token
+          -#= f.input :token, :input_html => { :value => @user.token}
+          - if @invitation.invitation_type == Invitation::TYPE_MEMBER
+            = f.simple_fields_for :team do |f_team|
+              = f_team.input :name, readonly: true, hint: 'You will be joined to the team', :input_html => { :value => @user.team.name}, :label=>false
+            -#= f.input :teamname, readonly: true, hint: 'You cannot change your teamname.' if @invitation.invitation_type == Invitation::TYPE_MEMBER
+          - elsif @invitation.invitation_type == Invitation::TYPE_SHARE
+            = f.simple_fields_for :team do |f_team|
+              = f_team.input :name, label: 'Team', :input_html => { :value => @user.team.name}
+
+          = f.input :email, readonly: true, hint: ''
+
+        -else
+          %h5
+            Email
+          = f.input :email, placeholder: '', :label=>false
+          -#.form-group{:style=>"margin-left: 0px !important;"}
+            %input.form-control{:type => "text", :id=>"user_email", :class=>"string email required form-control", :name=>"user[email]"}
+
+          -#= f.input :email, placeholder: ''
+          -#= f.input :teamname, placeholder: ''
+          %h5
+            Team
+          = f.simple_fields_for :team do |f_team|
+            = f_team.input :name, placeholder: '', :label=>false
+        %h5
+          Username
+        = f.input :username, placeholder: '', :label=>false
+        %h5
+          First name
+        = f.input :firstname, placeholder: '', :label=>false
+      .col-md-6
+        %h5
+          Last name
+        = f.input :lastname, placeholder: '', :label=>false
+        %h5
+          Password
+        = f.input :password, placeholder: 'Minimum 8 characters.', :label=>false
+        %h5
+          Confirm your password
+        = f.input :password_confirmation, placeholder: '', :label=>false
+
+    -#%h3.padd_bott_md Advanced options
+    -#.row
+      .col-md-6
+        %h5
+          Proxy IP
+      .col-md-6
+        %h5
+          Hadoop type
+        /= f.collection_select(:lastname, @all_clusters, :id, :name, :input_html =>{:class => "myclass"})
+
+    .col-md-6.col-md-offset-3
+      .button_place.text-center.padd_top_md
+        - if @invitation
+          = f.button :submit, :class => "undec btn_new_big mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md", :style=>"    width: 100%;", :value=>"Create user"
+        - else
+          = f.button :submit, :class => "undec btn_new_big mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md", :style=>"    width: 100%;", :value=>"Create a new cluster"
+

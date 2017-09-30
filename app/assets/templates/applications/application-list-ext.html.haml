@@ -1,0 +1,28 @@
+.app_wrap.border.marg_bott_md{:style=>"border-bottom: 0px"}(ng-if="loaded")
+  .row
+    .padd_md.grey_bg(ng-if="isAppsEmpty")
+      %h3.no_marg.nested_header.inl
+        No apps
+    %a(ng-href="{{ROUTES.getAddr('APPLICATIONS', clusterId)}}" class="undec" ng-if="!isAppsEmpty")
+      .padd_md.grey_bg
+        %h3.inl.no_marg.nested_header
+          Apps
+        .pull-right
+          %h5.inl
+            #all_apps=image_tag "new/icons/next.svg", :style=>"width: 27px; opacity: 0.8; ", :class=>"inl"
+        .mdl-tooltip.mdl-tooltip--large{:for => "all_apps"}
+          Click to show all {{apps.length}}
+
+    .row.bord_bott.padd_top_sm.padd_bott_sm.table-row(ng-if="!isAppsEmpty" ng-repeat="app in apps | limitTo:10 track by app.id")
+      %a(ng-href="{{ROUTES.getAddr('APPLICATION_INFO', clusterId, app.id)}}")
+        .col-md-1.col-xs-3
+          %img(ng-src="{{app.image_url}}" style="width: 50px;")
+        .col-md-10.col-xs-6
+          %h2.project_name
+            {{app.title ? app.title : app.name}}
+      .col-md-1.col-xs-3{:style=>"padding-top: 15px;", :id=>"{{app.id}}_status"}
+        .pull-right
+          %img(ng-src="{{utils.getStatusCircle(app.status)}}" class="status-dot")
+
+        .mdl-tooltip.mdl-tooltip--large{:for => "{{app.id}}_status"}
+          {{app.status}}

@@ -1,0 +1,116 @@
+'use strict';
+
+angular.module('components').component('containerList', {
+    templateUrl: '<%= asset_path("containers/container-list.html") %>',
+    controller: ['$location', '$http', '$scope', '$interval', '$routeParams', 'ROUTES', 'HTTP_CONSTANTS',
+        function ($location, $http, $scope, $interval, $routeParams, ROUTES, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+
+            $scope.openContainer = function (id) {
+                if (!GexUtils.isSelected()) {
+                    $location.url(ROUTES.getNgAddr('CONTAINER_INFO', $scope.clusterId, id));
+                }
+            };
+
+            function fetchContainers(firstTime) {
+                $http.get('/clusters/' + $scope.clusterId + '/containers/', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    var cont = response.data.containers;
+
+                    function isNodeContainer(element) {
+                        return !element.masterContainer;
+                    }
+
+                    //todo: check user package or something
+                    if (cont.some(isNodeContainer)) {
+                        $scope.containers = response.data.containers;
+                    }
+
+                    fetchContainersChecks(firstTime);
+
+                }, function errorCallback(response) {
+
+
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load containers: ' + GexUtils.getErrMsgServ(response));
+                    } else {
+                        console.log('Error fetching containers: ' + GexUtils.getErrMsgServ(response));
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            $scope.contChecksText = function (checks) {
+                if (!checks){
+                    return '-';
+                }
+                else{
+                  if (Object.keys(checks).length === 0 && checks.constructor === Object){ return 'No checks available.'}
+                  else{return checks['docker_containers_alive'];
+                  }
+                }
+            }
+
+
+
+            function fetchContainersChecks(firstTime) {
+
+                if(!$scope.containers || $scope.containers.length == 0){
+                    //console.log('Error: no containers');
+                    return;
+                }
+
+                var cont_ids = $scope.containers.map(function(cont) {return cont.id;});
+
+                $http.get('/checks/containers/', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        //ids: JSON.stringify(cont_ids)
+                        ids: cont_ids.toString()
+                    }
+                }).then(function (response) {
+
+                    $scope.contChecks = response.data;
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load containers checks: ' + GexUtils.getErrMsgServ(response));
+                    } else {
+                        console.log('Error fetching containers checks: ' + GexUtils.getErrMsgServ(response));
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.checksLoaded = true;
+                });
+            }
+
+            fetchContainers(true);
+
+            var fetchContainersInterval = $interval(function () {
+                fetchContainers();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchContainersInterval)) {
+                    $interval.cancel(fetchContainersInterval);
+                    fetchContainersInterval = undefined;
+                }
+            });
+        }
+    ]
+});

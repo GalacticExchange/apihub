@@ -1,0 +1,24 @@
+// file to import all components
+
+@import "bage";
+@import "modal";
+@import "grid";
+@import "icons";
+@import "fonts";
+@import "buttons";
+@import "card";
+
+
+@import "header";
+@import "shadows";
+@import "install_steps";
+@import "left_menu";
+
+.label {
+  float: left;
+  text-align: left;
+}
+.new-row {
+  clear: left;
+}
+

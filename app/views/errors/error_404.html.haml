@@ -1,0 +1,22 @@
+
+= stylesheet_link_tag    "ours/sidebar_view", media: "all"
+= javascript_include_tag :application
+
+
+= render 'shared/header'
+
+.container
+  .padd_top_big{style:"height: 20vh;"}
+  .flex-box{style:"display: flex; justify-content: center;"}
+    .div
+      %h2.no_marg{style:"font-weight: 600; font-size: 40pt !important;"} Page not found (404)
+      .padd_top_md
+        %p.no_marg.gr{style:"font-size:  20px !important;"} We can't find the page you're looking for.
+        %p{style:"margin-top: 20px; font-size:  20px !important;"}
+          =link_to root_path do
+            Take me to the homepage
+
+.smile{style:"position: absolute; left: 0; bottom: 0;"}
+  =image_tag "new/icons/face.svg", style:"opacity: 0.5;  width: 30px; margin: 20px"
+
+

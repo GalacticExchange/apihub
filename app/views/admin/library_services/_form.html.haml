@@ -1,0 +1,13 @@
+= horizontal_simple_form_for([:admin, @item], :html => { class: 'form-horizontal', :multipart => true }) do |f|
+  = render 'shared/form_errors', f: f
+
+  .input-group
+    = f.input :name
+    = f.input :title
+    = f.input :description, as: :text
+    = f.input :pos, as: :integer
+    = f.input :enabled, as: :boolean
+
+
+    %br
+    = f.button :submit, :class => "btn btn-primary"

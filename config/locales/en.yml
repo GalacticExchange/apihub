@@ -1,0 +1,154 @@
+# Files in the config/locales directory are used for internationalization
+# and are automatically loaded by Rails. If you want to use locales other
+# than English, add the necessary files in this directory.
+#
+# To use the locales, use `I18n.t`:
+#
+#     I18n.t 'hello'
+#
+# In views, this is aliased to just `t`:
+#
+#     <%= t('hello') %>
+#
+# To use a different locale, set it with `I18n.locale`:
+#
+#     I18n.locale = :es
+#
+# This would use the information in config/locales/es.yml.
+#
+# To learn more, please read the Rails Internationalization guide
+# available at http://guides.rubyonrails.org/i18n.html.
+
+en:
+  hello: "Hello world"
+
+
+
+  search:
+    all: "Search anything"
+    clusters:
+      not_found: "We could not find any clusters"
+      total:
+    users:
+      not_found: "We could not find any users"
+      total:
+    teams:
+      not_found: "We could not find any teams"
+      total:
+
+
+  labels:
+    joined: "Joined on"
+    local_node: "(it's your local node)"
+    local_node_sh: "(local)"
+    node_install_time: "(will take about 5 min)"
+
+    no_nodes_long: "Looks like you do not have any nodes in this cluster."
+    no_nodes_sub_long: "You can add a new node or switch to another cluster"
+
+  buttons:
+    team:
+      edit: "Edit team profile"
+      contact: "Contact team admin"
+    user:
+      edit: "Edit profile"
+      contact: "Send message"
+
+
+
+
+
+
+  sms:
+    welcome: >+
+              Welcome to Galactic Exchange!
+
+              Your account credentials are:
+
+              Username: %{username}
+
+              Password: %{password}
+
+              An email has been sent with download details.
+
+
+  teams:
+    updated: "Team was successfully updated"
+
+  nodes:
+    status:
+      active: "active"
+      installed: "installed"
+      installing: "installing"
+      starting: "starting"
+      restarting: "restarting"
+      stopped: "stopped"
+      stopping: "stopping"
+      removed: "removed"
+      removing: "removing"
+      uninstalling: "uninstalling"
+      uninstalled: "uninstalled"
+      install_error: "install error"
+      start_error: "start error"
+      remove_error: "remove error"
+      uninstall_error: "uninstall error"
+      stop_error: "stop error"
+      restart_error: "restart error"
+
+    status_label:
+      active:           "label-primary"
+      installed:        "label-success"
+      installing:       "label-success"
+      starting:         "label-success"
+      restarting:       "label-success"
+      stopped:          "label-default"
+      stopping:         "label-default"
+      removed:          "label-default"
+      removing:         "label-default"
+      uninstalling:     "label-default"
+      uninstalled:      "label-default"
+      install_error:    "label-danger"
+      start_error:      "label-danger"
+      remove_error:     "label-danger"
+      uninstall_error:  "label-danger"
+      stop_error:       "label-dangery"
+      restart_error:    "label-danger"
+
+  clusters:
+
+    shared:
+      empty: "You do not have any shared clusters yet."
+    own:
+      empty: "You do not have any clusters yet."
+
+
+
+    description:
+      empty: "That cluster does not have a description"
+
+    status:
+      active: "active"
+      installed: "installed"
+      installing: "installing"
+      install_error: "install error"
+      remove_error: "remove error"
+      deleted: "deleted"
+      deleting: "deleting"
+      removed: "removed"
+      removing: "removing"
+
+    status_label:
+      active:           "label-primary"
+      installed:        "label-success"
+      installing:       "label-success"
+      install_error:    "label-danger"
+      remove_error:     "label-danger"
+      deleted:          "label-default"
+      deleting:         "label-default"
+      removed:          "label-default"
+      removing:         "label-default"
+
+
+
+
+

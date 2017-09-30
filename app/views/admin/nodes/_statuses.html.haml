@@ -1,0 +1,52 @@
+- if item.active?
+  .label.label-primary active
+
+- elsif item.installed?
+  .label.label-success installed
+
+- elsif item.installing?
+  .label.label-success installing
+
+- elsif item.starting?
+  .label.label-success starting
+
+- elsif item.restarting?
+  .label.label-success restarting
+
+- elsif item.stopped?
+  .label.label-default stopped
+
+- elsif item.stopping?
+  .label.label-default stopping
+
+- elsif item.removed?
+  .label.label-default removed
+
+- elsif item.removing?
+  .label.label-default removing
+
+- elsif item.uninstalling?
+  .label.label-default uninstalling
+
+- elsif item.uninstalled?
+  .label.label-default uninstalled
+
+- elsif item.install_error?
+  .label.label-danger install error
+
+- elsif item.start_error?
+  .label.label-danger start error
+
+- elsif item.remove_error?
+  .label.label-danger remove error
+
+- elsif item.uninstall_error?
+  .label.label-danger uninstall error
+
+- elsif item.stop_error?
+  .label.label-danger stop error
+
+- elsif item.restart_error?
+  .label.label-danger restart error
+
+

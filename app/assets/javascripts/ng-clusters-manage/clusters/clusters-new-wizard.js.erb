@@ -1,0 +1,24 @@
+'use strict';
+
+angular.module('components').component('clustersNewWizard', {
+    templateUrl: '<%= asset_path("clusters/clusters-new-wizard.html") %>',
+    controller: ['$location','$http', '$scope', '$interval', '$routeParams', 'ROUTES',
+        function ($location,$http, $scope, $interval, $routeParams, ROUTES) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+
+            var path = ROUTES.getNgAddr('CLUSTERS_NEW_COMPONENTS');
+
+            $scope.createOnprem = function () {
+                $location.path(path).search({clusterType: 'onprem'});
+            };
+
+            $scope.createAws = function () {
+                $location.path(path).search({clusterType: 'aws'});
+            };
+
+
+        }
+    ]
+});

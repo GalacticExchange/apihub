@@ -1,0 +1,93 @@
+'use strict';
+
+angular.module('components').component('nodeListExt', {
+    templateUrl: '<%= asset_path("nodes/node-list-ext.html") %>',
+    bindings: {
+        page: '@'
+    },
+    controller: ['$http', '$scope', '$interval', 'ROUTES', '$q', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, ROUTES, $q, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+
+            $scope.nodeCommand = function (command, nodeId) {
+                GexUtils.nodeCommand(command, nodeId, function () {
+                    fetchNodes();
+                });
+            };
+
+            function fetchNodes(firstTime) {
+                $http.get('/nodes', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {mode: 'status'}
+                }).then(function (response) {
+                    var nodes = response.data.nodes;
+
+                    return $q(function (resolve, reject) {
+                        GexUtils.getCurrentNodeId(function (localNodeId, err) {
+                            if (err) {
+                                console.log(err.message);
+                            } else if (localNodeId) {
+                                var localNode = nodes.find(function (node) {
+                                    return node.id == localNodeId;
+                                });
+                                if (localNode) {
+                                    localNode.local = true;
+                                }
+                            }
+                            resolve(nodes);
+                        });
+                    }).then(function (updNodes) {
+                        return $q(function (resolve, reject) {
+                            var notWaitDate = moment().subtract(1, 'days');
+                            updNodes = _.sortBy(updNodes, function (node) {
+                                if (node.local) {
+                                    return 40;
+                                } else if (node.status == 'install_error' || node.status == 'uninstall_error') {
+                                    return moment.unix(node.status_changed).isAfter(notWaitDate) ? 50 : 90;
+                                } else {
+                                    return 50;
+                                }
+                            });
+
+                            $scope.nodes = updNodes;
+                            $scope.nodesEmpty = !$scope.nodes || $scope.nodes.length == 0;
+
+                            if (firstTime) $scope.loaded = true;
+                            resolve();
+                        })
+                    }).catch(function (err) {
+                        console.log(err.message);
+                    });
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load nodes: ' + response.statusText);
+                        $scope.loaded = true;
+                    } else {
+                        console.log('Error fetching nodes: ' + response.statusText);
+                    }
+                });
+            }
+
+
+            this.$onInit = function() {
+                fetchNodes(true);
+            };
+            var fetchNodesInterval = $interval(function () {
+                fetchNodes();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchNodesInterval)) {
+                    $interval.cancel(fetchNodesInterval);
+                    fetchNodesInterval = undefined;
+                }
+            });
+        }
+    ]
+});

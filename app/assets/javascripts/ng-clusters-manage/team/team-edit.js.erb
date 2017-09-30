@@ -1,0 +1,99 @@
+'use strict';
+
+angular.module('components').component('teamEdit', {
+    templateUrl: '<%= asset_path("profile/team-edit.html") %>',
+    controller: ['$http', '$scope', 'ROUTES', 'Upload', '$timeout',
+        function ($http, $scope, ROUTES, Upload, $timeout) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+
+            $http.get('/teamInfo', {
+                headers: {Accept: 'application/json'},
+                responseType: 'json'
+            }).then(function (response) {
+                $scope.team = response.data.team;
+
+                $scope.loaded = true;
+            }, function errorCallback(response) {
+                if (GexUtils.isResponseCanceled(response)) {
+                    return;
+                }
+                GexUtils.redirectIfSomeRespCodes(response);
+
+                console.log('Error fetching user information: ' + response.statusText);
+                $scope.loaded = true;
+            });
+
+
+            $scope.messageTextAvatar = '';
+            $scope.disableUpdAvatarBtn = false;
+            $scope.updAvatarBtnText = 'Choose new image';
+            $scope.updateAvatar = function (file, errFiles) {
+                $scope.messageTextAvatar = '';
+                var errFile = errFiles && errFiles[0];
+                if (errFile) {
+                    if (errFile.$error == 'pattern') {
+                        GexUtils.showMessageDialog('Error', 'Avatar image format must be GIF, PNG or JPEG.');
+                    } else if (errFile.$error == 'maxSize') {
+                        GexUtils.showMessageDialog('Error', 'Maximum size of avatar must be 1MB.');
+                    }
+                    return;
+                }
+
+                $scope.disableUpdAvatarBtn = true;
+                $scope.updAvatarBtnText = 'Uploading image...';
+                if (file) {
+                    file.upload = Upload.upload({
+                        url: '/profile/team/update_avatar',
+                        data: {'team[avatar]': file},
+                        method: 'PUT',
+                        headers: {Accept: 'application/json; charset=utf-8'}
+                    });
+
+                    file.upload.then(function (response) {
+                        $timeout(function () {
+                            $scope.messageTextAvatar = 'Avatar has been updated.';
+                            $scope.team.avatarUrl = response.data.url;
+                        });
+                    }, function (response) {
+                        GexUtils.showMessageDialog('Error', 'Cannot upload avatar: ' + GexUtils.getErrMsgServ(response));
+                    }, function (evt) {
+                    }).then(function () {
+                        $scope.disableUpdAvatarBtn = false;
+                        $scope.updAvatarBtnText = 'Choose new image';
+                    });
+                }
+            };
+
+
+            $scope.messageTextAbout = '';
+            $scope.disableUpdAboutBtn = false;
+            $scope.updAboutBtnText = 'Update info';
+            $scope.updateAbout = function () {
+                $scope.messageTextAbout = '';
+                $scope.disableUpdAboutBtn = true;
+                $scope.updAboutBtnText = 'Updating...';
+
+                $http.put('/teamInfo', {
+                    about: $scope.team.about
+                }, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.messageTextAbout = 'Updated successfully.';
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    $scope.messageTextAbout = GexUtils.getErrMsgServ(response);
+                    console.log('Error updating team information: ' + response.statusText);
+                }).then(function () {
+                    $scope.disableUpdAboutBtn = false;
+                    $scope.updAboutBtnText = 'Update info';
+                });
+            }
+        }
+    ]
+});

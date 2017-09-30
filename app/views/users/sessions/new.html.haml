@@ -1,0 +1,96 @@
+%div(id="outdated")
+  %h6 Your browser is out of date!
+  %p
+    Update your browser to view this website correctly.
+    %a(id="btnUpdateBrowser" href="http://outdatedbrowser.com/") Update my browser now
+  %p(class="last")
+    %a(href="#" id="btnCloseUpdateBrowser" title="Close") &times;
+.gx-login-page.flex-container-all.flex-center.padd_md{style:"height: 100vh"}
+  .flex-wrap{style:"flex-grow: 4"}
+  .flex-wrap{style:"flex-grow: 4"}
+    .text-center
+      =link_to root_path do
+        = image_tag 'new/logo/logo.png',:style=> "width: 100%; padding-bottom: 25px; max-width: 360px;"
+      .login_fields.padd_top_md{ style:"max-width: 360px; margin: 0 auto;"}
+        = simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f|
+          - flash.each do |name, msg|
+            -cls = name == 'notice' ? "info" : "error"
+            #flash.app_wrap.border.item.marg_bott_md.item.animate-show(data-block="flash-msg")
+              .row.bord_bott.padd_top_md.padd_bott_md{class:"#{cls}-flash"}
+                .flex-container-all.padd_left_md
+                  .flex-wrap.marg_ri_md{style:"flex-grow: 1"}
+                    %h5.white{style:"margin: 3px 0px 0px 10px !important"}=msg
+
+
+          = f.input :login, required: false, autofocus: true, :label=>false, placeholder: "Login"
+          = f.input :password, required: false, placeholder: "Password",:label=>false
+          -#.captcha{style:" margin-left: 28px;"}
+            = recaptcha_tags
+
+          .remember_me_checkbox
+            = f.input :remember_me, as: :boolean, :input_html => { :checked => true } if devise_mapping.rememberable?
+
+          = f.hidden_field :nodeId, :value => nil
+
+          .form-actions.text-center
+            = f.button :submit, "Log in", :class=>"undec mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md", :style=>"width: 100%;", "data-btn"=>"login", :data => { :disable_with => "Signing in..." }
+      .padd_top_15
+        %h6.gr{style:"font-size: 12px;"} You need to sign in or sign up before continuing.
+        %h6.gr{style:"font-size: 12px;"}
+          By signing in you agree to our
+          =link_to license_agreement_path do
+            License Agreement
+
+      .fl-cont.padd_top_md.fl-center
+        .fl-wrap.padd_ri_10
+          %h5.bold
+            =link_to 'Sign up', new_user_path, "data-link"=>"sign-up", class:'bold link-el'
+        .fl-wrap.padd_left_10{style:"border-left: solid 1px rgba(212, 212, 212, 0.6)"}
+          %h5
+            =link_to 'Forgot password?', new_user_password_path
+
+
+  .flex-wrap{style:"flex-grow: 4"}
+
+
+:javascript
+  function addLoadEvent(func) {
+    var oldonload = window.onload;
+    if (typeof window.onload != 'function') {
+        window.onload = func;
+    } else {
+        window.onload = function() {
+            if (oldonload) {
+                oldonload();
+            }
+            func();
+        }
+    }
+  }
+
+  addLoadEvent(function(){
+    outdatedBrowser({
+        bgColor: '#f25648',
+        color: '#ffffff',
+        lowerThan: 'borderImage',
+        languagePath: ''
+    })
+  });
+
+  if (GexUtils.isDesktopClient) {
+    GexUtils.getCurrentNodeId(function(nodeId, err) {
+      if (err) {
+        console.log(err.message);
+      } else if(nodeId) {
+         document.getElementById('user_nodeId').value = nodeId;
+      }
+    });
+  }
+
+  $(document).ready(function(){
+
+    $("#hide_flash").click(function(){
+        $("#flash").hide(1000);
+    });
+
+  });

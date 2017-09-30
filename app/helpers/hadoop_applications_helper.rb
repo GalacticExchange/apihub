@@ -1,0 +1,2 @@
+module HadoopApplicationsHelper
+end

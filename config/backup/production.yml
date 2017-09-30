@@ -1,0 +1,61 @@
+dir_backups_base: "/var/www/backups/api-prod/"
+
+backup:
+  app_files:
+    exclude:
+      - data/
+      - clusters/
+      - db/
+      - spec/
+      - app/assets/components/
+      - public/js/
+      - public/elfinder/
+      - public/system/
+      - public/uploads/
+      - public/uploads-init/
+
+
+  user_files:
+    include:
+      - public/uploads
+      - public/images
+      - data
+      - clusters
+      - /var/www/data
+
+
+notify:
+  mail:
+    from: noreply@galacticexchange.io
+    to: max.ivak@galacticexchange.io
+    reply_to: support@galacticexchange.io
+
+
+
+s3:
+  access_key_id: "PH_GEX_KEY_ID"
+  secret_access_key: "PH_GEX_ACESS_KEY"
+  region: "us-west-2"
+  bucket: "gex-backups"
+  #path: "/api-main"
+
+
+storages:
+  -
+    type: "local"
+    path: "/var/www/backups/api-prod"
+
+
+  -
+    type: "scp"
+    username: "ubackup"
+    password: 'PH_GEX_PASSWD1'
+    ip: '51.1.0.50'
+    port: 22
+    path: '/disk2/backups/ubackup/api-prod'
+
+  -
+    type: "s3"
+    region: "us-west-2"
+    bucket: "gex-backups"
+    path: "/api-prod"

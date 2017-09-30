@@ -1,0 +1,10 @@
+{
+  "allow_root": true,
+  "directory": "app/assets/components",
+  "ignoredDependencies": [
+    "jquery"
+  ],
+  "resolvers": [
+    "bower-npm-resolver"
+  ]
+}

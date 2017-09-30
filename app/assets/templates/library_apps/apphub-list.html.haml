@@ -1,0 +1,111 @@
+.gx-page
+  .sidebar-header(data-div="page-title")
+    .flex-wrap.flex-grow
+      %h2.sb-text.sb-h1-text AppHub™
+      %p.sb-p-text.gr
+        Thousands of automated builds from GitHub™
+    .flex-wrap
+      .app_wrap.border
+        .mdl-tabs.mdl-js-tabs.mdl-js-ripple-effect
+          .mdl-tabs__tab-bar
+            %a.accepted.mdl-tabs__tab.mdl-tab.hand_cursor(href="" ng-click="goToHandpickedApps()")
+              =image_tag "new/icons/handpick.svg", class: "mdl-tab-icon"
+              Handpicked
+            %a.accepted.mdl-tabs__tab.mdl-tab.hand_cursor.is-active(href="")
+              =image_tag "new/icons/autobuild.svg", class: "mdl-tab-icon"
+              Opensource
+            %a.accepted.mdl-tabs__tab.mdl-tab.hand_cursor(href="" ng-click="goToDevApps()")
+              =inline_svg "new/icons/debug.svg", class: "mdl-tab-icon"
+              Development
+
+  %div(ng-if="!loaded")
+    .flex-center.padd_top_md
+      %material-spinner.fade-element-in
+
+
+  %div.marg_bott_md(ng-if="loaded")
+
+    #autobuilds
+      .fl-cont
+        .fl-wrap.fl-grow
+
+          .fl-cont.lite_shadow
+            .header_search_wrap(ng-class="focusSearch ? 'search_box_focus' : undefined" style="padding-top: 0px")
+              %input(type="text" name="app.name" placeholder="Start typing application name..." ng-model="app.name" class="custom-input dform-control" ng-autofocus ng-focus="focusSearch = true" ng-blur="focusSearch = false")
+              .header_search_icon_wrap.inl.hand_cursor(ng-if="!spinner")
+                =inline_svg "new/icons/search_blue.svg", class:"search_input_icon colored-icon"
+              .flex-center.marg_10(ng-if="spinner")
+                %material-spinner.fade-element-in.padd_top_sm.padd_ri_sm(data-spinner-radius=15)
+        -#.fl-wrap.padd_left_md
+          .hand_cursor(ng-click='search_filters = !search_filters')
+            =inline_svg "new/icons/tune.svg", class:"search_input_icon colored-icon"
+      .app_card.border.marg_top_md.padd_md(ng-show='search_filters')
+        .fl-cont
+          .fl-wrap.padd_ri_md.marg_ri_md
+            %h6.no_marg.bold Application types
+            .padd_top_15.padd_left_sm
+              %label.mdl-checkbox.mdl-js-checkbox.mdl-js-ripple-effect{:for => "single_cont"}
+                %input#single_cont.mdl-checkbox__input{:checked => "checked", :type => "checkbox"}
+                %span.mdl-checkbox__label Single container
+              .padd_top_10
+                %label.mdl-checkbox.mdl-js-checkbox.mdl-js-ripple-effect{:for => "compose_app"}
+                  %input#compose_app.mdl-checkbox__input{ :type => "checkbox"}
+                  %span.mdl-checkbox__label Compose application
+          .fl-wrap
+            %h6.no_marg.bold Application source
+            .padd_top_15.padd_left_sm
+              %label.mdl-checkbox.mdl-js-checkbox.mdl-js-ripple-effect{:for => "source_github"}
+                %input#source_github.mdl-checkbox__input{:checked => "checked", :type => "checkbox"}
+                %span.mdl-checkbox__label GitHub
+              .padd_top_10
+                %label.mdl-checkbox.mdl-js-checkbox.mdl-js-ripple-effect{:for => "source_official"}
+                  %input#source_official.mdl-checkbox__input{:checked => "checked", :type => "checkbox"}
+                  %span.mdl-checkbox__label Official
+
+    .div{style:"padding-top: 25px;"}
+      .fl-cont.padd_top_big(ng-if="apphubApps.length == 0")
+        .fl-wrap.fl-grow
+        .fl-wrap.text-center
+          %h2.no_marg.bold.no-items-h No apps found, sorry
+        .fl-wrap.fl-grow
+
+      #top_of_apps.app_card.border(ng-if="apphubApps.length != 0")
+        .bord_bott.gr-hover-el(ng-repeat="apphubApp in apphubApps track by apphubApp.id")
+          %a.undec(ng-init="appUrl = getAppUrl(apphubApp.application_type)" ng-href="{{ROUTES.getAddr(appUrl, clusterId, apphubApp.id)}}")
+            .fl-cont.padd_md.marg_left_10
+              .fl-wrap.fl-grow
+                %h2.no_marg.bold.link-el{style:"font-size: 18pt !important;"} {{apphubApp.name}}
+                .padd_top_15
+                  %p.no_marg{style:"color: #6d6c6c; font-size: 16px;"} {{apphubApp.short_description ? apphubApp.short_description : 'No description provided'}}
+              .fl-wrap
+                .gx-bage.gx-bage-lg{class:'{{bageColor(apphubApp.application_type)}}-bage'}
+                  .fl-cont.fl-center
+                    .fl-wrap
+                      .div(ng-if='apphubApp.application_type == "compose_app" ' style='height: 14px; margin-top: -8px;')
+                        =inline_svg "new/icons/compose_app.svg", class: 'apphub-help-icon', width: 14, height: 14
+                      .div(ng-if='apphubApp.application_type == "container" ' style='height: 14px; margin-top: -10px;')
+                        =inline_svg "new/icons/one.svg", class: 'apphub-help-icon'
+                    .fl-wrap.marg_left_10
+                      %h6.no_marg {{applicationTypeName(apphubApp.application_type)}}
+                .padd_top_10.fl-cont
+                  .fl-wrap.fl-grow
+
+                  .fl-wrap.padd_ri_10(id="{{apphubApp.id+'-security'}}")
+                    =inline_svg "new/icons/security.svg", class: '{{getSecurityColor(apphubApp.clair_rating)}} sm-icon'
+                    .mdl-tooltip.mdl-tooltip--large(for="{{apphubApp.id+'-security'}}")
+                      Security rating: {{apphubApp.clair_rating}}
+
+                  .fl-wrap(id="{{apphubApp.id+'-source'}}")
+                    .div(ng-if="apphubApp.source_type!='github'")
+                      =inline_svg "new/icons/verified.svg", class: 'green-svg sm-icon'
+                    .div(ng-if="apphubApp.source_type=='github'")
+                      =inline_svg "new/icons/world.svg", class: 'lite-gr-svg sm-icon'
+                    .mdl-tooltip.mdl-tooltip--large(for="{{apphubApp.id+'-source'}}")
+                      Application source:
+                      {{apphubApp.source_type}}
+
+
+    .app_wrap(ng-show="apphubApps.length != 0")
+      .row
+        .text-center
+          %ul(uib-pagination total-items="pagination.totalItems" ng-model="pagination.currentPage" max-size="pagination.maxSize" class="pagination-sm" boundary-link-numbers="true" ng-change="pageChanged()" items-per-page="pagination.itemsPerPage")

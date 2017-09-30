@@ -1,0 +1,89 @@
+'use strict';
+
+angular.module('components').component('nodesInstAws', {
+    templateUrl: '<%= asset_path("nodes_install/node-inst-aws.html") %>',
+    controller: ['$http', '$scope', '$q', '$location', 'ROUTES',
+        function ($http, $scope, $q, $location, ROUTES) {
+            $scope.utils = GexUtils;
+            $scope.show = 'addAws';
+
+            var urlParams = $location.search();
+            $scope.withHadoop = urlParams.withHadoop;
+
+            $scope.addNodes = function () {
+
+                if(!$scope.dataForPage.nodeCount){
+                    GexUtils.showMessageDialog('Error', 'Please, specify correct number of nodes.');
+                    return;
+                }
+
+                GexUtils.showConfirmDialog(
+                  'Install '+$scope.dataForPage.nodeCount+' AWS '+ ($scope.dataForPage.nodeCount == 1 ? 'node' : 'nodes'),
+                  'You are going to install '+$scope.dataForPage.nodeCount+  ($scope.withHadoop ? ' Big Data' : ' Application-only')  +' AWS '+ ($scope.dataForPage.nodeCount == 1 ? 'node' : 'nodes') +
+                  '. <br> Instance type: ' +$scope.dataForPage.selectedInstance.name+'.',
+                  function () {
+
+                      $scope.err_message = undefined;
+                      $scope.spinner = true;
+
+
+                      $http.post('/nodes/add', {
+                          clusterID: GexUtils.currentClusterId,
+                          nNodes: $scope.dataForPage.nodeCount,
+                          instanceType: $scope.dataForPage.selectedInstance.name,
+                          diskStorage: $scope.dataForPage.diskStorage,
+                          hadoop_app: urlParams.withHadoop
+                      }, {
+                          headers: {Accept: 'application/json'},
+                          responseType: 'json'
+                      }).then(function (response) {
+                          $location.url(ROUTES.getNgAddr('NODES', GexUtils.currentCluster.id));
+                      }, function errorCallback(response) {
+                          if (GexUtils.isResponseCanceled(response)) {
+                              return;
+                          }
+                          GexUtils.redirectIfSomeRespCodes(response);
+
+                          $scope.spinner = false;
+                          $scope.err_message = GexUtils.getErrMsgServ(response);
+                      });
+                  },
+                  'Install', 'Cancel'
+                );
+
+
+
+
+
+
+            };
+
+
+            $http.get('/aws/instance_types', {
+                headers: {Accept: 'application/json'},
+                responseType: 'json',
+                params: {
+                    clusterId: GexUtils.currentClusterId,
+                    withHadoop: urlParams.withHadoop
+                }
+            }).then(function (response) {
+                var instances = response.data.result;
+                $scope.dataForPage = {
+                    diskStorage: 100,
+                    nodeCount: 1,
+                    instances: instances,
+                    selectedInstance: instances[0]
+                };
+            }, function errorCallback(response) {
+                if (GexUtils.isResponseCanceled(response)) {
+                    return;
+                }
+                GexUtils.redirectIfSomeRespCodes(response);
+
+                GexUtils.showMessageDialog('Error', 'Error fetching aws instance types: ' + GexUtils.getErrMsgServ(response));
+            }).then(function () {
+                $scope.loaded = true;
+            });
+        }
+    ]
+});

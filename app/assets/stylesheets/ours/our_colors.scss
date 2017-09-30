@@ -1,0 +1,45 @@
+//$accent-color-gex: #d54728;
+//$accent-color-gex: #2b83c7;
+//$accent-color-gex: #48d0cc;
+
+
+$accent-color-gex: #1d87e4;
+$link-color-gex: #0d75d0;
+
+
+$lite-grey-gex: #f1f1f1;
+$line-color-gex: rgba(212,212,212,0.6);
+$grey-color-gex: #7f7f7f;
+$text-color-gex: #434343;
+
+$gex-red-bg: hsla(0, 54%, 49%, 0.84);
+$gex-green-bg: rgba(57, 192, 57, 0.7);
+$gex-yellow-bg: #ffd90b;
+$gex-orange-bg: #ffb612;
+$gex-orange-link: #F57F17;
+
+$gex-purple: #673AB7;
+
+
+//$gex-green: #00C853;
+//$gex-green: #4CAF50;
+$gex-green: #5cce61;
+
+
+.green-bg{  background-color: #4fbf4e !important;  }
+.gex-bg{  background-color: $accent-color-gex !important;  }
+.lite-gr-bg{  background-color: $grey-color-gex !important;  }
+
+//.red-svg{  fill: $gex-red-bg !important;  }
+.red-svg{  fill: rgba(216, 64, 64, 0.84) !important;  }
+.gex-svg{  fill: $accent-color-gex !important;  }
+.yellow-svg{  fill: $gex-yellow-bg !important;  }
+.orange-svg{  fill: $gex-orange-bg !important;  }
+//.green-svg{  fill: $gex-green !important;  }
+.green-svg{  fill: #72d64f !important  }
+.dark-green-svg{  fill: #37d459 !important  }
+.purple-svg{  fill: $gex-purple !important;  }
+.gr-svg{  fill: $text-color-gex !important;  }
+.gx-gr-svg{  fill: #585858 !important;  }
+.lite-gr-svg{  fill: $grey-color-gex !important;  }
+.white-svg{  fill: #fff !important;  }

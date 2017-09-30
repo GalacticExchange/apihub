@@ -1,0 +1,75 @@
+
+%table.table.table-bordered
+  %tr
+    %td Service
+    %td Host
+    %td URL
+    %td Proxy URL
+
+  - items.each do |item|
+    %tr
+      %td
+        =link_to admin_cluster_service_path(item) do
+          %b=item.name
+      %td
+        =item.hostname
+      %td
+        %code
+          #{item.hostname}:#{item.port_out}
+      %td
+        = render 'admin/cluster_services/connect', item: item
+
+
+-#%h2 Services on master - Hadoop
+-#%table.table.table-bordered
+  %tr
+    %td Service
+    %td URL
+    %td Proxy URL
+
+  - @services_hadoop[:master_endpoints].each do |name, r|
+    %tr
+      %td
+        %b=r[:name]
+      %td
+        %code
+          #{r[:host]}:#{r[:port]}
+      %td
+        - if r[:protocol] == 'ssh'
+          %code.language-bash
+            ssh -p #{r[:port_out]} root@#{@sshproxy_host}
+        - elsif r[:protocol] == 'http'
+          - url = "http://#{@webproxy_host}:#{r[:port_out]}"
+          =link_to url, url, :target => '_blank'
+          %br
+          =link_to 'Connect by user', admin_cluster_service_connect_webproxy_url(:cluster_id=>@item.id, :url=>url), :class=>'btn btn-xs btn-default', :target => '_blank'
+          &nbsp;
+          =link_to 'Set cookie', "http://"+@webproxy_host+"/setcookie?token=#{@user_token}", :class=>'btn btn-xs btn-default', :target => '_blank'
+
+          %br
+          %br
+          port 80:
+          %br
+          - url_webproxy = "http://#{r[:proxy_host]}"
+          =link_to url_webproxy, url_webproxy, :target => '_blank'
+
+
+
+-#%h3 Services on node
+-#%table.table.table-bordered
+  %tr
+    %td Service
+    %td URL
+
+  - @services_hadoop[:node_endpoints].each do |name, r|
+    %tr
+      %td
+        %b=r[:name]
+        %br
+      %td
+        %code
+          #{r[:host]}:#{r[:port]}
+
+
+
+

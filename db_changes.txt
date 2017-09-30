@@ -1,0 +1,712 @@
+-- 2016-07-06, mmx
+
+- hadoop_app_id - hadoop app, FK cluster_applications.id
+
+=== APPLIED
+
+
+-- 2016-07-08, mmx
+
+ALTER TABLE `cluster_applications` ADD `uid` VARCHAR(255) NOT NULL AFTER `id`;
+update cluster_applications set uid=id;
+ALTER TABLE `cluster_applications` ADD UNIQUE(`uid`);
+
+
+
+=== APPLIED
+
+
+
+-- 2016-07-14, mmx
+
+ALTER TABLE `cluster_containers` ADD `basename` VARCHAR(255) NOT NULL AFTER `id`;
+
+
+
+-- 2016-08-14, mmx
+
+ALTER TABLE `library_applications` ADD `enabled` TINYINT(1) NOT NULL DEFAULT '1' AFTER `company_name`;
+ALTER TABLE `library_applications` ADD `pos` INT NOT NULL DEFAULT '0' AFTER `enabled`;
+
+-- 2016-08-14, elvis
+
+ALTER TABLE `clusters` CHANGE `primary_admin_user_id` `primary_admin_user_id` INT(11) NULL;
+
+
+-- 2016-09-02, mmx
+ALTER TABLE `cluster_containers` ADD `uid` VARCHAR(255) NOT NULL AFTER `id`;
+
+
+-- 2016-11-14, elvis
+
+CREATE TABLE IF NOT EXISTS `instances` (
+  `id` int(11) NOT NULL,
+  `uid` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `admin_notes` text COLLATE utf8_unicode_ci,
+  `sysinfo` text COLLATE utf8_unicode_ci,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+ALTER TABLE `instances`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `uid` (`uid`);
+
+ALTER TABLE `instances`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+
+
+
+
+ALTER TABLE `log_debug` ADD `instance_id` INT(11) NULL AFTER `node_id`;
+ALTER TABLE `log_debug` ADD INDEX(`instance_id`);
+
+==== applied on INIT
+
+
+-- 2016-11-18, elvis
+
+ALTER TABLE `instances` ADD `data` TEXT NULL AFTER `sysinfo`;
+
+
+-- 2016-11-21, elvis
+
+ALTER TABLE `nodes` ADD `instance_id` INT(11) NOT NULL AFTER `host_type_id`;
+
+ALTER TABLE `instances` ADD `last_node_id` INT(11) NULL AFTER `data`;
+
+ALTER TABLE `nodes` CHANGE `instance_id` `instance_id` INT(11) NULL;
+
+
+
+======== APPLIED ON MAIN
+======== APPLIED ON PROD
+==== applied on INIT
+
+
+
+-- 2016-12-02, elvis
+
+ALTER TABLE `users` ADD `phone_number` VARCHAR(255) NULL AFTER `registration_options`;
+ALTER TABLE `users` ADD `registration_ip` VARCHAR(255) NULL AFTER `phone_number`;
+ALTER TABLE `users` ADD `country` VARCHAR(255) NULL AFTER `registration_ip`;
+
+======== APPLIED ON MAIN
+======== APPLIED ON PROD
+==== applied on INIT
+
+
+-- 2016-12-12
+
+INSERT INTO `options` (`id`, `name`, `title`, `option_type`, `description`, `is_changed`, `category`, `value`) VALUES
+(10, 'registration_countries', 'registration_countries', '', '', 1, NULL, '["UA", "US"]');
+
+
+======== APPLIED ON MAIN
+======== APPLIED ON PROD
+==== applied on INIT
+
+
+
+
+-- 2016-12-26 elvis
+
+ALTER TABLE `users` ADD `sms_was_sent` DATETIME NULL AFTER `unlock_token`;
+
+======== APPLIED ON MAIN
+======== APPLIED ON PROD
+==== applied on INIT
+
+
+-- 2017-01-03, mmx
+
+ALTER TABLE `clusters` ADD `cluster_type_id` INT NULL DEFAULT '0' AFTER `status`;
+
+======== APPLIED ON MAIN
+==== applied on INIT
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cluster_types`
+--
+
+DROP TABLE IF EXISTS `cluster_types`;
+CREATE TABLE IF NOT EXISTS `cluster_types` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `pos` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Dumping data for table `cluster_types`
+--
+
+INSERT INTO `cluster_types` (`id`, `name`, `title`, `enabled`, `pos`) VALUES
+(1, 'onprem', 'On-premises', 1, 0),
+(2, 'aws', 'AWS', 1, 0);
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `cluster_types`
+--
+ALTER TABLE `cluster_types`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`),
+  ADD UNIQUE KEY `name` (`name`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `cluster_types`
+--
+ALTER TABLE `cluster_types`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=5;
+
+
+
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `aws_instance_types`
+--
+
+DROP TABLE IF EXISTS `aws_instance_types`;
+CREATE TABLE IF NOT EXISTS `aws_instance_types` (
+  `id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=139 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Dumping data for table `aws_instance_types`
+--
+
+INSERT INTO `aws_instance_types` (`id`, `created_at`, `updated_at`, `name`) VALUES
+(72, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 't2.medium'),
+(73, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 't2.large'),
+(74, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 't2.xlarge'),
+(75, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 't2.2xlarge'),
+(76, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm1.small'),
+(77, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm1.medium'),
+(78, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm1.large'),
+(79, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm1.xlarge'),
+(80, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm3.medium'),
+(81, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm3.large'),
+(82, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm3.xlarge'),
+(83, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm3.2xlarge'),
+(84, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm4.large'),
+(85, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm4.xlarge'),
+(86, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm4.2xlarge'),
+(87, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm4.4xlarge'),
+(88, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm4.10xlarge'),
+(89, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm4.16xlarge'),
+(90, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm2.xlarge'),
+(91, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm2.2xlarge'),
+(92, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'm2.4xlarge'),
+(93, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'cr1.8xlarge'),
+(94, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'r3.large'),
+(95, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'r3.xlarge'),
+(96, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'r3.2xlarge'),
+(97, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'r3.4xlarge'),
+(98, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'r3.8xlarge'),
+(99, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'r4.large'),
+(100, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'r4.xlarge'),
+(101, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'r4.2xlarge'),
+(102, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'r4.4xlarge'),
+(103, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'r4.8xlarge'),
+(104, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'r4.16xlarge'),
+(105, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'x1.16xlarge'),
+(106, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'x1.32xlarge'),
+(107, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'i2.xlarge'),
+(108, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'i2.2xlarge'),
+(109, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'i2.4xlarge'),
+(110, '2017-01-21 16:49:30', '2017-01-21 16:49:30', 'i2.8xlarge'),
+(111, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'hi1.4xlarge'),
+(112, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'hs1.8xlarge'),
+(113, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c1.medium'),
+(114, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c1.xlarge'),
+(115, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c3.large'),
+(116, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c3.xlarge'),
+(117, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c3.2xlarge'),
+(118, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c3.4xlarge'),
+(119, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c3.8xlarge'),
+(120, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c4.large'),
+(121, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c4.xlarge'),
+(122, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c4.2xlarge'),
+(123, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c4.4xlarge'),
+(124, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'c4.8xlarge'),
+(125, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'cc1.4xlarge'),
+(126, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'cc2.8xlarge'),
+(127, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'g2.2xlarge'),
+(128, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'g2.8xlarge'),
+(129, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'cg1.4xlarge'),
+(130, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'p2.xlarge'),
+(131, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'p2.8xlarge'),
+(132, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'p2.16xlarge'),
+(133, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'd2.xlarge'),
+(134, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'd2.2xlarge'),
+(135, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'd2.4xlarge'),
+(136, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'd2.8xlarge'),
+(137, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'f1.2xlarge'),
+(138, '2017-01-21 16:49:31', '2017-01-21 16:49:31', 'f1.16xlarge');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `aws_instance_types`
+--
+ALTER TABLE `aws_instance_types`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `aws_instance_types`
+--
+ALTER TABLE `aws_instance_types`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=139;
+
+
+
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `aws_regions`
+--
+
+DROP TABLE IF EXISTS `aws_regions`;
+CREATE TABLE IF NOT EXISTS `aws_regions` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=85 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Dumping data for table `aws_regions`
+--
+
+INSERT INTO `aws_regions` (`id`, `name`, `title`, `created_at`, `updated_at`) VALUES
+(71, 'us-east-1', 'US East (N. Virginia - us-east-1)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(72, 'us-east-2', 'US East (Ohio - us-east-2)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(73, 'us-west-1', 'US West (N. California - us-west-1)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(74, 'us-west-2', 'US West (Oregon - us-west-2)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(75, 'ca-central-1', 'Canada (Central - ca-central-1)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(76, 'eu-west-1', 'EU (Ireland - eu-west-1)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(77, 'eu-central-1', 'EU (Frankfurt - eu-central-1)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(78, 'eu-west-2', 'EU (London - eu-west-2)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(79, 'ap-northeast-1', 'Asia Pacific (Tokyo - ap-northeast-1)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(80, 'ap-northeast-2', 'Asia Pacific (Seoul - ap-northeast-2)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(81, 'ap-southeast-1', 'Asia Pacific (Singapore - ap-southeast-1)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(82, 'ap-southeast-2', 'Asia Pacific (Sydney - ap-southeast-2)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(83, 'ap-south-1', 'Asia Pacific (Mumbai - ap-south-1)', '2017-01-21 16:49:30', '2017-01-21 16:49:30'),
+(84, 'sa-east-1', 'South America (São Paulo - sa-east-1)', '2017-01-21 16:49:30', '2017-01-21 16:49:30');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `aws_regions`
+--
+ALTER TABLE `aws_regions`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `aws_regions`
+--
+ALTER TABLE `aws_regions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=85;
+
+
+
+==== applied on INIT
+
+
+
+-- 2017-01-04, mmx
+
+ALTER TABLE `cluster_services` ADD `title` VARCHAR(255) NULL AFTER `name`;
+ALTER TABLE `cluster_services` ADD `url` VARCHAR(255) NULL AFTER `private_ip`;
+
+
+-- 2017-01-11, elvis
+
+ALTER TABLE `library_services` ADD `description` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL AFTER `title`;
+ALTER TABLE `library_services` ADD `enabled` TINYINT(1) NOT NULL DEFAULT '1' AFTER `description`;
+ALTER TABLE `library_services` ADD `pos` INT(11) NOT NULL DEFAULT '0' AFTER `enabled`;
+
+
+
+==== applied on INIT
+
+
+
+---- 2017-01-12, mmx
+
+-- library_services - data
+
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `library_services`
+--
+
+DROP TABLE IF EXISTS `library_services`;
+CREATE TABLE IF NOT EXISTS `library_services` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `description` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `pos` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Dumping data for table `library_services`
+--
+
+INSERT INTO `library_services` (`id`, `name`, `title`, `description`, `enabled`, `pos`) VALUES
+(1, 'nginx', 'title', NULL, 1, 0),
+(5, 'hdfs', 'HDFS', NULL, 1, 0),
+(6, 'ssh', 'SSH', NULL, 1, 0),
+(7, 'hadoop_resource_manager', 'HDFS resource manager', NULL, 1, 0),
+(8, 'hdfs_namenode_webui', 'HDFS name node web UI', NULL, 1, 0),
+(9, 'hue', 'Hue', NULL, 1, 0),
+(10, 'spark_master_webui', 'Spark master web UI', NULL, 1, 0),
+(11, 'spark_history', 'Spark history', NULL, 1, 0);
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `library_services`
+--
+ALTER TABLE `library_services`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `library_services`
+--
+ALTER TABLE `library_services`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=12;
+
+
+
+==== applied on INIT
+
+
+
+---- 2017-01-19, mmx
+
+-- drop column teams.is_enterprise
+-- drop column teams.main_cluster_id
+-- drop column users.main_cluster_id
+
+
+==== applied on INIT
+
+
+
+--- 2017-02-03, mmx
+
+ALTER TABLE `nodes` ADD `jobs_state` TEXT NULL AFTER `updated_at`;
+
+
+
+-- 2017-02-01, elvis
+
+ALTER TABLE `nodes` ADD `title` VARCHAR(255) NULL AFTER `name`;
+
+-- 2017-02-07
+
+DROP TABLE IF EXISTS `log_sources`;
+CREATE TABLE IF NOT EXISTS `log_sources` (
+  `id` int(11) NOT NULL,
+  `parent_id` int(11) DEFAULT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `description` text COLLATE utf8_unicode_ci,
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `visible_client` tinyint(1) NOT NULL DEFAULT '0',
+  `need_notify` tinyint(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+INSERT INTO `log_sources` (`id`, `parent_id`, `name`, `title`, `description`, `enabled`, `visible_client`, `need_notify`) VALUES
+(1, NULL, 'cli', 'CLI', NULL, 1, 0, 0),
+(2, NULL, 'gexd', 'GEXD', NULL, 1, 0, 0),
+(3, 0, 'server', 'Server', NULL, 1, 0, 0),
+(4, NULL, 'user_action', 'User action', NULL, 1, 0, 0);
+
+ALTER TABLE `log_sources`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`);
+
+ALTER TABLE `log_sources`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=7;
+
+
+
+--- 2017-02-15, dmitry
+
+ALTER TABLE library_applications
+ADD release_date DATETIME
+
+
+
+--- 2017-02-15, dmitry <- add base apps to AppHub
+
+INSERT INTO `library_applications` (`id`, `name`, `title`, `git_repo`, `description`, `picture_file_name`, `picture_content_type`, `picture_file_size`, `picture_updated_at`, `category_title`, `company_name`, `enabled`, `pos`, `color`, `release_date`, `status`, `metadata`, `icon_file_name`, `icon_content_type`, `icon_file_size`, `icon_updated_at`) VALUES
+(1, 'hadoop_plain', 'Hadoop plain', 'https://github.com/dfgrhfjegi', 'Base img desc for hadoop_plain', 'aid_renew_small.jpg', 'image/jpeg', 34555, '2016-09-08 08:53:03', 'Big Data', '0', 0, 100, '#00796B', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(2, 'nginx', 'Nginx', 'https://github.com/dfgrhfjegi', 'Base img desc for nginx', 'nginx_logo.png', 'image/png', 86406, '2016-09-08 10:45:13', 'Web servers', '0', 0, 100, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(3, 'mysql', 'Mysql', 'https://github.com/dfgrhfjegi', 'Base img desc for mysql', 'mysql_logo.png', 'image/png', 19171, '2016-09-08 10:45:48', 'Databases', '0', 0, 100, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(4, 'datameer', 'Datameer', 'https://github.com/dfgrhfjegi', 'Base img desc for datameer', 'datameer_logo.jpg', 'image/jpeg', 15080, '2016-09-08 10:46:06', 'Big Data Analytics', '0', 1, 100, NULL, NULL, NULL, NULL, 'datameer_logo.png', 'image/png', 13718, '2017-01-31 17:29:45'),
+(5, 'hadoop_cdh', 'Hadoop cloudera', '', '', 'aid_renew_small.jpg', 'image/jpeg', 34555, '2016-09-09 11:20:14', 'Big Data', '0', 0, 100, '#7C4DFF', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(6, 'hadoop_hdp', 'Hadoop HDP', '', '', 'cloudera_logo.png', 'image/png', 8669, '2016-09-05 13:01:54', 'Big Data', '0', 0, 100, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(7, 'hadoop_mapr', 'Hadoop Mapr', '', '', 'IMG_0133.JPG', 'image/jpeg', 2117458, '2016-09-09 10:08:45', 'Big Data', '0', 0, 100, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(8, 'rocana', 'Rocana', '', 'Rocana’s advanced analytics constantly analyzes your entire infrastructure to spot important changes in activity and performance levels.\r\n\r\n<br> Detailed information: https://www.rocana.com/rocana-ops/advanced-analytics-anomaly-detection', 'f.png', 'image/png', 43291, '2017-01-23 11:47:54', 'IT Ops Analytics', 'Rocana, Inc.', 1, 1, '#388E3C', NULL, NULL, NULL, 'rocana_logo.png', 'image/png', 8082, '2017-01-31 17:29:17'),
+(9, 'zoomdata', 'Zoomdata', 'no git repository yet', 'Zoomdata is the fastest visual analytics for big data. Unlock insights with big data visualization at the speed of thought.', 'zoomdata.png', 'image/png', 60206, '2016-09-08 10:45:31', ' Big Data Analytics', 'Zoomdata', 1, 100, '#673AB7', NULL, NULL, NULL, 'zoomdata_logo.png', 'image/png', 34386, '2017-01-31 17:29:02'),
+(10, 'arcadia_data', 'Arcadia Data', 'no git repository', 'Arcadia Data unifies data discovery, visual analytics and business intelligence in a single, integrated platform that runs natively on your Hadoop clusters. No additional hardware required.', 'arc.png', 'image/png', 11424, '2016-09-15 15:39:38', 'Visual Analytics and BI', 'Arcadia Data Inc.', 0, 2, '#616161', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(11, 'platfora', 'Platfora', 'no git repository', 'Platfora''s Big Data Discovery and Analytics platform is the only end-to-end solution native on Hadoop + Spark.', 'platf.png', 'image/png', 6724, '2016-09-15 15:40:04', 'Big Data Analytics', 'Platfora, Inc.', 0, 100, '#64FFDA', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(12, 'yeti_data', 'Yeti Data', 'no git repository', 'Yeti Data''s analytic apps, powered by our Yeti Snowflake technology help you understand how effective each customer touch is with our data-driven approach.', 'yeti.png', 'image/png', 19007, '2016-09-15 15:40:22', 'Retail Analytics', '', 0, 100, '#0288D1', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(13, 'ubuntu16', 'Ubuntu 16.04', NULL, 'Ubuntu 16.04.1 LTS (Xenial Xerus)', 'main.medium1.png', 'image/png', 12169, '2017-01-05 10:52:26', 'Operating System', '', 1, 0, NULL, NULL, NULL, NULL, 'ubuntu16_logo-d1ce4c15488871eca53c86a755ca7b2cc10a978f516ca85bfa4b1d46d8d0b960.png', 'image/png', 27342, '2017-01-31 17:27:47'),
+(22, 'ubuntu-novnc', 'Ubuntu noVNC', NULL, '', 'main.medium.png', 'image/png', 12169, '2017-01-23 11:37:46', 'Operating System', 'Ubuntu', 1, 0, NULL, NULL, 1, NULL, 'ubuntu16_logo-d1ce4c15488871eca53c86a755ca7b2cc10a978f516ca85bfa4b1d46d8d0b960.png', 'image/png', 27342, '2017-01-31 17:27:56');
+(23, 'data_enchilada', 'Data Enchilada', NULL, 'desc ', 'logo5_500.png', 'image/png', 10125, '2017-03-02 14:40:33', 'Data Ingestion', 'Galactic Exchange', 1, 0, NULL, NULL, NULL, 'logo5_500.png', 'image/png', 10125, '2017-03-02 14:40:33', NULL);
+
+
+
+--- 2017-02-28, dmitry
+
+INSERT INTO `key_types` (`id`,`name`,`fields`, `created_at`,`updated_at`) VALUES
+(1,'aws', '{"aws_key_id":{"type":"text"}, "aws_secret_key":{"type":"text"} }', '2017-01-31 17:29:17', '2017-01-31 17:29:17')
+
+
+--- 2017-03-07 dmitry (applied on main,prod - 2017-03-07)
+
+INSERT INTO `library_services` (`id`, `name`, `title`, `description`, `enabled`, `pos`) VALUES
+(12, 'kibana', 'Kibana', NULL, 1, 0),
+(13, 'elastic', 'Elastic Search', NULL, 1, 0);
+
+
+UPDATE `library_services`
+SET title='HDFS Web UI'
+WHERE id=8;
+
+UPDATE `library_services`
+SET title='Spark Web UI'
+WHERE id=10;
+
+
+
+--- 2017-04-01 dmitry
+
+UPDATE `library_services`
+SET title='Elasticsearch'
+WHERE name='elastic';
+
+
+
+--- 2017-04-03 dmitry
+
+INSERT INTO `library_application_types` (`id`, `name`, `created_at`,`updated_at`) VALUES
+(1, 'development', '2017-01-31 17:29:17', '2017-01-31 17:29:17'),
+(2, 'handpicked', '2017-01-31 17:29:17', '2017-01-31 17:29:17');
+
+UPDATE `library_applications`
+SET library_application_type_id=2
+WHERE name='data_enchilada';
+
+UPDATE `library_applications`
+SET library_application_type_id=2
+WHERE name='zoomdata';
+
+UPDATE `library_applications`
+SET library_application_type_id=2
+WHERE name='rocana';
+
+UPDATE `library_applications`
+SET library_application_type_id=2
+WHERE name='datameer';
+
+UPDATE `library_applications`
+SET library_application_type_id=1
+WHERE name='ubuntu-novnc';
+
+UPDATE `library_applications`
+SET library_application_type_id=1
+WHERE name='ubuntu16';
+
+
+
+
+--- 2017-04-25, mmx
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `dashboards`
+--
+
+CREATE TABLE `dashboards` (
+  `id` int(11) NOT NULL,
+  `cluster_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `title` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `pos` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `dashboards`
+--
+ALTER TABLE `dashboards`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `cluster_id` (`cluster_id`),
+  ADD KEY `user_id` (`user_id`);
+
+
+--
+-- AUTO_INCREMENT for table `dashboards`
+--
+ALTER TABLE `dashboards`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+
+
+
+
+--- 2017-05-26, dmitry
+
+
+--
+-- add small instance type for tests
+--
+
+rake gexcore:add_instance_type_to_all_regions['t2.micro']
+
+
+--
+-- SET hadoop_compatible to true for all instance types, except t2.micro
+--
+
+UPDATE `aws_instance_types`
+SET hadoop_compatible=true
+WHERE name!='t2.micro';
+
+==== APPLIED MAIN
+==== APPLIED PROD
+
+
+-- 2017-05-29, mmx
+
+
+INSERT INTO `library_services` (`id`, `name`, `title`, `description`, `enabled`, `pos`) VALUES
+(NULL, 'nifi', 'NiFi', NULL, 1, 0);
+
+
+==== APPLIED MAIN
+==== APPLIED PROD
+
+
+-- 2017-06-19, dmitry
+
+INSERT INTO `library_services` (`id`, `name`, `title`, `description`, `enabled`, `pos`) VALUES
+(NULL, 'neo4j', 'Neo4j', NULL, 1, 0);
+
+
+-- 2017-06-30, dmitry
+
+INSERT INTO `library_services` (`id`, `name`, `title`, `description`, `enabled`, `pos`) VALUES
+(NULL, 'kudu', 'Kudu', NULL, 1, 0),
+(NULL, 'impala', 'Impala', NULL, 1, 0);
+
+
+
+-- 2017-07-06, dmitry
+
+INSERT INTO `library_services` (`id`, `name`, `title`, `description`, `enabled`, `pos`) VALUES
+(NULL, 'metabase', 'Metabase', NULL, 1, 0),
+(NULL, 'superset', 'Superset', NULL, 1, 0);
+
+
+
+-- 2017-07-07, dmitry
+
+INSERT INTO `library_service_types` (`id`, `name`, `created_at`,`updated_at`) VALUES
+(1, 'big_data', '2017-01-31 17:29:17', '2017-01-31 17:29:17'),
+(2, 'search_visualize', '2017-01-31 17:29:17', '2017-01-31 17:29:17'),
+(3, 'transform', '2017-01-31 17:29:17', '2017-01-31 17:29:17');
+
+
+
+UPDATE `library_services` SET library_service_type_id=1 WHERE
+name='hdfs' OR
+name='ssh' OR
+name='hadoop_resource_manager'OR
+name='hdfs_namenode_webui' OR
+name='hue' OR
+name='spark_master_webui' OR
+name='kudu' OR
+name='impala' OR
+name='spark_history';
+
+
+UPDATE `library_services` SET library_service_type_id=2 WHERE
+name='kibana' OR
+name='elastic' OR
+name='neo4j' OR
+name='metabase' OR
+name='superset';
+
+
+UPDATE `library_services` SET library_service_type_id=3 WHERE
+name='nifi';
+
+
+-- 2017-07-25, dmitry
+
+
+INSERT INTO `library_services` (`id`, `name`, `title`, `description`, `enabled`, `pos`, `library_service_type_id`) VALUES
+(NULL, 'neo4j_bolt', 'Neo4j Bolt', NULL, 1, 0, 2);
+
+
+==== APPLIED MAIN
+==== APPLIED PROD (07/08/2017)

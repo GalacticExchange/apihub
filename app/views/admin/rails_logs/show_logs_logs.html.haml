@@ -1,0 +1,10 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Rails logs
+      %p
+      %b file name:
+      = File.basename("#{Rails.root}/log/#{Rails.env}.log")
+%textarea{:style => "width: 100%;", rows: 30}
+  = @text

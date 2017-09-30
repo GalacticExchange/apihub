@@ -1,0 +1,55 @@
+.left_menu(data-div="cluster-drop-down")
+  %ul.mdl-menu.mdl-menu--bottom-left.classs.mdl-js-menu.mdl-js-ripple-effect.border.no_padd{:for => "cluster_actions_drop", :style=>"border-bottom: none;  margin-top: 84px; margin-left: 15px; min-width: 320px !important;"}
+    #switch_cluster_div.bord_bott
+      .flex-container-all.padd_left_15.padd_top_10
+        .flex-wrap
+          =image_tag "new/icons/swap.svg", style:"width: 17px; opacity: 0.6"
+        .flex-wrap.flex-center.padd_left_sm
+          %h6.no_marg.left_popup_h Switch cluster
+
+      .flex-container-all.padd_top_10.padd_bott_10
+        .flex-wrap{style:"width: 100%;"}
+          -if !@all_clusters_w_shared.nil? && @all_clusters_w_shared.length > 0 && @current_cluster
+            -if @all_clusters_w_shared.length > 1
+              -@all_clusters_w_shared.insert(0, @all_clusters_w_shared.delete(@current_cluster))
+            -@all_clusters_w_shared.select{|i| i.status == 'active'}.first(10).each do |cluster|
+              -selected = true if cluster == @current_cluster
+              -if cluster.cluster_type && cluster.cluster_type.name == "aws"
+                -type = "aws"
+              -else
+                -type = "onprem"
+              -shared = true unless current_user.team.clusters.include? cluster
+              -if cluster != @current_cluster
+                = link_to profile_change_current_cluster_path(:cluster_uid => cluster.uid), :class=>"undec"  do
+                  .hover-el.padd_15.flex-container-all
+                    .flex-wrap
+                      =render "shared/cluster_icon", {type: type, selected: selected, shared:false}
+                    .flex-wrap.padd_left_md.flex-grow
+                      %p.no_marg
+                        =cluster.name
+                    .flex-wrap
+                      =render "shared/cluster_icon", {type: type, selected: selected, shared:true} if shared
+              -else
+                .selected-el.padd_15.flex-container-all
+                  .flex-wrap
+                    =render "shared/cluster_icon", {type: type, selected: selected, shared:false}
+                  .flex-wrap.padd_left_md.flex-grow
+                    %p.no_marg.link-el{class:"#{selected ? "white" : ""}"}
+                      =cluster.name
+                  .flex-wrap
+                    =render "shared/cluster_icon", {type: type, selected: selected, shared:true} if shared
+
+
+          -else
+            .install_step{:style=>"padding: 10px 20px 10px 20px"}
+              %h5.no_marg.inl{:style=>"font-weight: 100;"}
+                You have only one cluster now.
+
+    = link_to NgRoutes::CLUSTERS, :class=>"undec", "data-link"=>"all-clusters" do
+      .hover-el
+        .padd_10.padd_left_md
+          .flex-container-all
+            .flex-wrap.flex-grow
+              %p.no_marg.link-el All clusters
+            .flex-wrap
+              =image_tag "new/icons/arrow_link.svg", style:"width: 20px;"

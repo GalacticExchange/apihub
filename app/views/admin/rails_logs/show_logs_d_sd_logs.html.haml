@@ -1,0 +1,11 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Sidekiq all logs
+      %p
+      %b file name:
+      = File.basename("#{Rails.root}/log/apihub-sidekiq-#{Rails.env}-log-0.log")
+
+%textarea{:style => "width: 100%;", rows: 30}
+  = @text

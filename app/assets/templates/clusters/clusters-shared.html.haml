@@ -1,0 +1,68 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Shared clusters
+    %p.sb-p-text.gr
+      Clusters shared with you.
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+
+.fl-cont.padd_top_big(ng-if="(!clusters || !clusters.length > 0) && loaded")
+  .fl-wrap.fl-grow
+  .fl-wrap
+    .text-center.marg_left_big.marg_ri_big
+      %h2.no_marg.bold.no-items-h Looks like you do not have any shared clusters yet.
+      -#%p.no_marg.gr.marg_top_10
+        You can add a new node or switch to another cluster
+  .fl-wrap.fl-grow
+
+
+#clusters.app_wrap.border.marg_bott_md(ng-if="loaded && clusters.length>0" data-div = "cluster-list")
+  .row
+    .grey_bg.padd_left_md.padd_ri_md.padd_top_15.padd_bott_15
+      .row
+        .col-md-3.col-sm-5.col-xs-6.no_padd_left
+          %p.no_marg{style:"font-size: 16px;"}
+            Type / name
+        .col-md-3.col-sm-4.col-xs-6.no_padd
+          %p.no_marg{style:"font-size: 16px;"}
+            State
+        .col-md-3.col-sm-3.hidden-xs
+          %p.no_marg{style:"font-size: 16px;"}
+            Joined/Total nodes
+        .col-md-2.col-sm-3.hidden-xs
+          %p.no_marg{style:"font-size: 16px;"}
+            Region
+        .col-md-1.hidden-xs.hidden-sm
+  .gr-hover-el.row.bord_bott.table-row.hand_cursor(data-div="cluster-{{cluster.id}}" ng-repeat="cluster in clusters track by cluster.id")
+    .row.padd_left_md.padd_ri_md
+      .col-md-3.col-sm-5.col-xs-6.padd_top_md.padd_bott_md.no_padd_left(ng-click="switchCluster(cluster)")
+        .flex-container-all
+          .flex-wrap.padd_ri_md
+            .div(ng-if="cluster.clusterType == 'aws' ")
+              =image_tag "new/icons/aws.svg", class: "left_popup_icon no_marg ", style:"opacity: 0.7"
+            .div(ng-if="cluster.clusterType == 'onprem' || cluster.clusterType == '' ")
+              =image_tag "new/icons/onprem.svg", class: "left_popup_icon no_marg ", style:"opacity: 0.7"
+          .flex-wrap
+            %p.no_marg.bold
+              {{cluster.name}}
+      .col-md-3.col-sm-4.col-xs-6.padd_top_md.padd_bott_md.no_padd_left(ng-click="switchCluster(cluster)" )
+        %p.no_marg.gr(data-div="cluster-state")
+          %img(ng-src="{{utils.getStatusCircle(cluster.status)}}" class="status-dot"){style:"margin-bottom: 2px;"}
+          {{cluster.status}}
+      .col-md-3.col-sm-3.hidden-xs.padd_top_md.padd_bott_md(ng-click="switchCluster(cluster)")
+        %p.no_marg.gr {{cluster.numberOfNodes ? cluster.numberOfJoined+'/'+ cluster.numberOfNodes : '-'}}
+      .col-md-2.col-sm-1.hidden-xs.padd_top_md.padd_bott_md(ng-click="switchCluster(cluster)")
+        %p.no_marg.gr {{cluster.settings.aws_region ? cluster.settings.aws_region : '-'}}
+
+      .col-md-1.hidden-xs.hidden-sm.no_padd_ri.padd_top_md.padd_bott_md(ng-if="utils.isAdmin(utils.currentUser)" div-block="do_settings_visible")
+        -#.pull-right.row-buttons{style:"margin-top: 2px;"}
+          %a(ng-href="{{ROUTES.getAddr('CLUSTER_EDIT', cluster.id)}}" data-btn="settings-btn")
+            =image_tag "new/icons/settings.svg", :style=>"width: 20px; opacity: 0.7;", :class=>"inl marg_left_md", :id=>"{{cluster.id}}set"
+
+          .mdl-tooltip.mdl-tooltip--large{:for => "{{cluster.id}}set"}
+            Settings
+

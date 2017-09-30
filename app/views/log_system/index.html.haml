@@ -1,0 +1,64 @@
+%h1 System logs
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th ID
+    %th= link_to_sortable_column :created_at, 'Date'
+    %th Level
+    %th Type
+    %th Subtype
+    %th Message
+    %th User
+    %th Team
+    %th Cluster
+    %th Node
+    %th IP
+    %th Data
+
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td= item.created_at
+      %td= @levels[item.level]
+      %td= item.log_type.name
+      %td= item.log_type.name
+      %td= item.message
+      %td
+        - if item.user.present?
+          = item.user.username
+        - else
+          N/A
+      %td
+        - if item.team.present?
+          = item.team.name
+        - else
+          N/A
+      %td
+        - if item.cluster.present?
+          = item.cluster.name
+        - else
+          N/A
+      %td
+        - if item.node.present?
+          = item.node.name
+        - else
+          N/A
+      %td
+        - if item.ip.present?
+          = item.ip
+        - else
+          N/A
+      %td= item.data
+
+
+
+
+= page_entries_info @items
+= paginate @items

@@ -1,0 +1,7 @@
+#mess_div.padd_bott_md
+  -messages.each do |message|
+    .mess{:id => "msg" +message.id.to_s}
+      = render 'messages/message_message', message: message
+
+
+

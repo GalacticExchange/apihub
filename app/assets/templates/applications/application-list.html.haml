@@ -1,0 +1,78 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text Apps
+    %p.sb-p-text.gr Use this window to manage your cluster apps.
+  .flex-wrap(ng-if="utils.userPermissions.cluster_manage")
+    %a(ng-href="{{ROUTES.getAddr('LIBRARY_APP_LIST', clusterId)}}")
+      %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_md Install new
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+.fl-cont.padd_top_big(ng-if="loaded && isAppsEmpty")
+  .fl-wrap.fl-grow
+  .fl-wrap
+    .text-center
+      %h2.no_marg.bold.no-items-h Looks like you do not have any apps yet
+      %p.padd_top_10.gr.padd_bott_md(ng-if="utils.userPermissions.cluster_manage")
+        You can find apps in the
+        %a(ng-href="{{ROUTES.getAddr('LIBRARY_APP_LIST', clusterId)}}")
+          AppHub™
+      %p.padd_top_10.gr.padd_bott_md(ng-if="!utils.userPermissions.cluster_manage")
+        You do not have permissions to install new apps, but you still can browse
+        %a(ng-href="{{ROUTES.getAddr('LIBRARY_APP_LIST', clusterId)}}")
+          AppHub™
+        and ask cluster owner to install apps that you need.
+  .fl-wrap.fl-grow
+
+
+.app_wrap.border.marg_bott_md(ng-if="loaded && !isAppsEmpty"){:style=>"border-bottom: 0px"}
+  .grey_bg.padd_left_md.padd_ri_md.padd_top_15.padd_bott_15
+    .row
+      .col-md-4.col-sm-5.col-xs-6.no_padd_left
+        %p.no_marg{style:"font-size: 16px;"} Application
+      .col-md-3.col-sm-4.col-xs-6.no_padd
+        %p.no_marg{style:"font-size: 16px;"} State
+
+  .row.bord_bott.table-row.gr-hover-el(ng-repeat="app in apps track by app.id" data-row="app-{{app.name}}")
+    %a(ng-href="{{ROUTES.getAddr('APPLICATION_INFO', clusterId, app.id)}}" class="undec")
+      .col-md-4.col-sm-5.col-xs-6.no_padd
+        .fl-cont{style:"align-items: center"}
+          .flex-wrap.padd_left_md
+            .ext-icon-wrap(ng-if='app.external')
+              = inline_svg "new/icons/extention.svg", class: "ext-icon"
+            .int-icon(ng-if='!app.external')
+              %img(ng-src="{{app.image_url}}" style="width: 50px; height: 50px; " ng-class="['bordery', app.status == 'uninstalling' ? 'uninstalling_app' : '']")
+          .flex-wrap.padd_top_md.padd_bott_md
+            .padd_left_10
+              %p.no_marg.marg_left_md.bold{ "ng-class"=> "app.status == 'uninstalling' ? 'uninstalling_app' : ''"}
+                {{app.title ? app.title : app.name}}
+
+
+      .col-md-4.col-sm-4.col-xs-6.padd_top_10.padd_bott_10
+        -#if
+        .div(ng-if="app.status == 'installing' && app.instStatus" data-div="app-state")
+          .progress_text.padd_top_sm
+            %p.inl
+              %img(ng-src="{{utils.getStatusCircle(app.status)}}" class="status-dot")
+              Installing
+            %p.gr.inl.marg_left_sm ({{app.instStatus.status}})
+            .progress_cont.padd_top_10{:style=>"width: 70%;"}
+              %mdl-progress(progress="{{app.instStatus.progress}}")
+
+        -#else
+        .div.padd_top_10(ng-if="!(app.status == 'installing' && app.instStatus)")
+          %img(ng-src="{{utils.getStatusCircle(app.status)}}" class="status-dot inl" style="width: 13px; margin-bottom: 4px;")
+          %p.inl.gr
+            {{utils.fixStatus(app.status)}}
+
+      .col-md-1.col-sm-3.hidden-xs
+
+    .col-md-3.hidden-xs.hidden-sm.padd_ri_md.padd_top_md.padd_bott_md
+      .pull-right.padd_ri_md
+        .row-buttons{style:"margin-top: 3px;"}
+          %a(ng-href="{{ROUTES.getAddr('APPLICATION_SETTINGS', clusterId, app.id)}}" class="inl")
+            =image_tag "new/icons/settings.svg", :style=>"width: 20px; opacity: 0.8;", :class=>"inl marg_left_md", :id=>"{{app.id}}set"
+        .mdl-tooltip.mdl-tooltip--large{:for => "{{app.id}}set"}
+          Configuration

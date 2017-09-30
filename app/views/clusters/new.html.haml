@@ -1,0 +1,35 @@
+.sidebar-header
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Create AWS cluster
+    %p.sb-p-text.gr
+      Use this window to create new AWS cluster.
+  -#.flex-wrap
+    =link_to clusters_new_path do
+      %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new
+        Create
+
+.div{style:"max-width: 900px;"}
+
+  = simple_form_for :cluster_params, url: create_cluster_path do |f|
+
+    %h5.padd_top_1t0.d_gr{style:"font-size: 16px; "} AWS Region
+    = f.collection_select(:awsRegion, @aws_regions, :id, :title)
+
+    -#%h5.padd_top_1t0.d_gr{style:"font-size: 16px; "} Instance type
+    -#= f.collection_select(:aws_region, @aws_regions, :id, :title)
+
+
+    %h5.padd_top_md.d_gr{style:"font-size: 16px; "} AWS Access Key ID
+    =f.input :awsKeyId, label: false, placeholder:'AKIAIOSFODNN7EXAMPLE', as: :fake
+
+    %h5.padd_top_md.d_gr{style:"font-size: 16px; "} AWS Secret Access Key
+    =f.input :awsKeySecret, label: false, placeholder:'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY', as: :fake
+
+    =f.input :clusterType, as: :hidden, input_html: {value: ClusterType::AWS}
+
+
+    .padd_top_md
+      =f.submit 'Create', :class=>"button mdl-button mdl-js-button mdl-js-ripple-effect gex-btn-new"
+    -#.info.padd_md{style:"background-color: rgba(255, 214, 0, 0.24);     border: solid 0px rgb(255, 214, 0);     border-radius: 4px;"}
+      %p.no_marg{style:"color: #5f5f5f"} Where can I get AWS Access Key ID and AWS Secret Access Key?

@@ -1,0 +1,105 @@
+'use strict';
+
+angular.module('components').component('containerListExt', {
+    templateUrl: '<%= asset_path("containers/container-list-ext.html") %>',
+    bindings: {
+        page: '@',
+        nodeId: '@',
+        applicationId: '@'
+    },
+    controller: ['$location', '$http', '$scope', '$interval', '$routeParams', 'ROUTES', 'HTTP_CONSTANTS',
+        function ($location, $http, $scope, $interval, $routeParams, ROUTES, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.nodeId = $routeParams.nodeId; //todo delete
+            var self = this;
+            var fetchContainersParams = {};
+
+            this.$onInit = function () {
+                fetchContainersParams = self.nodeId ? {nodeId: self.nodeId} : {applicationId: self.applicationId}; //todo filter by application id not work
+                fetchContainersParams.clusterId = GexUtils.currentClusterId;
+                fetchContainers(true);
+            };
+
+            $scope.openContainer = function (id) {
+                if (!GexUtils.isSelected()) {
+                    $location.url(ROUTES.getNgAddr('CONTAINER_INFO', $scope.utils.currentClusterId, id));
+                }
+            };
+
+            function fetchContainers(firstTime) {
+                $http.get('/containers', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: fetchContainersParams
+                }).then(function (response) {
+                    $scope.containers = response.data.containers;
+                    fetchContainersChecks(firstTime);
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    console.log('Error fetching containers: ' + GexUtils.getErrMsgServ(response));
+                });
+            }
+
+
+            function fetchContainersChecks(firstTime) {
+
+                if(!$scope.containers || $scope.containers.length == 0){
+                    $scope.loaded = true;
+                    return;
+                }
+
+
+                if(!$scope.containers){
+                    console.log('Error: no containers');
+                    $scope.loaded = true;
+                    return;
+                }
+
+                var cont_ids = $scope.containers.map(function(cont) {return cont.id;});
+
+                $http.get('/checks/containers/', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        ids: cont_ids.toString()
+                    }
+                }).then(function (response) {
+
+                    $scope.contChecks = response.data;
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load containers checks: ' + GexUtils.getErrMsgServ(response));
+                    } else {
+                        console.log('Error fetching containers checks: ' + GexUtils.getErrMsgServ(response));
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+
+
+
+            var fetchContainersInterval = $interval(function () {
+                fetchContainers();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchContainersInterval)) {
+                    $interval.cancel(fetchContainersInterval);
+                    fetchContainersInterval = undefined;
+                }
+            });
+
+        }
+    ]
+});

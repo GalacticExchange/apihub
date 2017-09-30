@@ -1,0 +1,23 @@
+%h1 #{@team.name.capitalize}
+
+= image_tag avatar_url_team(@team, :medium)
+
+-#%p
+  %b Name:
+  = @team.name
+%br
+%br
+%p
+  %b Admin:
+  = link_to admin_user_path(:id => @team.primary_admin.id) do
+    = @team.primary_admin.username
+%p
+  %b
+    = link_to admin_clusters_path(:team_id => @team.id) do
+      Clusters
+%p
+  %b About
+  = @team.about
+%p
+  %b Since
+  = our_date(@team.created_at)

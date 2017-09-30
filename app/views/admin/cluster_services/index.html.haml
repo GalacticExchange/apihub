@@ -1,0 +1,61 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Services
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Status
+    %th Name
+    %th Title
+    %th Application
+    %th Cluster
+    %th Node
+    %th Container
+    %th Hostname
+    %th Public_IP
+    %th Private_IP
+    %th Protocol
+    %th Port_IN
+    %th Port_OUT
+    %th Commands
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td
+        = render "statuses", item: item
+      %td
+        = link_to item.name, admin_cluster_service_path(item.id)
+      %td
+        = link_to item.title, admin_cluster_service_path(item.id)
+      %td
+        = link_to item.application.name, admin_cluster_application_path(item.application_id) if item.application
+      %td
+        = link_to item.cluster.name, admin_cluster_path(item.cluster_id) if item.cluster
+      %td
+        - if item.node
+          = link_to item.node.name, admin_node_path(item.node_id)
+        - else
+          master
+      %td
+        = link_to item.container.name, admin_cluster_container_path(item.container) if item.container
+      %td
+        = item.hostname if item.hostname
+      %td= item.public_ip if item.public_ip
+      %td= item.private_ip if item.private_ip
+      %td= item.protocol if item.protocol
+      %td= item.port_in if item.port_in
+      %td= item.port_out if item.port_out
+      %td
+        &nbsp;
+
+= paginate @items

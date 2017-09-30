@@ -1,0 +1,50 @@
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Containers
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Status
+    %th Name
+    %th Application
+    %th Cluster
+    %th Node
+    %th Hostname
+    %th Local IP
+    %th Gex IP
+    %th Services
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td
+        = item.status
+      %td
+        = link_to item.name, admin_cluster_container_path(item.id)
+      %td
+        = link_to item.application.name, admin_cluster_application_path(item.application_id) if item.application
+      %td
+        = link_to item.cluster.name, admin_cluster_path(item.cluster_id) if item.cluster
+      %td
+        -if item.node
+          = link_to item.node.name, admin_node_path(item.node_id)
+        -else
+          master
+      %td
+        = item.hostname if item.hostname
+      %td= item.local_ip
+      %td= item.gex_ip
+
+      %td
+        = link_to "Services (#{@count_services[item.id] || 0})", admin_cluster_services_path(filter_cmd: 'set', container_id: item.id, cluster_id: item.cluster)
+
+= paginate @items

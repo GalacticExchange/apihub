@@ -1,0 +1,134 @@
+.sidebar-header
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Create cluster
+    %p.sb-p-text.gr
+      Step 3: Configuration.
+  .flex-wrap
+    %cluster-install-steps(data-current-step='3' data-step-1="clusterType")
+
+
+.div(ng-if="err_mess"){style:"max-width: 900px;"}
+  .app_wrap.border.item.marg_bott_md.item.animate-show
+    .row.bord_bott.padd_top_md.padd_bott_md{style:"background-color: hsla(0, 54%, 49%, 0.84)"}
+      .flex-container-all.padd_left_md
+        .flex-wrap
+          =image_tag "new/icons/error_white.svg"
+        .flex-wrap
+          .err_div(ng-repeat="err in errors")
+            %h5.white{style:"margin: 3px 0px 0px 10px !important"}
+              {{err['message']}}
+
+
+
+
+.gx-page(ng-if='loaded && keysLoaded')
+  .app_wrap.border.marg_bott_md
+    .fl-cont.gx-fl-center.padd_md
+      .fl-wrap.padd_ri_10
+        .card-h-icon
+          .svg-wrap
+            =inline_svg "new/icons/settings.svg", class: "sm-icon white-svg fx-sm-icon"
+      .fl-wrap
+        %p.card-h.bold Configuration
+
+
+    .div.padd_left_md.marg_left_10
+      %form.simple-form{:novalidate => "", "ng-submit"=> "createAwsCluster(aws_cluster)", :name=>"createAwsClusterForm"}
+
+        -#.padd_bott_md.marg_bott_10
+          %h3.h-txt.bold.no_marg_bott Required fields
+          -#%h6.gr All fields required
+        .div{style:"max-width: 900px;"}
+          .fl-cont.padd_top_md.padd_bott_md
+            .fl-wrap.padd_ri_10
+              =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+            .fl-wrap
+              %h5.no_marg.gr{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+                Choose the region where the cluster will be created and provide your AWS Keys to continue.
+
+
+          .padd_top_md
+            %h4.no_marg AWS Region
+
+          .fl-cont.fl-center.padd_bott_md.padd_top_md
+            -#.fl-col.padd_ri_md{style:"width: 150px;"}
+              %h5.d_gr{style:"font-size: 16px; "} AWS Region
+            .fl-col.fl-grow
+              %ui-select(ng-model="aws_cluster.awsRegion" theme="select2" search-enabled="false" style="width:100%;")
+                %ui-select-match {{$select.selected.title}}
+                %ui-select-choices(repeat="region in regions")
+                  %div(ng-bind-html="region.title | highlight: $select.search")
+
+
+
+        .padd_top_md.marg_top_10
+          %h4.no_marg AWS Keys
+
+        .fl-cont.padd_top_md.gx-fl-center.padd_bott_md
+          .fl-wrap.marg_ri_md.lite-blue.hand_cursor.lite-gx-border(ng-click='selectKey(key)' class='{{isKeySelected(key)}}_key_bage' ng-repeat="key in keys"){style:'border: none; border-radius: 4px; padding: 15px 40px;     background-color: rgba(136, 136, 136, 0.13) !important;'}
+            .fl-cont.gx-fl-center
+              .fl-wrap.padd_ri_10
+                .div(ng-if='!isKeySelected(key)')
+                  =inline_svg 'new/icons/key.svg', class: 'sm-icon gx-gr-svg'
+                .div(ng-if='isKeySelected(key)')
+                  =inline_svg 'new/icons/check.svg', class: 'sm-icon gex-svg'
+              .fl-wrap
+                %p.no_marg.bold.d-gr-col
+                  {{key.name}}
+
+          .fl-wrap.marg_ri_md.lite-blue.hand_cursor(ng-click='addNewKey()'){style:'border-radius: 4px; padding: 15px 40px;'}
+            .fl-cont.gx-fl-center
+              .fl-wrap.padd_ri_10
+                =inline_svg 'new/icons/add_circle.svg', class: 'sm-icon gex-svg'
+              .fl-wrap
+                %p.no_marg.bold{style:'color: #1d87e4 !important;'}
+                  Add new AWS keys
+
+
+        .div.padd_top_md.marg_top_md(ng-if="keyCreation"){style:"max-width: 900px;"}
+          .padd_bott_md.marg_bott_10
+            %h4.no_marg Add new AWS keys
+
+          .fl-cont.fl-center.padd_bott_md
+            .fl-col.padd_ri_md{style:"width: 150px;"}
+              %h5.d_gr{style:"font-size: 16px; "} Key name
+            .fl-col.fl-grow
+              %input.new-input{:name=>"keyName", "ng-model" => "newKey.name", :type => "text", :placeholder=>"Key name" }
+
+
+
+          .fl-cont.fl-center.padd_bott_md
+            .fl-col.padd_ri_md{style:"width: 150px;"}
+              %h5.d_gr{style:"font-size: 16px; "} AWS Access Key ID
+            .fl-col.fl-grow
+              %input.new-input{:name=>"awsKey", "ng-model" => "newKey.awsKeyId", :type => "text", :placeholder=>"AKIAIOSFODNN7EXAMPLE" }
+
+
+          .fl-cont.fl-center.padd_bott_md
+            .fl-col.padd_ri_md{style:"width: 150px;"}
+              %h5.d_gr{style:"font-size: 16px; "} AWS Secret Access Key
+            .fl-col.fl-grow
+              %input.new-input{:name=>"awsSecret", "ng-model" => "newKey.awsKeySecret", :type => "password", :placeholder=>"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" }
+
+          .padd_top_md.padd_bott_md
+
+            .fl-cont
+              .fl-wrap.padd_ri_10
+
+                %a.mdl-button.mdl-js-button.mdl-js-ripple-effect.gx-btn.lite-blue.undec(ng-click="createKey()")
+                  Submit
+              .fl-wrap
+                %a.mdl-button.mdl-js-button.mdl-js-ripple-effect.gx-btn.lite-gr.undec(ng-click="closeKeyPart()")
+                  Cancel
+
+
+        %input{:name=>"clusterType", "ng-model" => "aws_cluster.clusterType", :type => "hidden", value:"aws"}
+
+        .padd_top_md.marg_top_md.padd_bott_md.marg_bott_10
+          .flex-container-all
+            .flex-wrap
+              %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.fade-element-in(data-btn="create-aws" ng-disabled="spinner")
+                Create AWS cluster
+            .flex-wrap.padd_left_md
+              %material-spinner.fade-element-in(ng-if="spinner")

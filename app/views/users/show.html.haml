@@ -1,0 +1,54 @@
+.row.gx-page
+  .col-md-1.no_padd
+  .col-md-10.no_padd
+
+    .padd_md.marg_top_md
+      .border.app_wrap.border_radius
+        .padd_md
+          .flex-container-all
+            .flex-wrap
+              = image_tag avatar_url(@user, :medium), class:"border_radius", alt:""
+              %br
+              .padd_top_md
+                -if current_user==@user
+                  =link_to NgRoutes::PROFILE_EDIT.gsub('{username}', @user.username) do
+                    %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_md.border_radius{:style=>"width: 200px;"} Edit profile
+                -else
+                  = link_to dialog_path(:to => @user.username) do
+                    %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_md.border_radius{:style=>"width: 200px;"} Send message
+
+            .flex-wrap.padd_left_md.marg_left_md.flex-grow
+              %h2.no_marg.bold
+                =@user.firstname
+                =@user.lastname
+              %h3.semibold.gr.no_marg.marg_top_sm{style:"font-weight: 400;"}
+                @#{@user.username}
+              .padd_top_md.marg_top_md
+                %h4.profile_inf{style:"font-size: 18px !important;"}
+                  Team:
+                %h4.profile_inf_user{style:"font-size: 18px !important;"}
+                  -if !@user.team.nil?
+                    = link_to @user.team.name, team_path(:name => @user.team.name)
+                  -else
+                    no team
+                .padd_top_s{style:"padding-top: 10px"}
+                  %h4.profile_inf{style:"font-size: 18px !important;"}
+                    Clusters:
+                  %h4.profile_inf_user{style:"font-size: 18px !important;"}
+                    -if !@clusters.nil? && !@clusters.empty?
+                      -@clusters.each do |t|
+                        .inl.padd_ri_sm
+                          = link_to t.name, cluster_path(:name => t.name)
+                    -else
+                      no cluster
+                -if !@user.about.nil?
+                  .padd_top_s{style:"padding-top: 10px"}
+                    %h4.profile_inf{style:"font-size: 18px !important;"}
+                      About:
+                    %h4.profile_inf_user{style:"font-size: 18px !important;"}=@user.about
+            .flex-wrap.hidden-xs.hidden-sm
+              %h6.semibold.no_marg
+                -#=image_tag "since.png", :width=>15,:class=>"padd_bott_sm"
+                =t('labels.joined')
+                = our_date(@user.created_at)
+

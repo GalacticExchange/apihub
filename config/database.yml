@@ -1,0 +1,118 @@
+default: &default
+  adapter: mysql2
+  encoding: utf8
+  pool: 5
+  username: root
+  password:
+  host: localhost
+
+### dev
+
+dev:
+  <<: *default
+  host: <%= Rails.application.secrets.db_host %>
+  database: <%= Rails.application.secrets.db %>
+  username: <%= Rails.application.secrets.db_user %>
+  password: <%= Rails.application.secrets.db_password %>
+
+logs_dev:
+  <<: *default
+  host: <%= Rails.application.secrets.logs_db_host %>
+  database: <%= Rails.application.secrets.logs_db %>
+  username: <%= Rails.application.secrets.logs_db_user %>
+  password: <%= Rails.application.secrets.logs_db_password %>
+
+
+####
+main:
+  <<: *default
+  host: <%= Rails.application.secrets.db_host %>
+  database: <%= Rails.application.secrets.db %>
+  username: <%= Rails.application.secrets.db_user %>
+  password: <%= Rails.application.secrets.db_password %>
+  pool: 100
+
+logs_main:
+  <<: *default
+  host: <%= Rails.application.secrets.logs_db_host %>
+  database: <%= Rails.application.secrets.logs_db %>
+  username: <%= Rails.application.secrets.logs_db_user %>
+  password: <%= Rails.application.secrets.logs_db_password %>
+  pool: 100
+
+
+####
+
+development:
+  <<: *default
+  host: <%= Rails.application.secrets.db_host %>
+  database: <%= Rails.application.secrets.db %>
+  username: <%= Rails.application.secrets.db_user %>
+  password: <%= Rails.application.secrets.db_password %>
+  pool: 100
+
+
+logs_development:
+  <<: *default
+  host: <%= Rails.application.secrets.logs_db_host %>
+  database: <%= Rails.application.secrets.logs_db %>
+  username: <%= Rails.application.secrets.logs_db_user %>
+  password: <%= Rails.application.secrets.logs_db_password %>
+  pool: 100
+
+
+
+test:
+  <<: *default
+  host: <%= Rails.application.secrets.db_host %>
+  database: <%= Rails.application.secrets.db %>
+  username: <%= Rails.application.secrets.db_user %>
+  password: <%= Rails.application.secrets.db_password %>
+
+
+logs_test:
+  <<: *default
+  host: <%= Rails.application.secrets.logs_db_host %>
+  database: <%= Rails.application.secrets.logs_db %>
+  username: <%= Rails.application.secrets.logs_db_user %>
+  password: <%= Rails.application.secrets.logs_db_password %>
+
+
+
+
+
+production:
+  <<: *default
+  host: <%= Rails.application.secrets.db_host %>
+  database: <%= Rails.application.secrets.db %>
+  username: <%= Rails.application.secrets.db_user %>
+  password: <%= Rails.application.secrets.db_password %>
+  pool: 100
+
+
+logs_production:
+  <<: *default
+  host: <%= Rails.application.secrets.logs_db_host %>
+  database: <%= Rails.application.secrets.logs_db %>
+  username: <%= Rails.application.secrets.logs_db_user %>
+  password: <%= Rails.application.secrets.logs_db_password %>
+  pool: 100
+
+
+
+aws:
+  <<: *default
+  host: <%= Rails.application.secrets.db_host %>
+  database: <%= Rails.application.secrets.db %>
+  username: <%= Rails.application.secrets.db_user %>
+  password: <%= Rails.application.secrets.db_password %>
+  pool: 100
+
+
+logs_aws:
+  <<: *default
+  host: <%= Rails.application.secrets.logs_db_host %>
+  database: <%= Rails.application.secrets.logs_db %>
+  username: <%= Rails.application.secrets.logs_db_user %>
+  password: <%= Rails.application.secrets.logs_db_password %>
+  pool: 100

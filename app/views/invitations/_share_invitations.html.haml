@@ -1,0 +1,16 @@
+.app_wrap.border.marg_bott_md{:style=>"border-bottom: 0px"}
+  -if @items.length != 0
+    -@items.each do |share|
+      .row.bord_bott.padd_top_md.padd_bott_md.table-row
+        .col-md-4
+          %p.no_marg.marg_left_md.bold
+            =share[:email]
+        .col-md-8
+          .pull-right
+            .row-buttons
+              =link_to invitation_delete_path(:id=>share[:id]) do
+                =image_tag "new/icons/delete.svg", :style=>"width: 20px; opacity: 0.8;", :class=>"inl", :id=>"#{share[:email]}"
+              .mdl-tooltip.mdl-tooltip--large{:for => "#{share[:email]}"}
+                Delete share
+  -else
+    %h4.gr.no_marg.padd_md.bord_bott.text-center No pending shares

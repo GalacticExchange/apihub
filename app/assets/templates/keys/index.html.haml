@@ -1,0 +1,120 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Keys
+    %p.sb-p-text.gr
+      Here you can manage your keys for cloud services.
+  .flex-wrap
+    %a(ng-click="newKeyDiv=true")
+      %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(data-btn="create-key") Add new key
+
+
+.gx-page(ng-show='newKeyDiv')
+  .app_wrap.border.marg_bott_md.padd_30
+    .fl-cont.gx-fl-center.padd_bott_md
+      .fl-wrap.padd_ri_10
+        .card-h-icon
+          .svg-wrap
+            =inline_svg "new/icons/add_circle.svg", class: "sm-icon white-svg fx-sm-icon"
+      .fl-wrap.fl-grow
+        %p.card-h.bold Add new key
+      .fl-wrap
+        %a.hand_cursor(ng-click="newKeyDiv=!newKeyDiv")
+          =inline_svg "new/icons/close_fill.svg", class: "md-icon lite-gr-svg fx-sm-icon"
+
+
+
+    .div.padd_top_10.padd_left_10.gx-font{style:'max-width: 900px;'}
+
+      .fl-cont.fl-center.padd_bott_md
+        .fl-wrap.padd_ri_md{style:"width: 200px;"}
+          %h5.d_gr{style:"font-size: 16px; "} Key name
+        .fl-wrap.fl-grow
+          %input.new-input{:name=>"keyName", "ng-model" => "newKey.name", :type => "text", :placeholder=>"Key name" }
+
+
+      .fl-cont.fl-center.padd_bott_md
+        .fl-col.padd_ri_md{style:"width: 200px;"}
+          %h5.d_gr{style:"font-size: 16px; "} AWS Access Key ID
+        .fl-col.fl-grow
+          %input.new-input{:name=>"awsKey", "ng-model" => "newKey.awsKeyId", :type => "text", :placeholder=>"AKIAIOSFODNN7EXAMPLE" }
+
+
+      .fl-cont.fl-center.padd_bott_md
+        .fl-col.padd_ri_md{style:"width: 200px;"}
+          %h5.d_gr{style:"font-size: 16px; "} AWS Secret Access Key
+        .fl-col.fl-grow
+          %input.new-input{:name=>"awsSecret", "ng-model" => "newKey.awsKeySecret", :type => "password", :placeholder=>"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" }
+
+      .padd_top_md
+
+        .fl-cont
+          .fl-wrap
+            %a.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.undec(style="padding: 0px 45px !important;" ng-disabled="addSpinner==true" ng-click="createNewKey()")
+              Create
+          .fl-wrap.padd_left_md
+            %material-spinner.fade-element-in(spinner-radius="18" ng-if="addSpinner")
+
+          -#.fl-wrap
+            %a.mdl-button.mdl-js-button.mdl-js-ripple-effect.gx-btn.lite-gr.undec(ng-click="closeKeyPart()")
+              Cancel
+
+
+
+
+
+
+
+
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+
+.fl-cont.padd_top_big(ng-if="(!keys || !keys.length > 0) && loaded")
+  .fl-wrap.fl-grow
+  .fl-wrap
+    .text-center.marg_left_big.marg_ri_big
+      %h2.no_marg.bold.no-items-h Looks like you do not have any keys yet.
+      -#%p.no_marg.gr.marg_top_10
+        You can add a new node or switch to another cluster
+  .fl-wrap.fl-grow
+
+
+
+.app_wrap.gx-page.border.marg_bott_md(ng-if="keys && keys.length > 0")
+  .row
+    -#.grey_bg.padd_left_md.padd_ri_md.padd_top_15.padd_bott_15
+      .row
+        .col-md-2.col-sm-3.col-xs-3
+          %p.no_marg{style:"font-size: 16px;"} Date
+        .col-md-10.col-xs-9.col-sm-9
+          %p.no_marg{style:"font-size: 16px;"} Data
+
+    .div(ng-repeat="key in keys")
+      .padd_left_md.padd_ri_md.fl-cont.gx-fl-center.table-row
+        .fl-wrap.padd_top_mdd.padd_bott_mdd{style:'padding: 30px 0px;'}
+          .gx-bage.gx-bage-lg{class:'trace-bage' , style:'padding: 12px 18px;border-radius: 6px; background-color: #efefef;'}
+            .fl-cont.fl-center
+              .fl-wrap
+                .div(style='height: 14px; margin-top: -8px;')
+                  =inline_svg "new/icons/key.svg", class: 'apphub-help-icon lite-gr-svg', width: 14, height: 14
+              .fl-wrap.marg_left_10
+                %h6.no_marg.gr.bold.uppercase
+                  {{key.type}}
+        .fl-wrap.fl-grow.padd_left_md
+          %h4.no_marg.bold.marg_bott_sm {{key.name}}
+          %h6.no_marg.inl.padd_ri_10(ng-repeat="(name, val) in key.creds")
+            .gr.inl.padd_ri_sm {{name}}:
+            {{val}}
+        .fl-wrap
+          .row-buttons.padd_ri_10
+            %button(data-btn="uninstall-cluster-all"){:class=>'mdl-button mdl-js-button mdl-js-ripple-effect btn-lite-red sm-cmn-btn', "ng-click"=>"removeKeyWrap(key.id)"}
+              .fl-cont
+                -#.fl-wrap.marg_ri_10{style:'margin-top: -1px;'}
+                  =inline_svg 'new/icons/backspace.svg', class: 'sm-icon red-svg'
+                .fl-wrap
+                  Remove
+
+      .bord_bott.marg_left_md.marg_ri_md(ng-if='!$last')

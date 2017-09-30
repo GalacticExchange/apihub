@@ -1,0 +1,67 @@
+'use strict';
+
+angular.module('components').component('clusters', {
+    templateUrl: '<%= asset_path("clusters/clusters.html") %>',
+    controller: ['$location', '$http', '$scope', '$interval', '$routeParams', 'ROUTES', 'HTTP_CONSTANTS',
+        function ($location, $http, $scope, $interval, $routeParams, ROUTES, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+
+            $scope.switchCluster = function (cluster) {
+                GexUtils.goToCluster(cluster);
+            };
+
+            function fetchClusters(firstTime) {
+                $http.get('/clusters', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    var newClusters = response.data.clusters;
+
+                    // todo: discuss!
+                    //if (newClusters.length == 0) {
+                    //    $location.url(ROUTES.CLUSTERS_NEW_WIZARD);
+                    //    return;
+                    //}
+
+                    $scope.clusters = _.sortBy(newClusters, function (cluster) {
+                        if (cluster.status == 'install_error' || cluster.status == 'uninstall_error') {
+                            return 90;
+                        } else {
+                            return 50;
+                        }
+                    });
+
+                    if (firstTime) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load clusters: ' + response.statusText + " " + response.status);
+                        $scope.loaded = true;
+                    } else {
+                        console.log('Error: ' + response.statusText + " " + response.status);
+                    }
+                });
+            }
+
+            fetchClusters(true);
+
+            var fetchClustersInterval = $interval(function () {
+                fetchClusters();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchClustersInterval)) {
+                    $interval.cancel(fetchClustersInterval);
+                    fetchClustersInterval = undefined;
+                }
+            });
+        }
+    ]
+});

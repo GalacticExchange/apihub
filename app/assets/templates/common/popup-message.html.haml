@@ -1,0 +1,16 @@
+.app_wrap.border.item.marg_top_10.marg_bott_10.item.animate-show(ng-if="text")
+  .row.bord_bott.padd_top_md.padd_bott_md(class="{{bgClass}}")
+    .flex-container-all.padd_left_md
+      .flex-wrap(ng-if="type=='error' ")
+        =image_tag "new/icons/error_white.svg"
+      .flex-wrap(ng-if="type=='success' ")
+        =image_tag "new/icons/done_white.svg"
+      .flex-wrap(ng-if="type=='wait' ")
+        =image_tag "new/icons/wait_white.svg"
+      .flex-wrap(ng-if="type=='install' ")
+        =image_tag "new/icons/download.svg"
+
+      .flex-wrap
+        .err_div
+          %h5.white{style:"margin: 3px 0px 0px 10px !important"}
+            {{text}}

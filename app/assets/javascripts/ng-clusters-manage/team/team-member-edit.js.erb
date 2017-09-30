@@ -1,0 +1,131 @@
+'use strict';
+
+angular.module('components').component('teamMemberEdit', {
+    templateUrl: '<%= asset_path("profile/team-member-edit.html") %>',
+    controller: ['$http', '$scope', '$routeParams', '$location', 'ROUTES',
+        function ($http, $scope, $routeParams, $location, ROUTES) {
+            $scope.utils = GexUtils;
+            $scope.username = $routeParams.username;
+
+            $scope.memberUpd = {
+                role: {
+                    name: undefined
+                }
+            };
+
+            fetchMember(true);
+
+            function fetchMember(firstTime) {
+                $http.get('/userInfo', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {username: $scope.username}
+                }).then(function (response) {
+                    $scope.member = response.data.user;
+                    $scope.memberUpd.role.name = $scope.member.role;
+                    getTeamRoles();
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    console.log('Error fetching member: ' + response.statusText);
+                    $scope.errText = response.statusText;
+
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            function getTeamRoles() {
+                $http.get('/groupList', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    if ($scope.member.role === 'superadmin') {
+                        $scope.teamRoles = response.data.groups;
+                    } else {
+                        $scope.teamRoles = _.filter(response.data.groups, function (role) {
+                            return role.name !== 'superadmin';
+                        });
+                    }
+
+                    $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    console.log('Error fetching member: ' + response.statusText);
+                    $scope.loaded = true;
+                });
+            }
+
+
+            $scope.changeRole = function (username, role) {
+                $scope.spinner = true;
+                $scope.errText = undefined;
+
+                var data = {
+                    username: username,
+                    role: role
+                };
+
+                $http.put('/users/roles', data, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function (response) {
+                    $scope.spinner = false;
+                    $scope.utils.showSnackbarMessage("Role changed");
+                    fetchMember();
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                    console.log('Error: ' + response.statusText + " " + response.status);
+                    $scope.spinner = false;
+                    $scope.errText = response.data ? response.statusText + ": " + response.data.errors[0].message : 'Sorry, but something went wrong';
+                });
+            }
+
+            $scope.removeMember = function(member) {
+                $scope.spinnerRemove = true;
+                $http.delete('/users', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {username: member.username}
+                }).then(function (response) {
+                    $location.url(ROUTES.TEAM_MEMBERS);
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    GexUtils.showMessageDialog('Error', 'Cannot remove user ' + member.name + ' ' + GexUtils.getErrMsgServ(response));
+                    console.log('Error: ' + response.statusText + " " + response.status);
+                }).then(function () {
+                    $scope.spinnerRemove = false;
+                });
+            }
+
+            $scope.canRemoveMember = function(member) {
+                var currentUser = GexUtils.currentUser;
+                if (member.role === 'superadmin') {
+                    return false;
+                } else {
+                    return (currentUser.role === 'admin' || currentUser.role === 'superadmin') && currentUser.username !== member.username;
+                }
+            }
+
+            $scope.canChooseRole = function (user) {
+                var currentUser = GexUtils.currentUser;
+                if (user.role === 'superadmin') {
+                    return false;
+                } else {
+                    return (currentUser.role === 'admin' || currentUser.role === 'superadmin') && currentUser.username !== user.username;
+                }
+            }
+        }
+    ]
+});

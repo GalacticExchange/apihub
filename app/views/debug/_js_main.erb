@@ -1,0 +1,204 @@
+<script language="JavaScript">
+
+  jQuery(function($) {
+    //init_data();
+
+    update_data();
+
+  });
+
+  var gauges = new Array();
+
+  for (var i = 0; i < 1; i++) {
+    gauges[i] = new myGauge();
+  }
+
+
+  var Person = function () {};
+  var person0 = new Person();
+
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min)) + min;
+  }
+
+  function init_data(){
+    $('#log1').html('updating...');
+
+    var car = {type:"Fiat", model:"500", color:"white"};
+
+    var person1 = new Person();
+    var person2 = new Person();
+
+    //
+    var gauge = d3.select("#g1");
+
+    //
+    //loadLiquidFillGauge("g1",  60, g_config);
+
+    //
+    //init_gauge(gauge);
+    //init_gauge2('g1', gauge, 50, g_config);
+    //var ind = 0;
+    //gauges[ind].draw('g1', gauge, 50, g_config);
+    //update_gauge(0, getRandomInt(1,55));
+    update_gauge(0, 79);
+    //update_gauge(0, 52);
+    //update_gauge(0, 60);
+    //update_gauge(1, 24);
+
+    //
+    //gauge.selectAll("*").remove();
+    //svg_get_all_childs(gauge, gauge.children);
+    //var a = all_children;
+
+    //a.remove();
+    //gaugeGroup.selectAll('*').remove();
+
+    //
+    //var a = gauge.selectAll('*');
+    //console.log("gg: "+a.size()+" elements");
+    //console.log("gg2: "+gauge.selectAll("*").size()+" elements");
+    //console.log("t3: "+gaugeGroup.selectAll("*").size()+" elements");
+
+
+    //console.log("a: "+a.length+" elements");
+
+    //a.forEach(function(elem){
+    //  console.log(elem);
+    //});
+
+    //
+
+    $('#log1').html('ok...');
+
+  }
+
+
+  function update_data(){
+    init_data();
+    setTimeout(update_data, 10000);
+  }
+
+  function update_gauge(ind, v){
+    var html_id = "g"+ind;
+    var gauge = d3.select("#"+html_id);
+    var g_config = gauge_create_config(v);
+    gauges[ind].draw(html_id, gauge, v, g_config);
+
+  }
+
+  function remove_all(){
+  }
+
+  function svg_calc_children(root){
+    var node=[];
+    root.children.forEach(function(d){ node.push(d.children[0])})
+    console.log(node);
+  }
+  //
+  var all_children = new Array;
+
+  function svg_get_all_children(d){
+    var all_children = svg_get_all_childs(d);
+    console.log("end, our array has: "+all_children.length+" elements");
+    all_children.forEach(function(elem){
+      console.log(elem.name);
+    });
+  }
+
+  function svg_get_all_childs(d, all_childs){
+    console.log('go');
+    all_children.push(all_childs);
+
+    if (d.children){
+      console.log('children');
+      var children = d.children;
+      for (var i = 0; i < children.length; i++) {
+        var temp_array = svg_get_all_childs(children[i], all_children);
+        console.log("got from recursion: : "+temp_array.length+" children");
+        all_children.push(temp_array);
+      }
+    }
+    else{
+      //return all_children;
+      //console.log("end, our array has: "+all_children.length+" elements");
+    }
+    //return all_children;
+  }
+
+
+
+  function init_gauge(gauge){
+    gaugeGroup = gauge.append("g")
+    var text1 = gaugeGroup.append("text").text('hell')
+    var text2 = gaugeGroup.append("text").text('hell')
+    var text3 = gaugeGroup.append("text").text('hell')
+
+    var waveGroup = gaugeGroup.append("defs").append("clipPath");
+    var wave = waveGroup.append("path");
+
+    var fillCircleGroup = gaugeGroup.append("g");
+    var text4 = fillCircleGroup.append("text").text("t4");
+
+    var text5 = gaugeGroup.append("text").text("t4");
+
+  }
+
+
+    ///////////////
+  function gauge_create_config(percentage){
+    var config1 = liquidFillGaugeDefaultSettings();
+
+    config1.waveRise = false;
+    config1.valueCountUp = false;
+
+    if (percentage >= 85) {
+      //config1.circleColor = "#FFDDDD";
+      config1.circleColor = "#FF8888";
+      config1.textColor = "#FF4444";
+      config1.waveTextColor = "#FFAAAA";
+      config1.waveColor =   "#FF7777";
+    } else  if (percentage > 30) {
+      config1.circleColor = "#246D5F";
+      config1.textColor = "#0E5144";
+      config1.waveTextColor = "#246D5F";
+      config1.waveColor = "#6DA398";
+    } else {
+
+    }
+
+
+    config1.circleThickness = 0.2;
+    if (percentage > 85) {
+      config1.textVertPosition = 0.2;
+      config1.waveCount = 1;
+      config1.waveHeight = 0.5;
+
+      config1.waveAnimateTime = 20000/percentage;
+    } else if (percentage > 50) {
+      config1.textVertPosition = 0.2;
+      config1.waveCount = 1;
+      config1.waveHeight = 0.1;
+
+      config1.waveAnimateTime = 40000/percentage;
+    } else if (percentage > 30) {
+      config1.textVertPosition = 0.2;
+      config1.waveCount = 1; // 2
+      config1.waveHeight = 0.1;
+
+      config1.waveAnimateTime = 40000/percentage;
+    }  else  {
+      config1.textVertPosition = 0.2;
+      config1.waveCount = 1;
+      config1.waveHeight = 0.1;
+
+      config1.waveAnimateTime = 40000/percentage;
+    }
+
+
+    return config1;
+  }
+
+
+
+</script>

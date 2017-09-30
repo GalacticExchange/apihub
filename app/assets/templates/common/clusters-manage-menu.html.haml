@@ -1,0 +1,78 @@
+.row{:style=>"width: 100%; overflow-x: hidden;"}
+  .col-md-12.no_padd{:style=>"widht: 100%"}
+    .navbar-header
+      .row.bord_bott
+        .navbar-toggle{ :style=>"float: left; padding: 0px; margin: 0px; width: 100%;"}
+          .row
+            .col-xs-1.no_padd{:style=>"cursor: pointer"}
+              .padd_left_md
+                .close-icon{:style=>"padding-top: 14pt; display: none; margin-left: -2px", "ng-click"=> "hideXsMenu()"}
+                  =image_tag "new/icons/close.svg", :width=>"25pt", :style=>"opacity: 0.7"
+                .menu-icon{:style=>"padding-top: 18pt", "data-target" => "#myNavbar", "data-toggle" => "collapse", :type => "button", "ng-click"=> "showXsMenu()"}
+                  %span.icon-bar
+                  %span.icon-bar
+                  %span.icon-bar
+            .col-xs-10.no_padd{:style=>"text-align: left;"}
+              %h3.step_text.side_menu_h{:style=>"color: #434343"}
+                Admin area
+
+
+    #target.container-fluid.no_padd.no_marg
+      #myNavbar.collapse.navbar-collapse.no_padd.no_marg
+        %ul.nav.navbar-nav.no_padd.no_marg{:style=>"float: none; width: 100%"}
+          %ul.nav.navbar-nav.no_padd.no_marg{:style=>"float: none; width: 100%"}
+            .padd_bott_mdz.install_step
+              .flex-container-all
+                .flex-wrap
+                  %h3.left-menu-h Clusters
+
+
+          %a(data-div="team_clusters" ng-href="{{ROUTES.getAddr('CLUSTERS')}}" class="left-menu-el" ng-class="pageSelected == 'clusters' ? 'left-menu-current' : ''")
+            .fl-cont.gx-fl-center
+              .fl-wrap.padd_ri_sm
+                = inline_svg "new/icons/clusters_.svg"
+              .fl-wrap
+                %h3 Team clusters
+
+          %a(data-div ="shared" ng-href="{{ROUTES.getAddr('CLUSTERS_SHARED')}}" class="left-menu-el" ng-class="pageSelected == 'clusters-shared' ? 'left-menu-current' : ''")
+            .fl-cont.gx-fl-center
+              .fl-wrap.padd_ri_sm
+                = inline_svg "new/icons/shares_.svg"
+              .fl-wrap
+                %h3 Shared
+
+          %a(data-div ="keys" ng-if="isAdmin()" ng-href="{{ROUTES.getAddr('KEYS')}}" class="left-menu-el" ng-class="pageSelected == 'keys' ? 'left-menu-current' : ''")
+            .fl-cont.gx-fl-center
+              .fl-wrap.padd_ri_sm
+                = inline_svg "new/icons/keys.svg"
+              .fl-wrap
+                %h3 Keys
+
+
+          .bord_bott.padd_top_10{style:'margin: 0 20px;'}
+
+
+
+          .install_step.side_menu_ln{style:'border-top: none;'}
+            %h3.left-menu-h Team
+
+          %a(data-div="members" ng-href="{{ROUTES.getAddr('TEAM_MEMBERS')}}" class="left-menu-el" ng-class="pageSelected == 'teamMembers' ? 'left-menu-current' : ''")
+            .fl-cont.gx-fl-center
+              .fl-wrap.padd_ri_sm
+                = inline_svg "new/icons/members.svg"
+              .fl-wrap
+                %h3 Members
+
+          %a(data-div="invitations" ng-href="{{ROUTES.getAddr('TEAM_INVITATIONS')}}" class="left-menu-el" ng-class="pageSelected == 'teamInvitations' ? 'left-menu-current' : ''")
+            .fl-cont.gx-fl-center
+              .fl-wrap.padd_ri_sm
+                = inline_svg "new/icons/invitation.svg"
+              .fl-wrap
+                %h3 Invitations
+
+          %a(data-div="edit" ng-href="{{ROUTES.getAddr('TEAM_EDIT')}}" class="left-menu-el" ng-class="pageSelected == 'teamEdit' ? 'left-menu-current' : ''")
+            .fl-cont.gx-fl-center
+              .fl-wrap.padd_ri_sm
+                = inline_svg "new/icons/edit_pen.svg"
+              .fl-wrap
+                %h3 Edit

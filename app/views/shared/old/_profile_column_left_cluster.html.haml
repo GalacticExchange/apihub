@@ -1,0 +1,13 @@
+
+.block1{:style=>"display:inline; margin-left:5px"}
+  =link_to all_clusters_path, :style=>"text-decoration: none;" do
+    = image_tag "cl_round.png", :width=>30, :style=>"margin-bottom: 12px"
+    %h2{:style=>"display:inline; opacity: 0.6"} Clusters
+    -#=image_tag "back_rev.png", :class=>"back_pic", :width=>10,:style=>"margin-bottom: 10px; margin-left: 4px; opacity: 0.6"
+
+
+
+= link_to my_clusters_path, :class => (s = bt == "cluster" ? "list-group-item active" : "list-group-item") do
+  My clusters
+= link_to shared_clusters_path, :class => (s = bt == "shared" ? "list-group-item active" : "list-group-item") do
+  Shared clusters

@@ -1,0 +1,150 @@
+'use strict';
+
+angular.module('components').component('serviceListExtNew', {
+    templateUrl: '<%= asset_path("services/service-list-ext-new.html") %>',
+    bindings: {
+        applicationId: '@',
+        containerId: '@',
+        username: '@',
+        applicationName: '@'
+    },
+    controller: ['$http', '$scope', '$interval', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+            var self = this;
+
+            this.$onInit = function () {
+                fetchServices(true);
+            };
+
+            function fetchServices(firstTime) {
+                var params = self.containerId ? {'containerID': self.containerId} : {'applicationID': self.applicationId};
+                params.clusterID = GexUtils.currentClusterId;
+
+                $http.get('/services', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: params
+                }).then(function (response) {
+                    $scope.services = response.data.services;
+                    $scope.isServicesEmpty = !$scope.services || $scope.services.length == 0;
+
+                    if(!$scope.isServicesEmpty){
+                      fetchServicesChecks(firstTime);
+                    }
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    console.log('Error fetching services: ' + response.statusText);
+                });
+            }
+
+
+            function fetchServicesChecks(firstTime) {
+
+
+                if(!$scope.services){
+                    GexUtils.showMessageDialog('Error', 'No services :(');
+                    return;
+                }
+
+                var cont_ids = $scope.services.map(function(cont) {return cont.id;});
+
+                $http.get('/checks/services/', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        //ids: JSON.stringify(cont_ids)
+                        ids: cont_ids.toString()
+                    }
+                }).then(function (response) {
+
+                    $scope.servicesChecks = response.data;
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load containers checks: ' + GexUtils.getErrMsgServ(response));
+                    } else {
+                        console.log('Error fetching containers checks: ' + GexUtils.getErrMsgServ(response));
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+
+
+
+
+            $scope.isShowConnectBtn = function (service) {
+                return service.status == 'active' && (service.protocol == 'ssh' || service.protocol == 'http' || service.protocol == 'https');
+            };
+
+            $scope.isShowTryToConnectBtn = function (service) {
+                return service.status == 'active' && !service.protocol;
+            };
+
+            $scope.tryConnectToService = function (service) {
+                GexUtils.showConfirmDialog('Warning: No protocol specified', 'We unable to specify protocol for this service.<br> You can try to connect via HTTP.', function () {
+                        if (!GexServiceHelper.baseServiceCheck(service)) {
+                            return;
+                        }
+
+                        var tmpService = _.cloneDeep(service);
+                        tmpService.protocol = 'http';
+                        window.open(GexServiceHelper.getServiceUrl(tmpService, self.username), '_blank');
+                    }
+                    , 'Try to connect via HTTP', 'Cancel'
+                );
+            };
+
+
+            $scope.connectToService = function (service) {
+                if (GexUtils.isDesktopClient) {
+                    if (service.protocol == 'ssh' && isUbuntuApplication()) { //todo temporary fix for ubuntu ssh container
+                        GexServiceHelper.openNative(service, 'root', 'root');
+                    } else if(service.protocol == 'ssh' && isNeedBorschFixSsh()) {
+                        GexServiceHelper.openNative(service, 'gex', 'gexborsch4');
+                    } else {
+                        GexServiceHelper.openNative(service, self.username, GexUtils.getToken());
+                    }
+                } else if (service.protocol == 'ssh') {
+                    GexUtils.showMessageDialog('Info', 'SSH is not supported by browsers. Please install ClusterGX desktop application from <a target="_blank" href="http://galacticexchange.io/downloads">http://galacticexchange.io/downloads</a>');
+                } else {
+                    if (!GexServiceHelper.baseServiceCheck(service)) {
+                        return;
+                    }
+                    window.open(GexServiceHelper.getServiceUrl(service, self.username), '_blank');
+                }
+            };
+
+            var fetchServicesInterval = $interval(function () {
+                fetchServices();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchServicesInterval)) {
+                    $interval.cancel(fetchServicesInterval);
+                    fetchServicesInterval = undefined;
+                }
+            });
+
+            function isUbuntuApplication() {
+                return self.applicationName && self.applicationName === 'ubuntu16';
+            }
+
+            function isNeedBorschFixSsh() {
+                return self.applicationName && (self.applicationName === 'data_enchilada'
+                    || self.applicationName === 'scraper' || self.applicationName === 'graph_ide');
+            }
+        }
+
+    ]
+});

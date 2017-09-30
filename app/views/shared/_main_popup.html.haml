@@ -1,0 +1,110 @@
+%a#messageDialogLink{:href => "#messageDialog"}
+#messageDialog
+  .flex-container-all.flex-center{style:"height: 90vh"}
+    .flex-wrap{style:"flex-grow: 1"}
+    .flex-wrap{style:"flex-grow: 5; max-width: 750px;"}
+      .lite_shadow.border_radius.white_bg.text-center{style:"padding: 10px !important; "}
+        .pull-right
+          =image_tag "new/icons/off.svg", :style=>"width: 25px; opacity: 0.6;", :id=> "closeMessageDialogModal", :class=>"close-messageDialog close-btn" , :onclick=>"GexUtils.afterMessageDialog(true)"
+        #messageDialogContent.text-center{style:"padding: 15px"}
+    .flex-wrap{style:"flex-grow: 1"}
+
+= javascript_include_tag 'animatedmodal/animatedModal.min'
+= javascript_include_tag 'material-spinner/dist/js/material.spinner.min'
+
+
+:javascript
+  $("#messageDialogLink").animatedModal(
+    {
+      color: 'rgba(191, 191, 191, 0.682353)',
+      animatedIn:'fadeIn',
+      animatedOut:'fadeOut',
+      modalTarget: 'messageDialog'
+    }
+  );
+
+  GexUtils.messageDialogMessages = [];
+
+  setInterval(function() {
+    var messageDialog = $('#messageDialog');
+    if (GexUtils.messageDialogMessages.length > 0 && GexUtils.isMessageDialogNotActive(messageDialog)) {
+       var data = GexUtils.messageDialogMessages.shift();
+       if (data.confirm) {
+         GexUtils.showConfirmDialog(data.header, data.description, data.yesFunc, data.yesButtonText, data.noButtonText);
+       } else {
+         GexUtils.showMessageDialog(data.header, data.description, data.afterClose);
+       }
+    }
+  }, 700);
+
+
+  GexUtils.showMessageDialog = function (header, description, afterClose) {
+    var messageDialog = $('#messageDialog');
+
+    if (GexUtils.isMessageDialogNotActive(messageDialog)) {
+      GexUtils.afterMessageDialog = function(alreadyClosed) {
+        if (!alreadyClosed) {
+          GexUtils.closeMessageDialog();
+        } else {
+          if (afterClose) {
+            afterClose();
+          }
+        }
+      };
+
+      var showMessageHtml = '<h2 class="no_marg popup_header_text">{header}</h2><div class="popup_text_wrap"><div style="padding: 30px;"><p class="gr no_marg" style="padding: 10px;  overflow-y: auto;   max-height: 450px;  overflow-wrap: break-word; word-wrap: break-word;">{description}</p></div></div><div class="bottom_fixed_on_popup1">'
+        + '<div class="text-center"><div class="mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md" id="qqq" onclick="GexUtils.afterMessageDialog()"  data-btn="popup-ok-btn">OK</div></div></div>';
+
+      messageDialog.find("#messageDialogContent").html(showMessageHtml.replace('{header}', header).replace('{description}',
+        description.replace(/(?:\r\n|\r|\n)/g, '<br />')));
+
+      $("#messageDialogLink").click();
+      componentHandler.upgradeElements(messageDialog[0]);
+    } else {
+      GexUtils.messageDialogMessages.push({header: header, description: description, afterClose: afterClose, confirm: false});
+    }
+  };
+
+  GexUtils.showConfirmDialog = function (header, description, yesFunc, yesButtonText, noButtonText) {
+    var messageDialog = $('#messageDialog');
+
+    if (GexUtils.isMessageDialogNotActive(messageDialog)) {
+      var showMessageHtml = '<h2 class="no_marg popup_header_text">{header}</h2><div class="popup_text_wrap"><p class="gr no_marg" style="padding: 30px; overflow-wrap: break-word; word-wrap: break-word;">{description}</p></div><div class="bottom_fixed_on_popup11">'
+        + '<div class="text-center"><div class="marg_ri_sm inl"><div class="mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md" data-btn="popup-yes-btn" onclick="GexUtils.afterConfirmDialog()">{yes_button_text}</div></div>'+
+        '<div class="marg_left_sm inl"><div class="mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md marg_ri_sm" style="background-color:#909090 !important" data-btn="popup-no-btn" onclick="GexUtils.closeMessageDialog()">{no_button_text}</div></div></div></div>';
+
+      GexUtils.afterConfirmDialog = function() {
+        GexUtils.closeMessageDialog();
+        yesFunc();
+      };
+
+      GexUtils.afterMessageDialog = function() {
+
+      };
+
+      messageDialog.find("#messageDialogContent").html(showMessageHtml.replace('{header}', header).replace('{description}',
+        description.replace(/(?:\r\n|\r|\n)/g, '<br />'))
+        .replace('{yes_button_text}', yesButtonText ? yesButtonText : 'Yes')
+        .replace('{no_button_text}', noButtonText ? noButtonText : 'No'));
+
+      $("#messageDialogLink").click();
+      componentHandler.upgradeElements(messageDialog[0]);
+    } else {
+      GexUtils.messageDialogMessages.push({header: header, description: description, yesFunc: yesFunc,
+        yesButtonText: yesButtonText, noButtonText: noButtonText,  confirm: true});
+    }
+  };
+
+  GexUtils.closeMessageDialog = function() {
+    $("#closeMessageDialogModal").click();
+  };
+
+  GexUtils.isMessageDialogNotActive = function(messageDialog) {
+    return messageDialog.hasClass('messageDialog-off') && messageDialog.css('z-index') != '9999';
+  };
+
+  if (GexUtils.isDesktopClient) {
+    GexUtils.electron.ipcRenderer.on('show-message', function(event, arg) {
+      GexUtils.showMessageDialog(arg.header, arg.description);
+    });
+  }

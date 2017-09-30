@@ -1,0 +1,64 @@
+.sidebar-header(data-div="page-title")
+  .fl-wrap.fl-grow
+    %h2.sb-text.sb-h1-text
+      Uninstall {{nodeUninst.nodeName}} (remote node)
+    %p.sb-p-text.gr
+      Fill remote machine credentials to uninstall node.
+
+%add-pass-modal
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+%div.remote-nodess(ng-if="loaded")
+
+  .fl-cont.padd_top_10
+    .fl-wrap{style:"padding-right: 25px;"}
+      .padd_bott_sm
+        %h5.d_gr.boldt{style:"font-size: 17px; "} Machine hostname or IP
+      %input.new-input(ng-model="nodeUninst.sshCredentials.host" type="text" ng-class="nodeUninst.err.host ? 'new-input_err' : undefined" ng-change="validateHostnameOrIp(nodeUninst, true)" uib-popover="{{nodeUninst.err.host}}" ng-focus="nodeUninst.err.hostShow = !!nodeUninst.err.host" ng-blur="nodeUninst.err.hostShow = false" popover-is-open="nodeUninst.err.hostShow" popover-trigger="'none'" ng-disabled="uninstSpinner" style="width:400px; max-width:400px;")
+
+  .fl-cont.padd_top_sm.marg_top_md
+    .fl-wrap{style:"padding-right: 25px;"}
+      .padd_bott_sm
+        %h5.d_gr.boldt{style:"font-size: 17px; "} SSH username
+      %input.new-input(ng-model="nodeUninst.sshCredentials.username" type="text" ng-class="nodeUninst.err.username ? 'new-input_err' : undefined" ng-change="validateUsername(nodeUninst, true)" uib-popover="{{nodeUninst.err.username}}" ng-focus="nodeUninst.err.usernameShow = !!nodeUninst.err.username" ng-blur="nodeUninst.err.usernameShow = false" popover-is-open="nodeUninst.err.usernameShow" popover-trigger="'none'" ng-disabled="sameUserFields && nodesInstalls.indexOf(nodeUninst) != 0 || uninstSpinner" style="width:400px; max-width:400px;")
+
+  .fl-cont.padd_top_sm.marg_top_md
+    .fl-wrap{style:"padding-right: 25px;"}
+      .padd_bott_sm.fl-cont.fl-center(style="width:400px; max-width:400px;")
+        .fl-wrap.fl-grow
+          %h5.d_gr.boldt{style:"font-size: 17px; "} {{nodeUninst.sshCredentials.authMethod == 'password' ? 'SSH password' : 'SSH private key'}}
+        .fl-wrap
+          %div(ng-switch on="nodeUninst.sshCredentials.authMethod")
+            .fl-wrap(ng-switch-when="password" ng-click="changeAuthMethod('privateKey')")
+              =inline_svg "new/icons/key.svg", class:"hand_cursor lite-gr-svg", id:"changeAuthToPrvKey"
+              .mdl-tooltip.mdl-tooltip--large(for="changeAuthToPrvKey")
+                Change to private key
+            .fl-wrap(ng-switch-when="privateKey" ng-click="changeAuthMethod('password')")
+              =inline_svg "new/icons/lock.svg", class:"hand_cursor lite-gr-svg", id:"changeAuthToPassword"
+              .mdl-tooltip.mdl-tooltip--large(for="changeAuthToPassword")
+                Change to password
+      .padd_ri_md(ng-switch on="nodeUninst.sshCredentials.authMethod")
+        .new-input-with-icon(style="width:400px; max-width:400px;" ng-switch-when="password" ng-init="passwordShow = false; fieldDisabled = false;" ng-class="{'new-input_err': nodeUninst.err.password, 'new-input-with-icon-dis': fieldDisabled}" uib-popover="{{nodeUninst.err.password}}" popover-is-open="nodeUninst.err.passwordShow" popover-trigger="'none'")
+          %input(ng-model="nodeUninst.sshCredentials.password" onfocus="$(this).parent().addClass('new-input-with-icon-focus')" onblur="$(this).parent().removeClass('new-input-with-icon-focus')" ng-attr-type="{{passwordShow ? 'text' : 'password'}}" ng-change="validatePassword(nodeUninst, true)" ng-focus="nodeUninst.err.passwordShow = !!nodeUninst.err.password" ng-blur="nodeUninst.err.passwordShow = false" ng-disabled="fieldDisabled = samePasswordFields && !$first || uninstSpinner" )
+          =image_tag "new/icons/eye.svg", "ng-mousedown": "passwordShow = fieldDisabled ?  false : true", "ng-mouseup": "passwordShow = false", "ng-mouseleave":"passwordShow = false"
+        .new-input-with-icon(style="width:400px; max-width:400px;" ng-switch-when="privateKey" ng-init="fieldDisabled = false;" ng-class="{'new-input_err': nodeUninst.err.privateKeyPath, 'new-input-with-icon-dis': fieldDisabled}" uib-popover="{{nodeUninst.err.privateKeyPath}}" popover-is-open="nodeUninst.err.privateKeyPathShow" popover-trigger="'none'")
+          %input(readonly ng-model="nodeUninst.sshCredentials.privateKeyPath" onfocus="$(this).parent().addClass('new-input-with-icon-focus')" onblur="$(this).parent().removeClass('new-input-with-icon-focus')" ng-focus="nodeUninst.err.privateKeyPathShow = !!nodeUninst.err.privateKeyPath" ng-blur="nodeUninst.err.privateKeyPathShow = false" type="text" ng-disabled="fieldDisabled = samePasswordFields && !$first || uninstSpinner" )
+          =image_tag "new/icons/folder.svg", class:'hand_cursor', "ng-click":"choosePrivateKey(nodeUninst, fieldDisabled)"
+
+  .fl-cont.padd_top_sm.marg_top_md
+    .fl-wrap{style:"padding-right: 25px;"}
+      .padd_bott_sm
+        %h5.d_gr.boldt{style:"font-size: 17px; "} SSH port
+      %input.new-input.inl(style="width:400px; max-width:400px;" ng-model="nodeUninst.sshCredentials.port" type="number" ng-class="nodeUninst.err.port ? 'new-input_err' : undefined" ng-change="validatePort(nodeUninst, true)"  uib-popover="{{nodeUninst.err.port}}" ng-focus="nodeUninst.err.portShow = !!nodeUninst.err.port" ng-blur="nodeUninst.err.portShow = false" popover-is-open="nodeUninst.err.portShow" popover-trigger="'none'" ng-disabled="samePortFields && nodesInstalls.indexOf(nodeUninst) != 0 || uninstSpinner")
+
+  .fl-cont.padd_top_md.marg_top_md
+    %div(ng-if="loaded")
+      .fl-cont
+        .fl-wrap
+          %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_red_btn.gex_btn_cmn( ng-click="uninstallNode()" ng-disabled="uninstSpinner" data-toggle="tooltip")
+            Uninstall
+        .fl-wrap.padd_left_md
+          %material-spinner.fade-element-in(spinner-radius="18"  ng-if="uninstSpinner")

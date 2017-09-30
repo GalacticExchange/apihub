@@ -1,0 +1,74 @@
+%div.gx-page(ng-if="loaded && !applicationNotFound")
+  #app_details_top.app_wrap.border.marg_bott_md
+    .padd_md
+      .fl-cont
+        .fl-wrap
+          .ext-icon-wrap(ng-if='app.external')
+            = inline_svg "new/icons/extention.svg", class: "ext-icon-big"
+          .int-icon-wrap(ng-if='!app.external')
+            %img(ng-src="{{app.image_url}}" style="width: 120px;" class="border cluster_app_logo")
+        .fl-wrap.fl-grow
+          .padd_left_md
+            %h2.no_marg.bold{style:"font-size: 20pt !important;"}
+              {{app.title ? app.title : app.name}}
+
+            .padd_top_sm
+              %h6.no_marg.inl.gr AppHub™ page:
+              %h6.no_marg.gr.inl
+                %a(ng-if="!app.external" ng-href="{{ROUTES.getAddr('LIBRARY_APP_INFO', clusterId, app.library_application.name)}}")
+                  {{app.library_application.title}}
+                %a(ng-if="app.external" ng-href="{{ROUTES.getAddr('APPHUB_APP', clusterId, app.apphub_id)}}")
+                  {{app.title}}
+
+            .padd_top_md
+              -#%h5.gr.semibold.marg_top_sm(data-div="app-state")
+                %img(ng-src="{{utils.getStatusCircle(app.status)}}" class="status-dot")
+                {{utils.fixStatus(app.status)}}
+
+              .fl-cont
+                .fl-wrap
+                  .gx-bage.gx-bage-md{class:'gx-{{utils.getStatusColor(app.status)}}-bage'}
+                    %h6 {{utils.fixStatus(app.status)}}
+
+
+
+            -#.padd_top_sm
+              %h5.no_marg.gr
+                {{app.notes ? app.notes : 'This is a place for your note - you can edit it by clicking the settings button'}}
+
+        -#.padd_top_md
+          %a#app_settings(data-btn = "settings-btn" ng-href="{{ROUTES.getAddr('APPLICATION_SETTINGS', clusterId, app.id)}}" class="inl")
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.inl{style:"padding: 0px !important"}
+              =image_tag "new/icons/settings.svg", :style=>"opacity: 0.6; margin-top: 0px; width: 17pt", :class=>"inl"
+        .fl-wrap
+          %a(data-btn= "settings-btn" ng-href="{{ROUTES.getAddr('APPLICATION_SETTINGS', clusterId, app.id)}}" class="inl")
+            .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gx-btn.lite-blue.undec
+              .fl-cont
+                .fl-wrap.marg_ri_10{style:'margin-top: -1px;'}
+                  =inline_svg 'new/icons/configure.svg', class: 'xsm-icon gex-svg'
+                .fl-wrap
+                  Settings
+
+  %service-list-ext(data-application-id="{{applicationId}}" data-application-name="{{app.name}}" data-username="{{username}}")
+  %container-list-ext(data-page="application" data-application-id="{{applicationId}}")
+    -#.new-part
+      .div{style:'padding: 20px 20px 30px 20px;'}
+        -#.bord_bott
+
+      %service-list-ext-new(data-application-id="{{applicationId}}" data-application-name="{{app.name}}" data-username="{{username}}")
+
+
+      .div{style:'padding: 20px 20px 30px 20px;'}
+        -#.bord_bott
+
+      %service-list-ext-new(data-application-id="{{applicationId}}" data-application-name="{{app.name}}" data-username="{{username}}")
+
+    -#%container-list-ext(data-page="application" data-application-id="{{applicationId}}")
+
+
+.fl-cont.padd_top_big(ng-if="loaded && applicationNotFound")
+  .fl-wrap.fl-grow
+  .fl-wrap
+    .text-center.marg_left_big.marg_ri_big
+      %h2.no_marg.bold.no-items-h 404 Application not found.
+  .fl-wrap.fl-grow

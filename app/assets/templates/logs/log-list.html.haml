@@ -1,0 +1,97 @@
+.gx-page
+  .sidebar-header(data-div="page-title"){"ng-class" => "invHalfOpacity"}
+    .flex-wrap.flex-grow
+      %h2.sb-text.sb-h1-text
+        Logs
+      %p.sb-p-text.gr
+        All logs for this cluster.
+
+  %div(ng-if="!loaded")
+    .flex-center.padd_top_md
+      %material-spinner.fade-element-in
+
+  .app_wrapf.borderf.marg_bott_md(ng-if="loaded")
+    .row
+      .padd_bott_md
+        %form.logs_form.fl-cont{"ng-submit" => "submitSearchForm()", :novalidate => "novalidate", :role => "form"}
+          .fl-wrap.fl-grow.marg_ri_10
+            %input.new-input{:name => "query" , "ng-model"=> "search.query", :placeholder => "Search all", :style => "width: 100%", :type => "text"}
+          .fl-wrap.fl-grow.marg_ri_10{style:"min-width: 150px; flex-grow: 2;"}
+            %ui-select.hand_cursor(ng-model="search.minLevel" theme="select2" search-enabled="false" style="width:100%")
+              %ui-select-match {{$select.selected}}
+              %ui-select-choices(repeat="logLevel in logLevels")
+                %div(ng-bind-html="logLevel | highlight: $select.search")
+
+          #user_f.fl-wrap.fl-grow.marg_ri_10{"ng-class"=>"{'field_err_wrap' : fieldsErr['user']}"}
+            %input.new-input(ng-change="validateIfEmpty(search.user, 'user')" name="user" placeholder="User" style="width: 100%" type="text" autocomplete="off" ng-model="search.user" typeahead-select-on-exact="true" typeahead-select-on-blur="true" uib-typeahead="user for user in findAutocomplete('/autocomplete_user_username', $viewValue,'user',true)")
+
+          #node_f.autocomplete.fl-wrap.fl-grow.marg_ri_10{"ng-class"=>"{'field_err_wrap' : fieldsErr['node']}"}
+            %input.new-input(ng-change="validateIfEmpty(search.node, 'node')" name="node" placeholder="Node" style="width: 100%" type="text" autocomplete="off" ng-model="search.node" typeahead-select-on-exact="true" typeahead-select-on-blur="true" uib-typeahead="node as node.name for node in findAutocomplete('/autocomplete_node_name', $viewValue,'node',true)")
+
+          #source_f.fl-wrap.fl-grow.marg_ri_md{"ng-class"=>"{'field_err_wrap' : fieldsErr['source']}"}
+            %input.new-input(ng-change="validateIfEmpty(search.source, 'source')" name="source" placeholder="Source" style="width: 100%" type="text" autocomplete="off" ng-model="search.source" typeahead-select-on-exact="true" typeahead-select-on-blur="true" uib-typeahead="source for source in findAutocomplete('/autocomplete_log_source_name', $viewValue,'source',true)")
+
+          .fl-wrap.flex-center
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.marg_ri_10{:type => "submit"} Apply
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new-transp{"ng-click"=> "clearSearchForm()"} Clear
+
+  .fl-cont.padd_top_big(ng-if="(!logs || !logs.length > 0) && loaded")
+    .fl-wrap.fl-grow
+    .fl-wrap
+      .text-center
+        %h2.no_marg.bold.no-items-h No logs yet
+    .fl-wrap.fl-grow
+
+  .no_marg(ng-if="loaded && logs  && logs.length != 0")
+    .app_wrap.border.marg_bott_md(id="top_of_logs")
+      .row
+        .grey_bg.padd_left_md.padd_ri_md.padd_top_15.padd_bott_15
+          .row
+            .col-md-2.col-sm-3.col-xs-3
+              %p.no_marg{style:"font-size: 16px;"} Date
+            .col-md-10.col-xs-9.col-sm-9
+              %p.no_marg{style:"font-size: 16px;"} Data
+
+        .bord_bott(ng-repeat="log in logs")
+          .row.padd_top_md.padd_bott_md.table-row1.row-node
+            .padd_left_md.padd_ri_md
+              .col-md-2.col-sm-3.col-xs-3
+
+                %h6.no_marg.gr.marg_top_sm{:style=>"font-size: 11pt"}
+                  {{log.created_at | parseDateTime:'YYYY-MM-DDTHH:mm:ss.SSSZ' | dateTimeFormat:'YYYY-MM-DD HH-mm-ss'}}
+              .col-md-10.col-xs-9.no_padd_ri
+                .row
+                  .col-md-12.no_padd_left
+                    .fl-cont{style:'    align-items: center;'}
+                      .fl-wrap.padd_ri_md
+                        .gx-bage(ng-class="log.level_name+'-bage' ")
+                          %h6 {{log.level_name}}
+                      .fl-wrap
+                        %h5.no_marg.inl.bold {{log.message}}
+                .row{:style=>"padding-top: 10px"}
+                  .col-md-3.no_padd_left
+                    %h6.no_marg.gr.inl{:style=>"font-size: 11pt"} Node:
+                    %h6.no_marg.inl{:style=>"font-size: 11pt"}
+                      {{log.node_name ? log.node_name : 'N/A'}}
+                  .col-md-3.no_padd_left
+                    %h6.no_marg.gr.inl{:style=>"font-size: 11pt"} User:
+                    %h6.no_marg.inl{:style=>"font-size: 11pt"}
+                      {{log.user ? log.user.username : 'N/A'}}
+                  .col-md-3.no_padd_left
+                    %h6.no_marg.gr.inl{:style=>"font-size: 11pt"} Source:
+                    %h6.no_marg.inl{:style=>"font-size: 11pt"}
+                      {{log.source_name}}
+
+                .data_row.row
+                  .col-md-11.no_padd
+                    %pre.no_marg.no_padd_bott.no_padd_left.hidden-xs.hidden-sm{:style=>"border:none; padding-top: 10px"}
+                      %code.no_marg.json_container(style="word-wrap: break-word;" ng-bind-html="showJsonLog(log)")
+
+                  .col-md-1.col-xs-12{"ng-click"=>"switchJsonView(log)", :style=>"cursor: pointer;"}
+                    .pull-right{:style=>'padding-top: 5pt'}
+                      =image_tag "new/icons/next.svg", :class=>"rotate_90", "ng-style"=> "{'opacity': 0.7, 'transform': log.showFull ? 'rotate(-90deg)' : 'rotate(90deg)'}"
+
+    .app_wrap
+      .row
+        .text-center
+          %ul(uib-pagination total-items="pagination.totalItems" ng-model="pagination.currentPage" max-size="pagination.maxSize" class="pagination-sm" boundary-link-numbers="true" ng-change="pageChanged()" items-per-page="pagination.itemsPerPage")

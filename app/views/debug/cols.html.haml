@@ -1,0 +1,35 @@
+
+:css
+  .flex-container {
+  /* Сначала создадим flex-контекст */
+  display: flex;
+
+    /* Теперь определим направление потока и хотим ли мы, чтобы элементы
+    переносились на новую строку
+     * Помните, что это тоже самое, что и:
+     * flex-direction: row;
+     * flex-wrap: wrap;
+     */
+    flex-flow: row wrap;
+
+    /* Теперь определим, как будет распределяться пространство */
+    justify-content: space-around;
+  }
+
+.row.flex-container
+  .col-md-2(style="background-color: yellow;")
+    text
+    <br>
+    text
+  .col-md-2(style="background-color: red;")
+    yo yo
+    <br>
+    aa
+    <br>
+    ddd
+    <br>
+  .col-md-2(style="background-color: green;")
+    1
+    <br>
+    444
+    <br>

@@ -1,0 +1,306 @@
+'use strict';
+
+angular.module('components').component('applicationServicesBrowser', {
+    templateUrl: '<%= asset_path("applications/services-browser.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', '$route', 'ROUTES', 'HTTP_CONSTANTS', '$q',
+        function ($http, $scope, $interval, $routeParams, $route, ROUTES, HTTP_CONSTANTS, $q) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.applicationId = $routeParams.applicationId;
+
+            $scope.pageType = servicesType();
+            $scope.pageTitle = getPageTitle();
+            $scope.pageDescription = getPageDesc();
+
+
+            fetchServices(true);
+
+            function  fetchServices(firstTime) {
+
+                var localNodeId = $q(function (resolve, reject) {
+                    GexUtils.getCurrentNodeId(function (localNodeId, err) {
+                        if (err) {
+                            console.log(err.message);
+                        }
+                        resolve(localNodeId);
+                    });
+                });
+
+                var clusterInfo = $q(function (resolve, reject) {
+                    $http.get('/clusters/'+GexUtils.currentClusterId+'/info', {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json',
+                        params: {clusterID: GexUtils.currentClusterId}
+                    }).then(function (response) {
+                        resolve(response.data.cluster);
+                    }, function errorCallback(response) {
+                        if (GexUtils.isResponseCanceled(response)) {
+                            return;
+                        }
+                        GexUtils.redirectIfSomeRespCodes(response);
+                        reject(new Error('Cannot load cluster: ' + GexUtils.getErrMsgServ(response)));
+                    });
+                });
+
+
+                $q.all([localNodeId, clusterInfo]).then(function (data) {
+                    return $q(function (resolve) {
+
+                        $scope.localNodeId = data[0];
+                        var cluster = data[1];
+
+                        if(cluster.numberOfNodes == 0) {
+                            $scope.needInstallNode = true;
+                            if (firstTime) $scope.loaded = true;
+                        }
+                        else{
+                            fetchAppServices(firstTime);
+                        }
+                        resolve(data);
+                    });
+                }).catch(function (err) {
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', err.message);
+                    } else {
+                        console.log(err.message);
+                    }
+                });
+            }
+
+
+            function fetchAppServices(firstTime) {
+                $http.get('/services', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        'applicationID': $scope.applicationId,
+                        'clusterID': GexUtils.currentClusterId,
+                        'servicesType': $scope.pageType
+                    }
+                }).then(function (response) {
+
+                    var filteredServices = response.data.services;
+                    var servicesGroups = _.values(_.reduce(filteredServices, function (result, service) {
+                        if (result[service.nodeName]) {
+                            result[service.nodeName].services.push(service);
+                        } else {
+                            var local = service.nodeID == $scope.localNodeId;
+                            result[service.nodeName] = {
+                                nodeName: service.nodeName,
+                                nodeId: service.nodeID,
+                                master: service.masterContainer,
+                                services: [service],
+                                order: service.masterContainer ? 100 : (local ? 25 : 50),
+                                local: local
+                            };
+                        }
+                        return result;
+                    }, {}));
+                    servicesGroups = _.sortBy(servicesGroups, ['order']);
+
+                    // for services checks
+                    $scope.allServices = response.data.services;
+
+                    $scope.servicesGroups = servicesGroups;
+                    if (!$scope.selectedGroup) {
+                        $scope.selectedGroup = $scope.servicesGroups[0];
+                    }
+
+
+                    fetchServicesChecks(firstTime);
+
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    console.log('Error fetching application services: ' + response.statusText);
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+
+            function fetchAppServicesOld(firstTime) {
+                $http.get('/services', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        'applicationID': $scope.applicationId,
+                        'clusterID': GexUtils.currentClusterId,
+                        'servicesType': $scope.pageType
+                    }
+                }).then(function (response) {
+                    $q(function (resolve, reject) {
+                        GexUtils.getCurrentNodeId(function (localNodeId, err) {
+                            if (err) {
+                                console.log(err.message);
+                            }
+                            resolve(localNodeId);
+                        });
+                    }).then(function (localNodeId) {
+                        return $q(function (resolve, reject) {
+                            var filteredServices = response.data.services;
+                            var servicesGroups = _.values(_.reduce(filteredServices, function (result, service) {
+                                if (result[service.nodeName]) {
+                                    result[service.nodeName].services.push(service);
+                                } else {
+                                    var local = service.nodeID == localNodeId;
+                                    result[service.nodeName] = {
+                                        nodeName: service.nodeName,
+                                        nodeId: service.nodeID,
+                                        master: service.masterContainer,
+                                        services: [service],
+                                        order: service.masterContainer ? 100 : (local ? 25 : 50),
+                                        local: local
+                                    };
+                                }
+                                return result;
+                            }, {}));
+                            servicesGroups = _.sortBy(servicesGroups, ['order']);
+
+                            // for services checks
+                            $scope.allServices = response.data.services;
+
+                            $scope.servicesGroups = servicesGroups;
+                            if (!$scope.selectedGroup) {
+                                $scope.selectedGroup = $scope.servicesGroups[0];
+                            }
+
+                            var isNodesInstalled = response.data.services.some(function (service) {
+                                return !service.masterContainer;
+                            });
+                            $scope.needInstallNode = !isNodesInstalled && (GexUtils.currentCluster.clusterType != 'aws' || visualize);
+                            resolve();
+                        });
+                    }).finally(function () {
+                        fetchServicesChecks(firstTime);
+                        //if (firstTime) $scope.loaded = true;
+                    });
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    console.log('Error fetching application services: ' + response.statusText);
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+
+            function fetchServicesChecks(firstTime) {
+
+                var ids = $scope.allServices.map(function(service) {return service.id;});
+
+                $http.get('/checks/services/', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        ids: ids.toString()
+                    }
+                }).then(function (response) {
+                    $scope.servicesChecks = response.data;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', 'Cannot load services checks: ' + GexUtils.getErrMsgServ(response));
+                    } else {
+                        console.log('Error fetching services checks: ' + GexUtils.getErrMsgServ(response));
+                    }
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+
+            $scope.isShowConnectBtn = function (service) {
+                return service.status == 'active' && (service.protocol == 'ssh' || service.protocol == 'http' || service.protocol == 'https');
+            };
+
+            $scope.connectToService = function (service) {
+                if (GexUtils.isDesktopClient) {
+                    GexServiceHelper.openNative(service, GexUtils.currentUser.username, GexUtils.getToken());
+                } else if (service.protocol == 'ssh') {
+                    GexUtils.showMessageDialog('Info', 'SSH is not supported by browsers. Please install ClusterGX desktop application from <a target="_blank" href="http://galacticexchange.io/downloads">http://galacticexchange.io/downloads</a>');
+                } else {
+                    if (!GexServiceHelper.baseServiceCheck(service)) {
+                        return;
+                    }
+                    window.open(GexServiceHelper.getServiceUrl(service, GexUtils.currentUsername), '_blank');
+                }
+            };
+
+            $scope.getNodeName = function (group) {
+                return group.master ? 'master' : (group.local ? group.nodeName + ' (local)' : group.nodeName);
+            };
+
+            $scope.selectGroup = function (group) {
+                if ($scope.selectedGroup.nodeId != group.nodeId) {
+                    $scope.selectedGroup = group;
+                }
+            };
+
+            var fetchAppServicesInterval = $interval(function () {
+                fetchServices();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchAppServicesInterval)) {
+                    $interval.cancel(fetchAppServicesInterval);
+                    fetchAppServicesInterval = undefined;
+                }
+            });
+
+            function isVisualize() {
+                return $route.current.originalPath == ROUTES.APPLICATION_SERVICES_VIS_BROWSER;
+            }
+
+
+            function servicesType() {
+                switch($route.current.originalPath) {
+                    case ROUTES.APPLICATION_SERVICES_VIS_BROWSER :
+                        return 'search_visualize';
+                        break;
+                    case ROUTES.HDP_APP_SERVICES_BROWSER :
+                        return 'big_data';
+                        break;
+                    case ROUTES.APPLICATION_SERVICES_TRANS_BROWSER :
+                        return 'transform';
+                        break;
+                }
+            }
+
+
+            function getPageTitle() {
+                switch ($scope.pageType){
+                    case 'search_visualize':
+                        return 'Search/Visualize';
+                        break;
+                    case 'big_data':
+                        return 'Big Data';
+                        break;
+                    case 'transform':
+                        return 'Transform';
+                        break;
+                }
+            }
+
+
+            function getPageDesc() {
+                switch ($scope.pageType){
+                    case 'search_visualize':
+                        return  'List of the available Search/Visualize services by nodes';
+                        break;
+                    case 'big_data':
+                        return 'List of the available Big Data services by nodes';
+                        break;
+                    case 'transform':
+                        return 'List of the available Transform services by nodes';
+                        break;
+                }
+            }
+
+        }
+    ]
+});

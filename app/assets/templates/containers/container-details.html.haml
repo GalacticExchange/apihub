@@ -1,0 +1,82 @@
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+.div(ng-if="loaded")
+  .sidebar-header
+    .flex-wrap.flex-grow
+      %h2.sb-text.sb-h1-text.inl.gr
+        Container
+      %h2.sb-text.sb-h1-text.inl
+        {{container.name}}
+      %p.sb-p-text.gr
+        Use this window to manage this container.
+
+
+  .app_wrap.border.marg_bott_md
+    .flex-container-all.grey_bg.padd_10.padd_left_md{style:"align-items: center;"}
+      .flex-wrap.padd_ri_10
+        =image_tag "new/icons/info_bl.svg", class:"card-icon"
+      .flex-wrap
+        %p.card-h Info
+
+    .row
+      .padd_md{style:"padding: 30px !important;"}
+        .flex-container-all
+          .flex-wrap.padd_ri_md.marg_ri_md
+            %h4.no_marg.gr.padd_bott_md State:
+            %h4.no_marg.gr.padd_bott_md Node:
+            %h4.no_marg.gr.padd_bott_md Application:
+            %h4.no_marg.gr.padd_bott_md Hostname:
+            %h4.no_marg.gr.padd_bott_md Local IP:
+            %h4.no_marg.gr GEX IP:
+
+          .flex-wrap.padd_ri_md.marg_ri_md
+            %h4.no_marg.padd_bott_md
+              %img(ng-src="{{utils.getStatusCircle(container.status)}}" class="status-dot")
+              {{utils.containerStatus(container.status)}}
+            %h4.no_marg.padd_bott_md
+              %a(ng-href="{{ROUTES.getAddr('NODES_INFO', clusterId, container.nodeID)}}" ng-if="!container.masterContainer")
+                {{container.nodeName}}
+              %div(ng-if="container.masterContainer") master
+            %h4.no_marg.padd_bott_md
+              %a(ng-href="{{ROUTES.getAddr('APPLICATION_INFO', clusterId, container.applicationID)}}")
+                {{container.applicationName}}
+            %h4.no_marg.padd_bott_md
+              {{container.domainname}}
+            %h4.no_marg.padd_bott_md {{container.local_ip ? container.local_ip : '-'}}
+            %h4.no_marg {{container.gex_ip ? container.gex_ip : '-'}}
+
+  %checks-details-ext(data-container-id="container.id" data-status="container.status" data-item-type=" 'container' ")
+
+  .row
+    .col-md-12.col-sm-12.col-xs-12.no_padd{:style=>"display: flex;"}(ng-if="utils.userPermissions.cluster_manage")
+      .app_wrap.border.marg_bott_md{:style=>"width: 100%"}
+        .flex-container-all.grey_bg.padd_10.padd_left_md{style:"align-items: center;"}
+          .flex-wrap.padd_ri_10
+            =image_tag "new/icons/command.svg", class:"card-icon"
+          .flex-wrap
+            %p.card-h Commands
+
+        %h4.no_marg.gr.padd_md.text-center{style:"margin-top: 30px !important;"}(ng-if="!utils.isShowStartButton(container.status) && !utils.isShowStopButton(container.status) && !utils.isShowRestartButton(container.status)") No commands available
+
+        .flex-container.padd_10
+          .padd_left_md
+          .padd_without_left_md(ng-if="utils.isShowStartButton(container.status)")
+            .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="start-container" ng-click="containerCommand('start', container.id)")
+              %h4.no_marg.bold{style:"padding-top: 6px;"}
+                =image_tag "new/icons/play_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+                Start
+          .padd_without_left_md(ng-if="utils.isShowStopButton(container.status)")
+            .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="stop-container" ng-click="containerCommand('stop', container.id)")
+              %h4.no_marg.bold{style:"padding-top: 6px;"}
+                =image_tag "new/icons/stop_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+                Stop
+          .padd_without_left_md(ng-if="utils.isShowRestartButton(container.status)")
+            .button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_transp_md.undec{style:"width: 100%"}(data-btn="restart-container" ng-click="containerCommand('restart', container.id)")
+              %h4.no_marg.bold{style:"padding-top: 6px;"}
+                =image_tag "new/icons/restart_color.svg", :class=>"inl marg_ri_sm  show_page_icon"
+                Restart
+
+
+  %service-list-ext(data-container-id="{{container.id}}" data-application-name="{{container.applicationName}}" data-username="{{username}}")

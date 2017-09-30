@@ -1,0 +1,14 @@
+
+
+.flex-container-all
+  .flex-wrap.flex-grow.multirow
+    = simple_form_for(@message, :url => messages_path, :method => :post, html: { class: 'form-horizontal' }, remote: true) do |f|
+      = f.error_notification
+
+      = f.input :message, label: false, :as => :text, placeholder:"Start typing your message here...", :wrapper => false, :input_html => { :rows => 3, :style => 'width: 100%', class:"lite_shadow"}
+      = f.input :to_user_id, :as => :hidden, :input_html => { :value => @another_user.id }
+
+      .text-rightf{:style=>"padding-top: 15px"}
+        = f.button :submit, value: 'Send message',:class=>"button mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md"
+  .flex-wrap.padd_left_jmd{style:"padding-left: 65px"}
+    -#= image_tag avatar_url(current_user, :thumb),alt:"", :width=>"40pt",:class=>"img-circle no_marg padd_top_sm"

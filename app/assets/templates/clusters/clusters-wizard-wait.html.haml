@@ -1,0 +1,114 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text What's next?
+    %p.sb-p-text.gr Step 3: Installation.
+    -#You can wait for the cluster to be created or explore other menu options and come back later
+  .flex-wrap
+    %cluster-install-steps(data-current-step='4' data-step-1="clusterType")
+    -#.flex-container-all
+      .flex-wrap.padd_10
+        .step-el.flex-center.gr_bg 1
+      .flex-wrap.padd_10
+        .step-el.flex-center.gr_bg 2
+      .flex-wrap.padd_10.no_padd_ri
+        .step-el.flex-center 3
+
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+%div.gx-page(ng-if="loaded")
+
+  .fl-cont.padd_bott_md.marg_top_md.marg_bott_md(ng-if="isInstallingState(cluster)" style="align-items: center")
+    .fl-wrap
+      %material-spinner.fade-element-in(spinner-radius="18")
+    .fl-wrap.padd_left_md
+      %h3.bold.no_marg
+        .gr.inl Installing cluster
+        %b.inl {{cluster.name}}
+        .gr.inl (this should only take a few minutes)
+
+  .div.padd_bott_md(ng-if="isActiveState(cluster)")
+    .fl-cont.padd_bott_10.marg_top_md(style="align-items: center")
+      .fl-wrap{style:'min-width: 36px;'}
+        =inline_svg "new/icons/mark_comleted.svg", class:"lg-icon dark-green-svg"
+        -#=image_tag 'new/icons/mark_comleted.svg', style:"width: 40px;"
+      .fl-wrap.padd_left_md
+        %h3.bold.no_marg
+          .gr.inl Cluster
+          %b.inl {{cluster.name}}
+          .gr.inl was installed successfully.
+
+    .padd_top_md
+
+      .fl-cont.gx-fl-center
+        .fl-wrap{style:'min-width: 36px;'}
+
+          =inline_svg "new/icons/error_red.svg", class:"lg-icon orange-svg"
+        .fl-wrap.padd_left_md
+          %p.no_marg{style:"line-height: 1.4 !important;"}
+            This cluster currently has a single master node.
+            %br
+            You need to add at least one slave node before you can use the cluster:
+
+  .fl-cont.padd_bott_md.marg_top_md.marg_bott_md(ng-if="isErrorState(cluster)" style="align-items: center")
+    .fl-wrap{style:'min-width: 36px;'}
+      =inline_svg "new/icons/mark_failed.svg", class:"lg-icon red-svg"
+    .fl-wrap.padd_left_md
+      %h3.bold.no_marg
+        .gr.inl Sorry, cluster
+        %b.inl {{cluster.name}}
+        .gr.inl did not install well. Please check your configuration.
+
+
+  .buttons.padd_top_sm.marg_top_10(ng-if="!isInstallingState(cluster) && isActiveState(cluster)")
+    .fl-cont.padd_bott_md
+      .div(ng-click="setClusterInstallNode(cluster)" data-btn="add-node")
+        .fl-wrap.padd_md.hand_cursor.lite-gx-border(data-div="on-premise-card")
+          .fl-cont.gx-fl-center{style:'width: 700px;'}
+            .fl-wrap.padd_ri_md
+              .div.gx-grad{style:'border-radius: 50%; backgrfound-color: #5d5d5d; padding: 20px;'}
+                =inline_svg "new/icons/nodes_.svg", class: "lg-icon white-svg"
+            .fl-wrap.fl-grow.padd_left_md.padd_ri_md
+              %h3.bold.no_marg{style:"font-size: 20pt; color: #585858;"} {{installNodeText}}
+              .fl-cont.marg_top_10
+                .fl-wrap.padd_ri_10
+                  =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+                .fl-wrap
+                  %h5.no_marg.gr{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+                    You need to add new slave nodes to the cluster.
+            .fl-wrap.padd_left_md.padd_ri_10.marg_left_md
+              =inline_svg "new/icons/next.svg", class:"lg-icon gex-svg"
+
+    -#.fl-cont.padd_top_md.padd_bott_md(ng-if="isActiveState(cluster)")
+      .fl-wrap
+        =image_tag "new/icons/nodes_.svg", style:"width: 48px; opacity: 0.7"
+      .fl-wrap.padd_left_md{style:"padding-top: 3px;"}
+        %h3.h-txt.bold.no_marg Add new node
+        %p.sb-p-text.gr You can add a new node to this cluster.
+        .padd_top_15
+          %div{style:"width: 180px;"}
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(ng-click="setClusterInstallNode(cluster)" style="min-width: 180px;" data-btn="add-node" ) {{installNodeText}}
+    -#.fl-cont.padd_top_md.padd_bott_md(ng-if="isActiveState(cluster)")
+      .fl-wrap
+        =image_tag "new/icons/dashboard_black.svg", style:"width: 48px; opacity: 0.7"
+      .fl-wrap.padd_left_md{style:"padding-top: 3px;"}
+        %h3.h-txt.bold.no_marg Go into cluster workflow
+        %p.sb-p-text.gr You can go into cluster workflow and add nodes later.
+        .padd_top_15
+          %div{style:"width: 180px;"}
+            %a(ng-click="switchCluster(cluster)")
+              %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(style="min-width: 180px;" data-btn="cluster-workflow") Cluster workflow
+
+    -#.fl-cont.padd_top_md.padd_bott_md
+      .fl-wrap
+        =image_tag "new/icons/clusters_black.svg", style:"width: 48px; opacity: 0.7"
+      .fl-wrap.padd_left_md{style:"padding-top: 3px;"}
+        %h3.h-txt.bold.no_marg Go to clusters page
+        %p.sb-p-text.gr You can go to clusters page to work with other clusters.
+        .padd_top_15
+          %a(ng-href="{{ROUTES.getAddr('CLUSTERS')}}")
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(style="min-width: 180px;" data-btn="all-clusters") All Clusters
+
+

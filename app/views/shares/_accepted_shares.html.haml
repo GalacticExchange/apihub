@@ -1,0 +1,26 @@
+.app_wrap.border.marg_bott_md{:style=>"border-bottom: 0px"}
+  -if @items.length != 0
+    -@items.each do |share|
+      .row.bord_bott.padd_top_md.padd_bott_md.table-row
+
+        .col-md-4
+          = link_to  user_path(:name =>share.user.username) do
+            = image_tag avatar_url(share.user, :thumb), :width=>20, :class=>"img-circle avarars-satur inl undec marg_left_sm", :style=>"margin-top: -5px;"
+            %p.no_marg.marg_left_md.bold.inl
+              =share.user.firstname
+              =share.user.lastname
+              (#{share.user.username})
+        .col-md-8
+          .pull-right
+            .row-buttons
+              =link_to dialog_path(:to => share.user.username), :class=>"undec" do
+                =image_tag "new/icons/message.png", :style=>"width: 20px; opacity: 1; ", :class=>"inl marg_ri_md", :id=>share.user.username
+              =link_to share_del_path(:username=>share.user.username) do
+                =image_tag "new/icons/delete.svg", :style=>"width: 20px; opacity: 0.8;", :class=>"inl", :id=>"#{share.user.username}del"
+
+              .mdl-tooltip.mdl-tooltip--large{:for => "#{share.user.username}del"}
+                Delete share
+              .mdl-tooltip.mdl-tooltip--large{:for => share.user.username}
+                Send message
+  -else
+    %h4.gr.no_marg.padd_md.bord_bott.text-center No shares yet

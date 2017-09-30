@@ -1,0 +1,48 @@
+%h1 Container "#{@item.name}"
+Name: #{@item.name}
+%br
+%b Status:
+= @item.status
+%br
+
+%b Cluster:
+= link_to @item.cluster.name, admin_cluster_path(@item.cluster_id) if @item.cluster
+%br
+
+%b Node:
+- if @item.node
+  = link_to @item.node.name, admin_node_path(@item.node_id)
+- else
+  master
+%br
+
+%b Application:
+- if @item.application
+  = link_to @item.application.name, admin_cluster_application_path(@item.application_id)
+%br
+
+
+%b Hostname:
+= @item.hostname if @item.hostname
+%br
+%b Local IP:
+= @item.local_ip
+%br
+%b Gex IP:
+= @item.gex_ip
+
+%br
+%br
+%b Data in consul
+%br
+%textarea(style="width:800px;height:120px;")
+
+%br
+%br
+
+
+%h2 Services
+= link_to "Services", admin_cluster_services_path(:filter_cmd=>'set', :container_id => @item.id, :cluster_id => @item.cluster)
+
+=render 'admin/cluster_services/list', items: @item.services
+

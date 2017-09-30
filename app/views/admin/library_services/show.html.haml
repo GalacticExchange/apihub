@@ -1,0 +1,28 @@
+%h1 Library service "#{@item.name}"
+.row
+  .col-md-9
+    %b Name:
+    = @item.name
+
+%br
+%b Title:
+= @item.title
+%br
+%b Position:
+= @item.pos
+%br
+%b Enabled:
+= @item.enabled
+%br
+%b Description:
+%br
+%textarea{:style => "width: 80%;"}
+  = @item.description
+
+%br
+=link_to edit_admin_library_service_path do
+  %btn.btn.btn-primary Edit
+
+
+= link_to admin_library_service_path(@item.id), method: :delete, data: { confirm: 'Delete this app?' } do
+  %btn.btn.btn-danger Delete

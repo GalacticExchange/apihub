@@ -1,0 +1,92 @@
+= stylesheet_link_tag "ours/tpl_admin", media: "all"
+
+.page-header
+  .row
+    .col-md-7
+      %h1
+        Clusters
+
+.filter
+  = inline_filter_form_for(@filter)
+
+.center-block
+  = paginate @items
+%br
+%table.table.table-striped.table-bordered.table-hover
+  %tr
+    %th= link_to_sortable_column :id, '#'
+    %th Status
+    %th UID
+    %th Name
+    %th Team
+    %th Type
+    %th Hadoop
+    %th Nodes
+    %th Containers
+    %th Applications
+    %th Services
+    %th Admin notes
+    %th Commands
+
+  - @items.each do |item|
+    %tr
+      %td= item.id
+      %td
+        = render "statuses", item: item
+      %td= item.uid
+      %td
+        = link_to "#{item.name}", admin_cluster_path(:id => item.id)
+      %td
+        -if item.team
+          = link_to admin_team_path(:id => item.team.id) do
+            = item.team.name
+      %td= item.cluster_type.name if item.cluster_type
+      %td
+        - if item.hadoop_app_id
+          =link_to item.hadoop_type.name, admin_cluster_application_path(item.hadoop_app_id)
+      %td
+        = link_to admin_nodes_path(:cluster_id => item.id) do
+          nodes
+          %span
+            (#{@count_nodes[item.id] || 0})
+      %td
+        = link_to admin_cluster_containers_path(filter_cmd: 'set', cluster_id: item.id) do
+          containers
+          %span
+            (#{@count_containers[item.id] || 0})
+
+      %td
+        = link_to admin_cluster_applications_path(:cluster_id => item.id) do
+          applications
+          %span
+            (#{@count_applications[item.id] || 0})
+
+      %td
+        = link_to admin_cluster_services_path(:cluster_id => item.id) do
+          services
+          %span
+            (#{@count_services[item.id] || 0})
+
+      %td
+        .big
+          = (nl2br item.admin_notes || "").html_safe
+      %td
+
+        = link_to nodes_performance_admin_cluster_path(:id => item.id) do
+          Monitoring
+        |
+
+        = link_to admin_log_debug_index_path(:cluster_id => item.id, :cluster=>item.name) do
+          Logs
+        |
+
+        = link_to admin_invitations_path(:cluster_id => item.id) do
+          invitations
+          %span
+            -if @count_invitations[item.id]
+              (#{@count_invitations[item.id]})
+            -else
+              (0)
+        |
+= paginate @items
+

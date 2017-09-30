@@ -1,0 +1,12 @@
+.row
+  .col-md-8.no_padd
+    = vertical_simple_form_for([:admin, @user], :url => admin_adminupdatepassword_path, :method => :put) do |f|
+      = render 'shared/form_errors', f: f
+      %h5
+        New password
+      .field
+        = f.password_field :password, :autocomplete => "off" , :class => "form-control"
+      %br
+      %br
+      .padd_top_md
+        = f.submit  :class => "mdl-button mdl-js-button mdl-js-ripple-effect gex_mdl_btn_md ", :value=>"Set password"

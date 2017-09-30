@@ -1,0 +1,48 @@
+'use strict';
+
+angular.module('components').component('applicationListExt', {
+    templateUrl: '<%= asset_path("applications/application-list-ext.html") %>',
+    bindings: {
+        cluster: '@'
+    },
+    controller: ['$http', '$scope', '$interval', '$routeParams', 'HTTP_CONSTANTS',
+        function ($http, $scope, $interval, $routeParams, HTTP_CONSTANTS) {
+            $scope.utils = GexUtils;
+
+            this.$onInit = function () {
+                $scope.clusterId = this.cluster;
+                fetchApplications(true);
+            };
+
+            function fetchApplications(firstTime) {
+                $http.get('/clusters/' + $scope.clusterId + '/applications/', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {type: "_with_images"}
+                }).then(function (response) {
+                    $scope.apps = response.data.results;
+                    $scope.isAppsEmpty = !$scope.apps || $scope.apps.length == 0;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    console.log('Error fetching applications: ' + GexUtils.getErrMsgServ(response));
+                }).then(function () {
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            var fetchApplicationsInterval = $interval(function () {
+                fetchApplications();
+            }, HTTP_CONSTANTS.FETCH_INTERVAL);
+
+            $scope.$on('$destroy', function () {
+                if (angular.isDefined(fetchApplicationsInterval)) {
+                    $interval.cancel(fetchApplicationsInterval);
+                    fetchApplicationsInterval = undefined;
+                }
+            });
+
+        }
+    ]
+});

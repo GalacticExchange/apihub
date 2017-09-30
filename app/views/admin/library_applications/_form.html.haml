@@ -1,0 +1,25 @@
+= horizontal_simple_form_for([:admin, @item], :html => { class: 'form-horizontalc', :multipart => true }) do |f|
+  = render 'shared/form_errors', f: f
+
+  .rinput-group
+    -#= image_tag picture_url_library_application(@item, :thumb)
+    = f.input :picture, as: :file
+    = f.input :icon, as: :file
+    = f.input :title
+    = f.input :name
+    = f.input :company_name
+    = f.input :category_title
+    = f.input :description, as: :text
+    = f.input :pos, as: :integer
+    = f.input :enabled, as: :boolean
+
+
+    %h3 Images
+    #images
+      = f.simple_fields_for :images, html: { class: 'form-horizontal' } do |image|
+        = render 'image_fields', f: image
+      .links
+        = link_to_add_association 'add', f, :images
+
+    %br
+    = f.button :submit, :class => "btn btn-primary"

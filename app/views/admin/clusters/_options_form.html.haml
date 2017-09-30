@@ -1,0 +1,9 @@
+
+= simple_form_for([:admin, @cluster], url: admin_update_cluster_options_path, method: :put) do |f|
+  = render 'shared/form_errors', {f: f}
+
+  = f.input :options, as: :text
+  .button_place.padd_top_md.padd_bott_big
+    = f.button :submit, :value=>"Submit"
+
+

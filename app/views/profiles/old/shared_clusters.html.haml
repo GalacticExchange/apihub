@@ -1,0 +1,42 @@
+#wrap
+  %br
+  .container
+    = render "shared/flash"
+    .row
+      .col-md-3
+        .list-group
+          = render "shared/profile_column_left_main", bt: ""
+        .list-group
+          = render "shared/profile_column_left_team", bt: ""
+        %br
+        .list-group
+          = render "shared/profile_column_left_cluster", bt: "shared"
+
+      .col-md-9.no_padd_top
+        .profile_header
+          %h2.inl
+            Shared
+          %h2.inl.gr
+            clusters
+
+        -if @items.empty?
+          %h3.text-center.no_padd_top
+            =t('clusters.shared.empty')
+        -else
+          -@items.each do |cluster|
+            .panel-cluster
+              %h4{:style=>"margin: 3px;"}
+                =image_tag "clust12.png", :width=>12,:style=>"margin-bottom: 2px; margin-right: 4px"
+                = link_to cluster.name, show_shared_cluster_path(:name => cluster.name)
+
+              .right_part_cl_bl.inl
+                #additional_info.no_marg_bott
+                  %h4{:style=>"font-size:16px; margin-bottom: 3px;"}
+                    %p.gr.no_marg_bott
+                      -if cluster.description=""
+                        =t('clusters.description.empty')
+                      -else
+                        =cluster.description
+
+            %hr.no_marg
+

@@ -1,0 +1,139 @@
+.row{:style=>"width: 100%; overflow-x: hidden;"}
+  .col-md-12.no_padd{:style=>"widht: 100%"}
+    .navbar-header
+      .row.bord_bott
+        .navbar-toggle{ :style=>"float: left; padding: 0px; margin: 0px; width: 100%;"}
+          .row
+            .col-xs-1.no_padd{:style=>"cursor: pointer"}
+              .padd_left_md
+                .close-icon{:style=>"padding-top: 14pt; display: none; margin-left: -2px"}
+                  =image_tag "new/icons/close.svg", :width=>"25pt", :style=>"opacity: 0.7"
+                .menu-icon{:style=>"padding-top: 18pt", "data-target" => "#myNavbar", "data-toggle" => "collapse", :type => "button"}
+                  %span.icon-bar
+                  %span.icon-bar
+                  %span.icon-bar
+            .col-xs-10.no_padd{:style=>"text-align: left;"}
+              %h3.step_text.side_menu_h{:style=>"color: #434343"}
+                DIALOGS
+
+
+    #target.container-fluid.no_padd.no_marg
+      #myNavbar.collapse.navbar-collapse.no_padd.no_marg
+        %ul.nav.navbar-nav.no_padd.no_marg{:style=>"float: none; width: 100%"}
+          .padd_bott_md.install_step
+            .flex-container-all
+              .flex-wrap
+                %h3.step_text.side_menu_h.no_padd_bott.no_marg.padd_top_md DIALOGS
+                .padd_left_md
+                  %h5.no_marg.inl{:style=>"font-weight: 100;"}
+                    =@unread_count
+                    unread
+
+          -#.install_step.hidden-xs{:style=>"margin-top: 0px"}
+            %h3.step_text.side_menu_h DIALOGS
+
+          -@dialogs.each do |dialog|
+            - user = dialog.from_user_id == @user.id ?  dialog.to_user : dialog.from_user
+
+            -if !user.nil?
+              -#:class => ['usr', ('active' if another_user_name == user.username) ]
+              .install_step.side_menu_element_dialog.bord_bott{:class => (another_user_name == user.username ? "current_step" : "")}
+                .row.padd_sm{:style=>"padding-top: 10px; padding-bottom: 10px"}
+                  = link_to user_path(:name => user.username), :class=>"undec" do
+                    .col-md-3.col-xs-2.dialogs_av_div
+                      -if user.avatar_file_name.nil?
+                        = image_tag avatar_url(user, :thumb), alt:"", :class=>"img-circle avarars-satur av_dialogs inl", :width=>"100%"
+                      -else
+                        = image_tag avatar_url(user, :thumb), alt:"", :class=>"img-circle av_dialojgs inl", :width=>"100%"
+                  = link_to dialog_path(:to => user.username), :class => ['usr', ('active' if another_user_name == user.username) ],:style=>"text-decoration: none;" do
+                    .col-md-7.col-xs-7.no_padd.dialogs_text_div{:style=>"margin-top: -5px;"}
+                      %p.no_marg_bott=user.username
+                      -if !dialog.last_message.nil?  && dialog.last_message.from_user_id == current_user.id
+                        = image_tag avatar_url(current_user, :thumb),alt:"", :class=>"hidden-sm img-circle avarars-satur av_dialogs inl marg_ri_sm", :width=>"15pt"
+                      %h6.no_marg.gr.inl{:style=>"font-weight: 300;word-wrap: break-word;"}=truncate(dialog.last_message.message, :length => 22) if !dialog.last_message_id.nil?
+
+                    .col-md-2.col-xs-7.dialogs_notifications_div
+                      -if @not_read_dialogs[dialog.id] > 0
+                        %span.badge.dialogs_badge #{@not_read_dialogs[dialog.id]}
+                      -#=image_tag "since.png", :style=>"width: 13pt; opacity: 0.5; margin: 3px 0px 0px 1px"
+
+
+                -#%h3.step_text.side_menu_text{:class => (s = "users" == "users" ? "current_step_text" : "")}
+                  Users
+                  %span.badge.pull-right.marg_ri_md{:style=>"margin-top: 4px"} #{@total_users}
+
+
+
+:javascript
+
+  $( document ).ready(function() {
+     $(".close-icon").animate({opacity: 0},100);
+  });
+
+  $( ".close-icon" ).click(function() {
+   $('.collapse').collapse('hide');
+   $('.close-icon').hide();
+   $(".close-icon").animate({opacity: 0},300);
+   $('.menu-icon').show();
+   $(".menu-icon").animate({opacity: 1},300);
+  });
+
+  $( ".menu-icon" ).click(function() {
+    $('.close-icon').show();
+    $(".close-icon").animate({opacity: 1},300);
+    $('.menu-icon').hide();
+    $(".menu-icon").animate({opacity: 0},300);
+  });
+
+
+
+-#if @dialogs.size == 0
+  %h5.text-center
+    You do not have any dialogs yet.
+-#@dialogs.each do |dialog|
+  - user = dialog.from_user_id == @user.id ?  dialog.to_user : dialog.from_user
+
+  -if user!=nil
+    .panel-body.padd_top_md.padd_bott_md
+      .row
+        .col-sm-1.col-xs-1
+          -if user.avatar_file_name.nil?
+            = image_tag avatar_url(user, :thumb), :class=>"img-circle avarars-satur av_dialogs inl"
+          -else
+            = image_tag avatar_url(user, :thumb), :class=>"img-circle av_dialogs inl"
+        .col-sm-3.col-xs-3.padd_bott_sm
+          %h4.inl{:style=>"margin-top:0px; font-size: 18pt;"}
+            = link_to dialog_path(:to => user.username), :class => ['usr', ('active' if another_user_name == user.username) ],:style=>"text-decoration: none;" do
+              =user.username
+
+            .clearfix
+            %h6.inl.bold.gr
+              =image_tag "since.png", :class=>"since_pic_dialogs"
+              = our_date_message(dialog.updated_at)
+        .col-sm-7.col-xs-7.padd_top_sm
+          %h4.inl.gr#last_mess_text{:style=>"font-weight: 300;word-wrap: break-word;"}
+            =truncate(dialog.last_message.message, :length => 120) if !dialog.last_message_id.nil?
+
+        .col-sm-1.col-xs-1
+          -if @not_read_dialogs[dialog.id] > 0
+            .pull-right{:style=>"margin-top: 16.5px; margin-right: 15px"}
+              %span.badge.dialogs_badge #{@not_read_dialogs[dialog.id]}
+    %hr.hr_search
+
+
+
+-#for mobile version !
+  %h3{:style=>"margin: 8px 0px 0px 0px; font-weight: 400;"}
+    = image_tag avatar_url(user, :thumb), :width=>40,:style=>"margin-bottom: 3px; margin-right: 4px", :class=>"img-circle"
+    = link_to dialog_path(:to => user.username), :class => ['usr', ('active' if another_user_name == user.username) ],:style=>"text-decoration: none; color: #434343 !important" do
+      =user.username
+    -#if another_user_name == user.username
+      .pull-right{:style=>"margin-top: 8px;"}
+        =image_tag "acticve_dot.png", :width=>15
+    -if @not_read_dialogs[dialog.id] > 0
+      .pull-right{:style=>"margin-top: 8px;"}
+        %span.badge.dialogs_badge #{@not_read_dialogs[dialog.id]}
+    %br
+      = dialog.last_message.message if !dialog.last_message_id.nil?
+    %br
+  %hr

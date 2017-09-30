@@ -1,0 +1,31 @@
+- sshproxy_host = Gexcore::Settings.sshproxy_host
+- webproxy_host = Gexcore::Settings.webproxy_host
+
+- if item.protocol == 'ssh'
+  %code.language-bash
+    ssh -p #{item.port_out} root@#{sshproxy_host}
+- elsif item.protocol == 'http'
+  -#- if item.container.node_id.nil?
+  - if item.need_proxy?
+    - url = "http://#{webproxy_host}:#{item.port_out}"
+    - url_webproxy = "http://#{item.proxy_host}"
+
+    =link_to url_webproxy, url_webproxy, :target => '_blank'
+    %br
+    =link_to url, url, :target => '_blank'
+    %br
+    =link_to 'CONNECT', "http://#{webproxy_host}/setcookie?token=#{@user_token}&u=#{ERB::Util.url_encode(url_webproxy)}", :class=>'btn btn-lg btn-primary', :target => '_blank'
+    %br
+    %br
+    =link_to 'Connect by user', admin_cluster_service_connect_webproxy_url(:cluster_id=>item.cluster_id, :url=>url), :class=>'btn btn-xs btn-default', :target => '_blank'
+    &nbsp;
+    =link_to 'Set cookie', "http://#{webproxy_host}/setcookie?token=#{@user_token}&u=#{url_webproxy}", :class=>'btn btn-xs btn-default', :target => '_blank'
+
+    %br
+
+  - else
+    - url = "http://#{item.container.ip}:#{item.port_out}"
+    =link_to url, url, :target => '_blank'
+    %br
+    - url = "http://#{item.hostname}:#{item.port_out}"
+    =link_to url, url, :target => '_blank'

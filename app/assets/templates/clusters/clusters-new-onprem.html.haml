@@ -1,0 +1,110 @@
+.sidebar-header
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Create cluster
+    %p.sb-p-text.gr
+      Step 3: Configuration.
+  .flex-wrap
+    %cluster-install-steps(data-current-step='3' data-step-1="clusterType")
+
+.div(ng-if="err_mess"){style:"max-width: 900px;"}
+  .app_wrap.border.item.marg_bott_md.item.animate-show
+    .row.bord_bott.padd_top_md.padd_bott_md{style:"background-color: hsla(0, 54%, 49%, 0.84)"}
+      .flex-container-all.padd_left_md
+        .flex-wrap
+          =image_tag "new/icons/error_white.svg"
+        .flex-wrap
+          .err_div(ng-repeat="err in errors")
+            %h5.white{style:"margin: 3px 0px 0px 10px !important"}
+              {{err['message']}}
+
+
+.gx-page
+  .app_wrap.border.marg_bott_md
+    .fl-cont.gx-fl-center.padd_md
+      .fl-wrap.padd_ri_10
+        .gex-bgg{style:'background-color: #585858; border-radius: 50%;  padding: 5px; height: 28px; width: 28px; '}
+          .div{style:'margin-top: 3px;'}
+            =inline_svg "new/icons/settings.svg", class: "sm-icon white-svg fx-sm-icon"
+      .fl-wrap
+        %p.card-h.bold{style:'color: #585858'} Configuration
+
+
+    .div.padd_left_md.marg_left_10{style:"max-width: 900px;"}
+
+      .fl-cont.padd_top_md.padd_bott_md
+        .fl-wrap.padd_ri_10
+          =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+        .fl-wrap
+          %h5.no_marg{style:"line-height: 1.4 !important; padding-botthom: 10px;"}
+            .bold.inl Normally you don't need to provide any information here.
+            .inl.gr Choose 'Advanced options' if you want to set advanced parameters such as network proxy and gateway.
+
+
+      %form.simple-form{:novalidate => ""}
+
+        .fl-cont.fl-center.marg_bott_md.padd_top_md{style:"justify-content: flex-start;"}
+          .fl-wrap.fl-growr
+            %h3.h-txt.bold.no_marg.marg_bott_sm Advanced options
+            %h6.gr.no_marg  Click on the arrow to set advanced networking options.
+          .fl-wrap.padd_left_big
+            %button.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--colored.gex-btn-icon.lite-gr-btn(ng-class="advanced ? 'rotate-180' : '' " ng-click="advanced=!advanced" ng-init="advanced=false"){style:"bactkground-color: rgba(183, 183, 183, 0.3);"}
+              = image_tag 'new/icons/down.svg', style:"opacity: 0.7; margin-top: 3px;"
+
+        .advanced-fields(ng-show="advanced")
+          .fl-cont.fl-center.padd_bott_md
+            .fl-col.padd_ri_md{style:"width: 150px;"}
+              %h5.d_gr{style:"font-size: 16px; "} Proxy IP
+            .fl-col.fl-grow
+              %input.new-input{"ng-model" => "onprem_cluster.proxyIP", :type => "text" }
+
+          .fl-cont.fl-center.padd_bott_md
+            .fl-col.padd_ri_md{style:"width: 150px;"}
+              %h5.d_gr{style:"font-size: 16px; "} Proxy user
+            .fl-col.fl-grow
+              %input.new-input{"ng-model" => "onprem_cluster.proxyUser", :type => "text"}
+
+          .fl-cont.fl-center.padd_bott_md
+            .fl-col.padd_ri_md{style:"width: 150px;"}
+              %h5.d_gr{style:"font-size: 16px; "} Proxy password
+            .fl-col.fl-grow
+              %input.new-input{"ng-model" => "onprem_cluster.proxyPassword", :type => "text"}
+
+          .fl-cont.fl-center.padd_bott_md
+            .fl-col.padd_ri_md{style:"width: 150px;"}
+              %h5.d_gr{style:"font-size: 16px; "} Static IP's
+            .fl-col.fl-grow
+              %label(class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-1")
+                %input(type="checkbox" id="switch-1" class="mdl-switch__input" ng-model="onprem_cluster.staticIPs")
+
+          .fl-cont.fl-center.padd_bott_md
+            .fl-col.padd_ri_md{style:"width: 150px;"}
+              %h5.d_gr{style:"font-size: 16px; "} Gateway IP
+            .fl-col.fl-grow
+              %input.new-input{"ng-model" => "onprem_cluster.gatewayIP", :type => "text", "ng-disabled"=> "!onprem_cluster.staticIPs"}
+
+          .fl-cont.fl-center.padd_bott_md
+            .fl-col.padd_ri_md{style:"width: 150px;"}
+              %h5.d_gr{style:"font-size: 16px; "} Network mask
+            .fl-col.fl-grow
+              %input.new-input{"ng-model" => "onprem_cluster.networkMask", :type => "text", "ng-disabled"=> "!onprem_cluster.staticIPs"}
+
+          .fl-cont.fl-center.padd_bott_md
+            .fl-col.padd_ri_md{style:"width: 150px;"}
+              %h5.d_gr{style:"font-size: 16px; "} Network IP range (from/to)
+            .fl-col.fl-grow.padd_ri_10
+              %input.new-input{"ng-model" => "onprem_cluster.networkIPRangeStart", :type => "text", "ng-disabled"=> "!onprem_cluster.staticIPs" }
+            .fl-col.fl-grow.padd_left_10
+              %input.new-input{"ng-model" => "onprem_cluster.networkIPRangeEnd", :type => "text", "ng-disabled"=> "!onprem_cluster.staticIPs" }
+
+
+        %input{"ng-model" => "onprem_cluster.clusterType", :type => "hidden", value:"onprem"}
+
+        .padd_top_md.marg_top_md.padd_bott_md.marg_bott_10
+          .flex-container-all
+            .flex-wrap
+              %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.fade-element-in{"ng-click"=> "createOnpremCluster(onprem_cluster)"}(data-btn="create-onprem" ng-disabled="spinner==true")
+                Create On-Premise cluster
+            .flex-wrap.padd_left_md
+              %material-spinner.fade-element-in(ng-if="spinner")
+    -#%p Actually here's no additional configuration required (yet), so we can go.

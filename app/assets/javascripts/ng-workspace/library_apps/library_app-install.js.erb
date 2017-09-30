@@ -1,0 +1,155 @@
+'use strict';
+
+angular.module('components').component('libraryAppInst', {
+    templateUrl: '<%= asset_path("library_apps/library_app-inst.html") %>',
+    controller: ['$http', '$scope', '$routeParams', 'ROUTES', '$location', '$q',
+        function ($http, $scope, $routeParams, ROUTES, $location, $q) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.clusterId = $routeParams.clusterId;
+            $scope.updAppProps = {};
+            $scope.selectNodeWrapper = {selectedNode: undefined}; // because of https://github.com/angular-ui/ui-select/issues/18
+
+
+            function fetchAppInstInfo(firstTime) {
+                $http.get('/clusters/' + $scope.clusterId + '/applications/' + $routeParams.appName + '/install_config', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {clusterID: GexUtils.currentClusterId}
+                }).then(function (response) {
+                    var newNodes = response.data.nodes;
+                    $scope.libApp = response.data.libApp;
+                    $scope.appProps = response.data.metadata;
+                    $scope.appInfo = response.data.app_info;
+
+                    return $q(function (resolve, reject) {
+                        if (GexUtils.isDesktopClient) {
+                            GexUtils.getLocalNodeInfo(function (locNodeInfo, err) {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    var localNodeId = locNodeInfo.id;
+                                    if (localNodeId) {
+                                        var localNode = newNodes.find(function (node) {
+                                            return node.id == localNodeId;
+                                        });
+                                        if (localNode) {
+                                            localNode.local = true;
+                                            newNodes = _.sortBy(newNodes, ['local']);
+                                        }
+                                    }
+                                    resolve();
+                                }
+                            });
+                        } else {
+                            resolve();
+                        }
+                    }).catch(function (err) {
+                        var message = 'Error fetching local node info: ' + err.message;
+                        if (firstTime) {
+                            GexUtils.showMessageDialog('Error', message);
+                        } else {
+                            console.log(message);
+                        }
+                    }).finally(function () {
+                        $scope.nodes = newNodes;
+                        $scope.selectNodeWrapper.selectedNode = newNodes && newNodes[0] ? newNodes[0] : undefined;
+
+                        if (firstTime) $scope.loaded = true;
+                    });
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    var errMessage = 'Cannot fetching app: ' + GexUtils.redirectIfSomeRespCodes(response);
+                    if (firstTime) {
+                        GexUtils.showMessageDialog('Error', errMessage);
+                        $scope.loaded = true;
+                    } else {
+                        console.log(errMessage);
+                    }
+                });
+            }
+
+
+            function getNodeType(node) {
+                return node.hadoopAppId ? ' (Big Data)' : ' (App-only)';
+            }
+
+
+            $scope.getNodeNameWithLocal = function (node) {
+
+                if (node.local){
+                    var withLocal = node.name + ' - local';
+                }
+
+                if (node.settings.aws_instance_type){
+                    var withLocal = node.name + ' - ' + node.settings.aws_instance_type;
+                }
+
+                return withLocal + getNodeType(node);
+            };
+
+
+            fetchAppInstInfo(true);
+
+
+            $scope.submit = function () {
+                var requestData = {
+                    applicationName: $scope.libApp.name,
+                    nodeID: $scope.selectNodeWrapper.selectedNode.id,
+                    settings: angular.copy($scope.updAppProps)
+                };
+
+                $http.post('/gex_applications', {cluster_application: requestData}, {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json'
+                }).then(function () {
+                    GexUtils.showSnackbarMessage("Installing application...");
+                    $location.url(ROUTES.getNgAddr('APPLICATIONS', $scope.clusterId));
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    GexUtils.showMessageDialog('Error', 'Error installing app: ' + GexUtils.getErrMsgServ(response));
+                });
+            }
+
+
+            $scope.checkRequirements = function() {
+                $http.get('/check_app_requirements', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        lib_app_name: $scope.libApp.name,
+                        nodeID: $scope.selectNodeWrapper.selectedNode.id
+                    }
+                }).then(function (response) {
+                    $scope.submit();
+                }, function errorCallback(response) {
+
+                    if (response.status == 403){
+                        GexUtils.showConfirmDialog('Warning', response.data.errors[0].message, function () {
+                            $scope.submit();
+                        }, 'Continue anyway', 'Cancel');
+                    }
+                    else{
+                        GexUtils.showMessageDialog('Cannot install '+$scope.libApp.title, response.data.errors[0].message );
+                    }
+
+
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+                });
+            }
+
+
+        }
+    ]
+});

@@ -1,0 +1,19 @@
+%br
+.block1{:style=>"display:inline; margin-left:5px"}
+  -#= link_to  current_user.team.name, team_path(:name =>  current_user.team.name), :style=>"text-decoration: none;" do
+  -#= link_to @user.team.name, team_path(:name => @user.team.name) do
+  = link_to team_path(:name => @user.team.name), :style=>"text-decoration: none;" do
+    = image_tag avatar_url_team(@team, :thumb), :width=>30, :style=>"margin-bottom: 12px", :class=>"img-circle"
+    %h2{:style=>"display:inline; opacity: 0.6"} Team
+    -#=image_tag "back_rev.png", :class=>"back_pic", :width=>10,:style=>"margin-bottom: 10px; margin-left: 4px; opacity: 0.6"
+
+
+-#= link_to profileedit_path, :class => (s = bt == "stats" ? "list-group-item active" : "list-group-item") do
+  Stats
+= link_to members_team_path, :class => (s = bt == "members" ? "list-group-item active" : "list-group-item") do
+  Members
+-if (@user.can? :get_list_of_invitations_team, @team)
+  = link_to NgRoutes::TEAM_INV, :class => (s = bt == "invitations" ? "list-group-item active" : "list-group-item") do
+    Invitations
+  = link_to edit_team_path, :class => (s = bt == "editteam" ? "list-group-item active" : "list-group-item") do
+    Edit

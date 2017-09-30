@@ -1,0 +1,70 @@
+'use strict';
+
+angular.module('components').component('userAvatar', {
+    templateUrl: '<%= asset_path("profile/user-avatar.html") %>',
+    controller: ['$http', '$scope', 'ROUTES', '$routeParams', 'Upload', '$timeout',
+        function ($http, $scope, ROUTES, $routeParams, Upload, $timeout) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.messageTextAvatar = '';
+            $scope.disableSubmitBtn = false;
+            $scope.submitBtnText = 'Choose new image';
+
+            $http.get('/userInfo', {
+                headers: {Accept: 'application/json'},
+                responseType: 'json',
+                params: {username: $routeParams.username}
+            }).then(function (response) {
+                $scope.user = response.data.user;
+
+                $scope.loaded = true;
+            }, function errorCallback(response) {
+                if (GexUtils.isResponseCanceled(response)) {
+                    return;
+                }
+                GexUtils.redirectIfSomeRespCodes(response);
+
+                console.log('Error fetching user information: ' + response.statusText);
+                $scope.loaded = true;
+            });
+
+
+            $scope.updateAvatar = function (file, errFiles) {
+                $scope.messageTextAvatar = '';
+                var errFile = errFiles && errFiles[0];
+                if (errFile) {
+                    if (errFile.$error == 'pattern') {
+                        GexUtils.showMessageDialog('Error', 'Avatar image format must be GIF, PNG or JPEG.');
+                    } else if (errFile.$error == 'maxSize') {
+                        GexUtils.showMessageDialog('Error', 'Maximum size of avatar must be 1MB.');
+                    }
+                    return;
+                }
+
+                $scope.disableSubmitBtn = true;
+                $scope.submitBtnText = 'Uploading image...';
+                if (file) {
+                    file.upload = Upload.upload({
+                        url: '/profile/update_avatar',
+                        data: {'user[avatar]': file},
+                        method: 'PUT',
+                        headers: {Accept: 'application/json; charset=utf-8'}
+                    });
+
+                    file.upload.then(function (response) {
+                        $timeout(function () {
+                            GexUtils.showSnackbarMessage('Avatar has been updated.');
+                            $scope.user.avatar_url = response.data.url;
+                        });
+                    }, function (response) {
+                        GexUtils.showMessageDialog('Error', 'Cannot upload avatar: ' + GexUtils.getErrMsgServ(response));
+                    }, function (evt) {
+                    }).then(function () {
+                        $scope.disableSubmitBtn = false;
+                        $scope.submitBtnText = 'Choose new image';
+                    });
+                }
+            }
+        }
+    ]
+});

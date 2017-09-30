@@ -1,0 +1,27 @@
+.row
+  .col-md-6
+
+    = vertical_simple_form_for(@user) do |f|
+      -#= f.error_notification
+      = render 'shared/form_errors', {f: f}
+
+      -#%h5 Email
+      -#.form-group{:style=>"margin-left: 0px !important;"}
+      -#  %input.form-control{:type => "text", :id=>"user_email", :class=>"string email required form-control", :name=>"user[email]"}
+
+      .clearfix
+      -#= f.input :email, placeholder: ''
+      -#= f.input :teamname, placeholder: ''
+
+      = f.simple_fields_for :team do |f_team|
+        = f_team.input :name, label: 'Team'
+
+      = f.input :username, label: 'Username', placeholder: ''
+      = f.input :firstname, placeholder: ''
+      = f.input :lastname, placeholder: ''
+      = f.input :password, placeholder: 'Minimum 8 characters.'
+      = f.input :password_confirmation, placeholder: ''
+
+      .button_place.text-center{:style=>"padding-top: 10px; padding-bottom: 5%"}
+        = f.button :submit, :class => "mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent material_blue_btn password_btn", :value=>"Create user"
+

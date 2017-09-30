@@ -1,0 +1,75 @@
+'use strict';
+
+angular.module('components').component('teamsSearch', {
+    templateUrl: '<%= asset_path("search/teams-search.html") %>',
+    controller: ['$http', '$scope', '$interval', '$routeParams', 'ROUTES', '$location', '$anchorScroll',
+        function ($http, $scope, $interval, $routeParams, ROUTES, $location, $anchorScroll) {
+            $scope.utils = GexUtils;
+            $scope.ROUTES = ROUTES;
+            $scope.searchText = $location.search().q;
+            $scope.focusSearch = false;
+            if (!$location.search().pg) {
+                $location.search('pg', 1);
+            }
+
+            if ($scope.searchText) {
+                search($scope.searchText, $location.search().pg, true);
+            } else {
+                $scope.loaded = true;
+            }
+
+            $scope.pagination = {
+                maxSize: 5,
+                currentPage: $location.search().pg,
+                totalItems: 1,
+                itemsPerPage: 10
+            };
+
+            function search(searchText, page, firstTime) {
+                $http.get('/search/teams', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {q: searchText, pg: page}
+                }).then(function (response) {
+                    $scope.teams = response.data.result;
+                    $scope.pagination.totalItems = response.data.total;
+
+                    if (firstTime) $scope.loaded = true;
+                }, function errorCallback(response) {
+                    if (GexUtils.isResponseCanceled(response)) {
+                        return;
+                    }
+                    GexUtils.redirectIfSomeRespCodes(response);
+
+                    console.log('Error fetching teams: ' + response.statusText);
+                    if (firstTime) $scope.loaded = true;
+                });
+            }
+
+            $scope.submitSearch = function () {
+                var searchText = $scope.searchText;
+                $location.search('q', searchText);
+                $location.search('pg', 1);
+            };
+
+            $scope.$on('$routeUpdate', function (event) {
+                $scope.searchText =  $location.search().q;
+                $scope.pagination.currentPage = $location.search().pg;
+                if (!_.isNil($scope.searchText) && $scope.searchText != '') {
+                    search($location.search().q, $location.search().pg);
+                }else {
+                    $scope.teams = null;
+                }
+            });
+
+            $scope.pageChanged = function() {
+                if ($location.hash() !== 'top_of_teams') {
+                    $location.hash('top_of_teams');
+                } else {
+                    $anchorScroll();
+                }
+                $location.search('pg', $scope.pagination.currentPage);
+            }
+        }
+    ]
+});

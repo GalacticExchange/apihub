@@ -1,0 +1,18 @@
+.sidebar-header(data-div="page-title")
+  .flex-wrap.flex-grow
+    %h2.sb-text.sb-h1-text
+      Uninstalling a local node
+    -#%p.sb-p-text.gr
+    -#  Uninstalling a local node.
+
+%div
+  .fl-cont.padd_bott_md.marg_top_md.marg_bott_md(style="align-items: center")
+    .fl-wrap
+      %material-spinner.fade-element-in
+    .fl-wrap.padd_left_md
+      %h5.d_gr.bold.no_marg_top{style:"font-size: 19px; "} {{waitHeader}}
+      .fl-cont{style:"align-items: center;"}
+        .fl-wrap.marg_ri_10
+          =inline_svg "new/icons/info_black.svg", class:"info-gr-icon"
+        .fl-wrap
+          %h6.gr.no_marg{style:"font-size: 16px;"} {{waitDescription}}

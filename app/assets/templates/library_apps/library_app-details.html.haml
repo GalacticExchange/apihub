@@ -1,0 +1,70 @@
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+.app_wrap.border.marg_bott_md(ng-if="loaded")
+  .div
+    .padd_md
+      .fl-cont
+        .fl-wrap.padd_ri_10
+          .gx-bage.gx-bage-lg{class:'trace-bage' , style:'padding: 12px 18px;border-radius: 6px; background-color: #efefef;'}
+            .fl-cont.fl-center
+              .fl-wrap
+                .div(style='height: 14px; margin-top: -8px;')
+                  =inline_svg "new/icons/star1.svg", class: 'apphub-help-icon lite-gr-svg', width: 14, height: 14
+              .fl-wrap.marg_left_10
+                %h6.no_marg.gr.bold
+                  Handpicked app
+        .fl-wrap.padd_ri_10
+          .gx-bage.gx-bage-lg{class:'trace-bage' , style:'padding: 12px 18px;border-radius: 6px; background-color: #efefef;'}
+            .fl-cont.fl-center
+              .fl-wrap
+                .div(style='height: 14px; margin-top: -8px;')
+                  =inline_svg "new/icons/components.svg", class: 'apphub-help-icon lite-gr-svg', width: 14, height: 14
+              .fl-wrap.marg_left_10
+                %h6.no_marg.gr.bold
+                  {{app.categoryTitle}}
+        .fl-wrap.padd_ri_10
+          .gx-bage.gx-bage-lg{class:'trace-bage' , style:'padding: 12px 18px;border-radius: 6px; background-color: #efefef;'}
+            .fl-cont.fl-center
+              .fl-wrap
+                .div(style='height: 14px; margin-top: -8px;')
+                  =inline_svg "new/icons/assistant.svg", class: 'apphub-help-icon lite-gr-svg', width: 14, height: 14
+              .fl-wrap.marg_left_10
+                %h6.no_marg.gr.bold
+                  {{app.companyName}}
+
+
+
+
+  .row.border_bott
+    .col-lg-2.col-md-4.col-sm-6.no_padd
+      .padd_md.border_bott_xs
+        %img.border(ng-src="{{app.imageUrl}}" style="width: 100%;" class="bord_bott+xs")
+        .padd_top_md
+          .div(ng-if="!app.status || app.status!=1")
+            %a(ng-if="app.clusterApplicationId" ng-href="{{ROUTES.getAddr('APPLICATION_INFO', clusterId, app.clusterApplicationId)}}" class="undec")
+              %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new.green-btn(style=" width: 100%;") Open
+            %a(ng-if="!app.clusterApplicationId && utils.userPermissions.cluster_manage" ng-href="{{ROUTES.getAddr('LIBRARY_APP_INST', clusterId, app.name)}}" class="undec" )
+              %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(style=" width: 100%; ") Install
+          .div(ng-if="app.status && app.status==1")
+            %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex-btn-new(disabled style=" width: 100%;") {{app.releaseDate ? "Coming in "+app.releaseDate : 'Coming soon'}}
+
+
+    .col-lg-8.col-md-5.col-sm-6.no_padd
+      .padd_md
+        -#%h4.gr.no_marg.thin.marg_bott_sm {{app.companyName}}
+        %h2.no_marg.bold{style:"font-size: 33pt !important;"} {{app.title}}
+        -#%h5.gr.bold.padd_top_md{style:"color: #6190da !important"} {{app.categoryTitle}}
+        .padd_top_sm
+          %h5.gr{:style=>"font-size: 13pt; line-height: 1.5;"}(ng-bind-html="app.desc")
+
+
+  .row(ng-if="app.scr && app.scr.length > 0")
+    .padd_md
+      .row
+        .col-md-12.no_padd.padd_bott_md
+          %div(uib-carousel interval="5000" active="activeSlideIndex")
+            %div(uib-slide ng-repeat="slide in app.scr track by slide.id" index="$index")
+              %img(ng-src="{{slide.url}}" style="max-height:450pt;")
+

@@ -1,0 +1,20 @@
+
+
+.card-h-icon{
+  background-color: rgba(88, 88, 88, 0.8);
+  border-radius: 50%;
+  padding: 5px;
+  height: 28px;
+  width: 28px;
+
+  .svg-wrap{
+    margin-top: 3px;
+  }
+}
+
+.card-h{
+  margin: 0 !important;
+  font-size: 20px !important;
+  //color: #585858;
+  color: rgba(88, 88, 88, 0.95);
+}

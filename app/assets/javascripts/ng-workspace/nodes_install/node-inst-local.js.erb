@@ -1,0 +1,348 @@
+'use strict';
+
+angular.module('components').component('nodeInstLocal', {
+    templateUrl: '<%= asset_path("nodes_install/node-inst-local.html") %>',
+    controller: ['$http', '$scope', '$q', '$location', 'ROUTES', '$timeout',
+        function ($http, $scope, $q, $location, ROUTES, $timeout) {
+            $scope.utils = GexUtils;
+
+            $scope.checksText = 'Checking machine configuration';
+            $scope.checksInfo = 'Checking your machine configuration, please wait.';
+            $scope.checks = true;
+            $scope.pgData = {err: {}};
+
+            var urlParams = $location.search();
+            $scope.withHadoop = urlParams.withHadoop;
+
+            var os = GexUtils.require('os');
+
+            $q(function (resolve, reject) {
+                var data = {};
+
+                GexUtils.getCurrentNodeId(function (nodeId, err) {
+                    if (err) {
+                        reject(new Error('Error checking if the node exists: ' + err.message));
+                        return;
+                    }
+                    data.nodeId = nodeId;
+
+                    resolve(data);
+                });
+            }).then(function (data) {
+                return $q(function (resolve, reject) {
+                    if (!data.nodeId) {
+                        resolve(data);
+                        return;
+                    }
+
+                    $http.get('/nodes/' + data.nodeId + '/info', {
+                        headers: {Accept: 'application/json'},
+                        responseType: 'json'
+                    }).then(function (response) {
+                        if (response.data.node.status == 'removed') {
+                            reject(new Error('You already have a removed node.\nIf you want to uninstall it, go to the nodes page and uninstall it.'));
+                        } else {
+                            reject(new Error('You already have a local node installed in the current cluster.\n Please uninstall it.'));
+                        }
+                    }, function errorCallback(response) {
+                        if (GexUtils.isResponseCanceled(response)) {
+                            reject(new Error('Error checking node info.'));
+                            return;
+                        }
+
+                        if (response.status == 403) {
+                            reject(new Error('You already have a node installed for another user.\nIf you want to uninstall it, Log In as another user.'));
+                        } else {
+                            reject(new Error('Error checking local node info. Status: ' + response.statusText + " " + response.status));
+                        }
+                    });
+                });
+            }).then(function (data) {
+                return $q(function (resolve, reject) {
+                    GexUtils.exec('gex node env --ui', function (err, stdout) {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        try {
+                            var checkResult = JSON.parse(stdout);
+                            if (checkResult.error) {
+                                reject(new Error(checkResult.error.message));
+                                return;
+                            }
+                            data.checkResult = checkResult;
+                            resolve(data);
+                        } catch (err) {
+                            err.message = 'Cannot parse output from environment check:' + err.message;
+                            reject(err);
+                        }
+                        resolve(data);
+                    });
+                });
+            }).then(function (data) {
+                return $q(function (resolve, reject) {
+                    var needInstall = {};
+                    data.needInstall = needInstall;
+                    if (os.platform() === 'linux') {
+                        resolve(data);
+                        return;
+                    }
+
+                    GexUtils.exec('gex virtualbox check --ui', function (err, stdout) {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+
+                        needInstall.virtualBox = stdout.trim() === 'true';
+                        resolve(data);
+                    });
+                })
+            }).then(function (data) {
+                return $q(function (resolve, reject) {
+                    var needInstall = data.needInstall;
+                    if (os.platform() === 'linux') {
+                        resolve(data);
+                        return;
+                    }
+
+                    GexUtils.exec('gex vagrant check --ui', function (err, stdout) {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+
+                        needInstall.vagrant = stdout.trim() === 'true';
+                        resolve(data);
+                    });
+                })
+            }).then(function (data) {
+                return $q(function (resolve, reject) {
+                    var adaptersJson = data.checkResult.allNetworkAdapters ? data.checkResult.allNetworkAdapters : [];
+                    if (adaptersJson.length > 1) {
+                        $scope.showNetworkAdapter = true;
+                        $scope.netAdapters = adaptersJson;
+                        $scope.pgData.netAdapter = adaptersJson[0];
+                    } else {
+                        $scope.pgData.netAdapter = adaptersJson.length == 1 ? adaptersJson[0] : null; //in baremetal install adapters empty
+                    }
+
+                    if (data.needInstall.virtualBox || data.needInstall.vagrant) {
+                        var text = 'Additional software will be installed: ';
+                        if (data.needInstall.virtualBox && data.needInstall.vagrant) {
+                            text += 'Virtual box and Vagrant.'
+                        } else if (needInstall.virtualBox) {
+                            text += 'Virtual box.';
+                        } else if (needInstall.vagrant) {
+                            text += 'Vagrant.';
+                        }
+                        $scope.popupText = text;
+                    }
+
+                    if ($location.search().nodeName) {
+                        $scope.pgData.nodeName = $location.search().nodeName;
+                        resolve(data);
+                    } else {
+                        $http.get('/nodes/get_name', {
+                            headers: {Accept: 'application/json'},
+                            responseType: 'json'
+                        }).then(function (response) {
+                            $scope.pgData.nodeName = response.data.name;
+                            resolve(data);
+                        }, function errorCallback(response) {
+                            reject(response.data ? response.data.errors[0].message : 'Sorry, but something went wrong when get node name')
+                        });
+                    }
+                })
+            }).then(function (data) {
+                return $q(function (resolve, reject) {
+                    var dialog = GexUtils.electron.remote.dialog;
+                    var path = GexUtils.require('path');
+                    if (os.platform() === 'win32') {
+                        $scope.pgData.installVMPath = path.join(os.homedir(), '.gex', 'VirtualBox Vms');
+                        $scope.chooseVmPath = function () {
+                            var updInstallPath = dialog.showOpenDialog({
+                                title: "Choose the install folder for the local node",
+                                buttonLabel: "Choose",
+                                defaultPath: $scope.pgData.installVMPath,
+                                properties: ['openDirectory', 'createDirectory']
+                            });
+                            if (updInstallPath) {
+                                $scope.pgData.installVMPath = updInstallPath[0];
+                                $scope.validateInstallPath($scope.pgData);
+                            }
+                        };
+                        $scope.showNodeFolder = true;
+                    }
+
+                    $scope.promiseData = data;
+                    $scope.checks = false;
+                })
+            }).catch(function (err) {
+                GexUtils.showMessageDialog('Error', err.message, function () {
+                    $scope.$apply(function () {
+                        $location.url(ROUTES.getNgAddr('NODES', GexUtils.currentCluster.id));
+                    });
+                });
+            });
+
+            $scope.validateNodeName = function (pgData, showPopup) {
+                var deferred = $q.defer();
+
+                if (_.isEmpty(pgData.nodeName)) {
+                    pgData.err.nodeName = 'Node name must not be empty.';
+                    if (showPopup) {
+                        pgData.err.nodeNameShow = true;
+                    }
+                    deferred.resolve();
+                    return deferred.promise;
+                }
+
+                $http.get('/nodes/check_name', {
+                    headers: {Accept: 'application/json'},
+                    responseType: 'json',
+                    params: {
+                        name: pgData.nodeName,
+                        clusterId: GexUtils.currentClusterId
+                    }
+                }).then(function (response) {
+                    pgData.err.nodeName = undefined;
+                }, function errorCallback(response) {
+                    pgData.err.nodeName = response.data ? response.data.errors[0].message : 'Sorry, but something went wrong';
+                }).then(function () {
+                    if (showPopup) {
+                        pgData.err.nodeNameShow = !!pgData.err.nodeName;
+                    }
+                    deferred.resolve();
+                });
+                return deferred.promise;
+            }
+
+            $scope.validateInstallPath = function (pgData) {
+                if (!$scope.showNodeFolder) {
+                    pgData.err.installVMPath = undefined;
+                    return;
+                }
+
+                var fs = GexUtils.require('fs');
+                try {
+                    fs.mkdirSync(pgData.installVMPath);
+                    pgData.err.installVMPath = undefined;
+                } catch (e) {
+                    if (!(e.message.indexOf('EEXIST') >= 0)) {
+                        pgData.err.installVMPath = 'Incorrect path: ' + e.message;
+                    } else if (!fs.lstatSync(pgData.installVMPath).isDirectory()) {
+                        pgData.err.installVMPath = 'It is not a directory';
+                    } else {
+                        pgData.err.installVMPath = undefined;
+                    }
+                }
+            }
+
+            $scope.installNode = function () {
+                $scope.spinner = true;
+                var data = $scope.promiseData;
+                data.selectedNetAdapter = $scope.pgData.netAdapter;
+                data.installVMPath = $scope.pgData.installVMPath;
+                data.nodeName = $scope.pgData.nodeName;
+
+                //don't need to validate net adapter because it select with autoselected first value
+                $scope.validateInstallPath($scope.pgData);
+                $scope.validateNodeName($scope.pgData).then(function () {
+                    var errObj = $scope.pgData.err;
+                    for (var j in errObj) {
+                        if (errObj[j]) {
+                            $scope.spinner = false;
+                            return;
+                        }
+                    }
+
+                    $q(function (resolve, reject) {
+                        var needInstall = data.needInstall;
+                        if (needInstall.virtualBox) {
+                            $scope.checksText = 'Installing Virtual Box';
+                            $scope.checksInfo = 'Installing Virtual Box. It will take about five minutes.<br>During the installation you will be asked to click and confirm admin privileges.';
+                            $scope.checks = true;
+                            GexUtils.exec('gex virtualbox install --ui', function (err) {
+                                if (err) {
+                                    reject(err);
+                                    return;
+                                }
+                                resolve(data);
+                            });
+                        } else {
+                            resolve(data);
+                        }
+                    }).then(function (data) {
+                        return $q(function (resolve, reject) {
+                            var needInstall = data.needInstall;
+                            if (needInstall.vagrant) {
+                                $scope.checksText = 'Installing Vagrant';
+                                $scope.checksInfo = 'Installing Vagrant. It will take about five minutes.<br>During the installation you will be asked to click and confirm admin privileges.';
+                                $scope.checks = true;
+                                GexUtils.exec('gex vagrant install --ui', function (err) {
+                                    if (err) {
+                                        reject(err);
+                                        return;
+                                    }
+                                    resolve(data);
+                                });
+                            } else {
+                                resolve(data);
+                            }
+                        })
+                    }).then(function (data) {
+                        return $q(function (resolve, reject) {
+                            var installVMPath = data.installVMPath;
+
+                            $scope.checksText = 'Checking machine configuration';
+                            $scope.checksInfo = 'Checking your machine configuration, please wait.';
+                            $scope.checks = true;
+
+                            var command = 'gex node env --afterDep --ui' + (installVMPath ? ' --vboxdir="' + installVMPath + '"' : '');
+                            GexUtils.exec(command, function (err, stdout) {
+                                if (err) {
+                                    reject(err);
+                                    return;
+                                }
+                                try {
+                                    var checkResult = JSON.parse(stdout);
+                                    if (checkResult.error) {
+                                        reject(new Error(checkResult.error.message));
+                                    }
+                                    resolve(data);
+                                } catch (err) {
+                                    err.message = 'Cannot parse output from the environment check after dependency check:' + err.message;
+                                    reject(err);
+                                }
+                            });
+                        })
+                    }).then(function (data) {
+                        return $q(function (resolve, reject) {
+                            GexUtils.electron.ipcRenderer.send('gexd-post-/nodes', {
+                                token: GexUtils.getToken(),
+                                vBoxMachineFolder: data.installVMPath,
+                                selectedNetInterface: data.selectedNetAdapter,
+                                clusterID: GexUtils.currentClusterId,
+                                customName: data.nodeName,
+                                hadoopApp: urlParams.withHadoop
+                            });
+                            //todo wait for response
+
+                            $timeout(function () {
+                                $location.url(ROUTES.getNgAddr('NODES', GexUtils.currentCluster.id));
+                            }, 5000);
+                            resolve();
+                        })
+                    }).catch(function (err) {
+                        GexUtils.showMessageDialog('Error', err.message, function () {
+                            $scope.$apply(function () {
+                                $location.url(ROUTES.getNgAddr('NODES', GexUtils.currentCluster.id));
+                            });
+                        });
+                    });
+                });
+            };
+        }
+    ]
+});

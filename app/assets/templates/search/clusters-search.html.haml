@@ -1,0 +1,30 @@
+.app_wrap.marg_bott_md
+  .flex-container.lite_shadow
+    %form.header_search_wrap(novalidate ng-submit="submitSearch()" ng-class="focusSearch ? 'search_box_focus' : undefined" style="padding-top: 0px")
+      %input(type="text" name="searchText" placeholder="Search clusters" ng-model="searchText" class="custom-input dform-control" ng-autofocus ng-focus="focusSearch = true" ng-blur="focusSearch = false")
+      .header_search_icon_wrap.inl.hand_cursor(ng-click="submitSearch()")
+        =image_tag "new/icons/search_black.svg", class:"search_input_icon"
+
+%div(ng-if="!loaded")
+  .flex-center.padd_top_md
+    %material-spinner.fade-element-in
+
+%div(ng-if="loaded")
+  .app_wrap.border(ng-if="clusters && clusters.length > 0")
+    .row
+      %a(ng-href="/cluster/{{cluster.name}}" class="undec" ng-repeat="cluster in clusters track by cluster.name")
+        .row.bord_bott.table-row
+          .padd_myd.padd_left_md{:style=>"padding: 10px"}
+            %h2.project_name{:style=>"margin-top: 0px !important; margin-bottom: 8px; color: #338cda"}
+              {{cluster.name}}
+            %h6.gr.no_marg
+              Nodes: {{cluster.numberOfNodes || 0}}
+
+  .app_wrap(ng-if="clusters && pagination.totalItems > pagination.itemsPerPage")
+    .row
+      .text-center
+        %ul(uib-pagination total-items="pagination.totalItems" ng-model="pagination.currentPage" max-size="pagination.maxSize" class="pagination-sm" boundary-link-numbers="true" ng-change="pageChanged()" items-per-page="pagination.itemsPerPage")
+
+
+  %h3.text-center.no_marg.padd_md(ng-if="!clusters || clusters.length == 0")
+    We could not find any clusters

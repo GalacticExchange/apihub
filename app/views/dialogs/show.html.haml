@@ -1,0 +1,14 @@
+.flex-container
+  =render "shared/left_popup"
+  .inline-flex
+    .col-xs-12.no_padd.install_left_col.main_div_size.flex_col_sm
+      = render 'left_column', another_user_name: @another_user.username
+  .inline-flex{:style=>"flex-grow: 1;"}
+    .col-md-12.col-xs-12.main.main_div_size
+      .flex-container-all
+        .flex-wrap.flex-grow
+
+          = render 'messages/smform'
+          -#.clearfix
+          .padd_top_md
+            = render 'messages', messages: @messages

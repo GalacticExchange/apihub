@@ -1,0 +1,4 @@
+{
+   "username" : "kateryna.khotkevych@galacticexchange.io",
+   "userRole" : "User"
+}

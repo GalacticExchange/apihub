@@ -1,0 +1,7 @@
+.nested-fields
+  .row
+    = image_tag picture_url_library_application_image(f.object, :thumb)
+    = f.input :image, as: :file
+    = link_to_remove_association "remove", f
+
+    %hr

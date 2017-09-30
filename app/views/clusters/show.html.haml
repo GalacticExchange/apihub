@@ -1,0 +1,38 @@
+#wrap
+  .container
+    .row
+      .col-md-1.no_padd
+      .col-md-10.no_padd
+        .padd_md.marg_top_md
+          .border.app_wrap.border_radius
+            .padd_md
+              .flex-container-all
+                .flex-wrap.flex-grow
+                  %h2.semibold.no_marg.inl.gr Cluster
+                  %h2.semibold.no_marg.inl=@cluster.name
+                  .padd_top_md
+                    %h5.gr.no_marg
+                      -if @cluster.description=""
+                        =t('clusters.description.empty')
+                      -else
+                        =@cluster.description
+                  .padd_top_md
+                    %h4.profile_inf{style:"font-size: 18px !important;"}
+                      Team:
+                    %h4.profile_inf_user{style:"font-size: 18px !important;"}
+                      -if @cluster.team.nil?
+                        no team
+                      -else
+                        = link_to @cluster.team.name, team_path(:name => @cluster.team.name)
+
+                    .padd_top_sm
+                      %h4.profile_inf{style:"font-size: 18px !important;"}
+                        Nodes:
+                      %h4.profile_inf_user{style:"font-size: 18px !important;"}
+                        =@nodes_count
+                .flex-wrap
+                  -if !@cluster.team.nil?
+                    = link_to dialog_path(:to => @cluster.team.primary_admin.username), :class=>"undec" do
+                      %button.mdl-button.mdl-js-button.mdl-js-ripple-effect.gex_mdl_btn_md Contact cluster's owner
+
+

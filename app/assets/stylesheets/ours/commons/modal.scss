@@ -1,0 +1,27 @@
+.gx-page {
+  .gx-modal {
+
+    h2 {
+      font-size: 21pt !important;
+      font-weight: 600;
+      color: #585858;
+      margin: 0 !important;
+      line-height: 1.1 !important;
+    }
+
+    p {
+      margin: 0 !important;
+      font-size: 13pt;
+      padding: 10px 0 0 0;
+      color: #7f7f7f !important;
+    }
+
+    .close-icon {
+      cursor: pointer;
+      margin: 0;
+      width: 25px;
+      opacity: 0.6;
+    }
+
+  }
+}
