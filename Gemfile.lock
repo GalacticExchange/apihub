@@ -636,6 +636,7 @@ GEM
       thread_safe (~> 0.1)
     uglifier (3.0.4)
       execjs (>= 0.3.0, < 3)
+    vault (0.10.1)
     versionomy (0.5.0)
       blockenspiel (~> 0.5)
     wannabe_bool (0.5.0)
@@ -751,6 +752,7 @@ DEPENDENCIES
   tinymce-rails (= 4.1.6)
   tzinfo-data (= 1.2016.6)
   uglifier (= 3.0.4)
+  vault (~> 0.1)
   versionomy (= 0.5.0)
   wannabe_bool (~> 0.5.0)
   whenever

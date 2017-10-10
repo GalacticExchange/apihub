@@ -237,6 +237,9 @@ gem 'wannabe_bool', '~> 0.5.0'
 
 gem 'diplomat', '1.3.0'
 
+# storing secrets
+gem "vault", "~> 0.1"
+
 # profiling
 group :development do
   gem 'rack-mini-profiler'
