@@ -8,7 +8,8 @@ set :rails_env, 'main'
 
 
 #
-set :repo_url, 'ssh://git@github.com:22/GalacticExchange/apihub.git'
+#set :repo_url, 'ssh://git@github.com:22/GalacticExchange/apihub.git'
+set :repo_url, 'ssh://git@github.com:GalacticExchange/apihub.git'
 
 server_ip = deploy_creds[:server_ip]
 server_user = deploy_creds[:server_user]
