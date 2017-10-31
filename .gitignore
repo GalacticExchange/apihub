@@ -16,6 +16,8 @@
 
 #/config/gex/gex_config.yml
 
+/config/secrets.yml
+
 .env.*
 
 # Ignore dynamically created assets

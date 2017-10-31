@@ -78,7 +78,7 @@ server_app_repo_versions: 'http://gex1.devgex.net:8090/applications'
 
 
 # redis
-redis_host: 'redis'
+redis_host: 'gexcore-redis'
 redis_prefix: 'gex'
 
 

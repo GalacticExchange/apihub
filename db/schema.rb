@@ -283,17 +283,6 @@ ActiveRecord::Schema.define(version: 20170707094858) do
     t.index ["reset_password_token"], name: "index_optimacms_cms_users_on_reset_password_token", unique: true, using: :btree
   end
 
-  create_table "dashboards", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
-    t.integer "cluster_id",                null: false
-    t.integer "user_id"
-    t.string  "name",                      null: false
-    t.string  "title"
-    t.boolean "enabled",    default: true, null: false
-    t.integer "pos",        default: 0,    null: false
-    t.index ["cluster_id"], name: "cluster_id", using: :btree
-    t.index ["user_id"], name: "user_id", using: :btree
-  end
-
   create_table "errors", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string "name",                      null: false
     t.string "title",                     null: false
@@ -372,13 +361,13 @@ ActiveRecord::Schema.define(version: 20170707094858) do
     t.boolean  "enabled",                                   default: true, null: false
     t.integer  "pos",                                       default: 0,    null: false
     t.string   "color"
-    t.text     "metadata",                    limit: 65535
     t.datetime "release_date"
+    t.integer  "status"
+    t.text     "metadata",                    limit: 65535
     t.string   "icon_file_name"
     t.string   "icon_content_type"
     t.integer  "icon_file_size"
     t.datetime "icon_updated_at"
-    t.integer  "status"
     t.integer  "library_application_type_id"
     t.index ["library_application_type_id"], name: "index_library_applications_on_library_application_type_id", using: :btree
     t.index ["name"], name: "name", unique: true, using: :btree
@@ -432,7 +421,6 @@ ActiveRecord::Schema.define(version: 20170707094858) do
   create_table "nodes", id: :bigint, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci" do |t|
     t.string   "uid",                                          null: false
     t.string   "name"
-    t.string   "title"
     t.integer  "cluster_id",                                   null: false
     t.integer  "node_number",                  default: 0,     null: false
     t.integer  "host_type_id",                 default: 1,     null: false
@@ -449,7 +437,6 @@ ActiveRecord::Schema.define(version: 20170707094858) do
     t.string   "env_settings"
     t.datetime "created_at",                                   null: false
     t.datetime "updated_at",                                   null: false
-    t.text     "jobs_state",     limit: 65535
     t.integer  "hadoop_app_id"
     t.index ["agent_token"], name: "agent_token", using: :btree
     t.index ["cluster_id"], name: "cluster_id", using: :btree

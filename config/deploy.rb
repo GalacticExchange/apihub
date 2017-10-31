@@ -18,7 +18,7 @@ set :rvm_type, :user
 #set :group, 'dev'
 set :deploy_user, 'uadmin'
 
-
+set :use_sudo, false
 
 #set :repo_url, 'git@git.gex:gex/apihub.git'
 #set :repo_url, '.'
