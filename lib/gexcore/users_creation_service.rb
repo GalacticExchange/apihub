@@ -142,8 +142,8 @@ module Gexcore
         res_verify = Gexcore::UsersCreationService.verify_user(user.confirmation_token)
         gex_logger.log_response(res_verify, 'user_verified', "Email was verified: :email", 'user_verify_error')
 
-        # email
-        UsersMailer.phone_verification_email(user.email).deliver_later
+        # email todo - fix email sending
+        #UsersMailer.phone_verification_email(user.email).deliver_later
       end
 
       #
@@ -510,7 +510,8 @@ module Gexcore
       to_activate = is_admin_mode || is_test_mode || is_phone_valid
 
       if to_activate
-        UsersMailer.phone_verification_email(user.email).deliver_later
+        # todo - fix
+        #UsersMailer.phone_verification_email(user.email).deliver_later
       end
 
 
