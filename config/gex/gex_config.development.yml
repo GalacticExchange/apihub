@@ -49,7 +49,7 @@ log_slack_channel: '#dev_errors'
 log_kafka_server_url: "log.devgex.net:9092"
 log_kafka_topic: "log_app"
 
-logs_elasticsearch_host: '51.0.0.63'
+logs_elasticsearch_host: '51.0.2.13'
 logs_elasticsearch_port: '9200'
 logs_elasticsearch_prefix: ''
 
@@ -65,7 +65,7 @@ support_email: 'support@galacticexchange.io'
 
 
 # elasticsearch
-elasticsearch_host: '51.0.0.13'
+elasticsearch_host: '51.0.2.13'
 elasticsearch_port: 9200
 elasticsearch_prefix: 'gex.'
 

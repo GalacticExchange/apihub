@@ -44,7 +44,8 @@ log_slack_channel: '#main_errors'
 log_kafka_server_url: "51.0.0.62:9092"
 log_kafka_topic: "log_app"
 
-logs_elasticsearch_host: '51.0.0.63'
+#logs_elasticsearch_host: '51.0.0.63'
+logs_elasticsearch_host: 'gexcore-elasticsearch'
 logs_elasticsearch_port: '9200'
 logs_elasticsearch_prefix: ''
 
